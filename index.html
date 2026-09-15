@@ -86,6 +86,35 @@ main{padding:26px 30px 90px;max-width:1240px;width:100%}
 .tile .big{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1;letter-spacing:-.02em}
 .tile .lbl{font-size:12px;color:var(--muted);font-weight:600}
 .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+/* langit: kepala Beranda yang warnanya mengikuti waktu sholat */
+.langit{position:relative;overflow:hidden;border-radius:18px;color:#fff;padding:18px 20px 0;margin-bottom:18px;isolation:isolate;background:linear-gradient(180deg,#0A1230 0%,#16224A 60%,#2A2F5E 100%)}
+.langit[data-fase="fajar"]{background:linear-gradient(180deg,#1C2356 0%,#574788 55%,#DC8B7A 100%)}
+.langit[data-fase="pagi"]{background:linear-gradient(180deg,#245F9E 0%,#5E98CD 55%,#EFC58A 100%)}
+.langit[data-fase="siang"]{background:linear-gradient(180deg,#1B5B9C 0%,#3F86C6 60%,#93C6E8 100%)}
+.langit[data-fase="sore"]{background:linear-gradient(180deg,#22507F 0%,#B77C48 70%,#EDB35F 100%)}
+.langit[data-fase="senja"]{background:linear-gradient(180deg,#211A49 0%,#843A59 55%,#E9814F 100%)}
+.langit[data-fase="malam"]{background:linear-gradient(180deg,#0A1230 0%,#16224A 60%,#2A2F5E 100%)}
+.langit::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 1s;background-image:radial-gradient(1.2px 1.2px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 28% 42%,#fff 50%,transparent 51%),radial-gradient(1.4px 1.4px at 46% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 63% 30%,#fff 50%,transparent 51%),radial-gradient(1.3px 1.3px at 78% 16%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 88% 40%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 36% 24%,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 70% 8%,#fff 50%,transparent 51%)}
+.langit[data-fase="malam"]::before,.langit[data-fase="fajar"]::before{opacity:.8}
+.langit .atas{display:flex;justify-content:space-between;align-items:flex-start;gap:12px 24px;flex-wrap:wrap}
+.langit .eyebrow{color:rgba(255,255,255,.82)}
+.langit h1{font-family:var(--serif);font-size:34px;line-height:1.05;font-weight:400;margin:4px 0 0;text-shadow:0 1px 12px rgba(0,0,0,.25)}
+.langit h1 em{color:#F5D28A;font-style:italic}
+.langit .sub{color:rgba(255,255,255,.9);margin-top:6px;max-width:62ch}
+.langit .sub b{color:#fff}
+.langit .kanan{display:flex;flex-direction:column;align-items:flex-end;gap:8px;text-align:right}
+.langit .jam-besar{font:500 clamp(30px,6vw,46px)/1 var(--mono);letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-shadow:0 1px 14px rgba(0,0,0,.25)}
+.langit .berikut{font-size:13px;opacity:.92}
+.langit .aksi{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.langit .aksi .btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+.langit .aksi .btn.danger{background:rgba(239,93,111,.3)}
+.langit .strip{list-style:none;margin:14px -20px 0;padding:10px 12px 12px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;background:rgba(6,12,28,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.langit .strip li{text-align:center;padding:6px 2px;border-radius:10px}
+.langit .strip .n{display:block;font-size:11.5px;opacity:.82}
+.langit .strip .w{display:block;font:500 15px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+.langit .strip li.lewat{opacity:.5}
+.langit .strip li.berikut-ini{background:rgba(255,255,255,.18);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+@media (max-width:760px){.langit{padding:16px 16px 0;border-radius:16px}.langit .strip{margin:12px -16px 0}.langit h1{font-size:28px}.langit .kanan{align-items:flex-start;text-align:left}.langit .aksi{justify-content:flex-start}}
 @media (max-width:980px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tiles .tile{padding:12px 14px}.tiles .tile .big{font-size:24px}}
 .check .jam{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
 .check .jam a{color:var(--gold-2)}
@@ -817,12 +846,16 @@ function vHariIni(){
   const bl = blokHari(tk); const kini = bl.find(b => b.m0 <= nowMin && nowMin < b.m1), berikut = bl.find(b => b.m0 > nowMin && b.jenis!=='sholat');
   const fokusBuka = (S.fokus.items||[]).filter(x=>!x.utama&&!x.selesai).sort((a,b)=>(a.tenggat||'9').localeCompare(b.tenggat||'9'));
   return `
-  <div class="topbar"><div><div class="eyebrow">${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()} · ${hijri(now)}</div>
-    <h1 class="serif">${jamSapa}, <em>${esc(S.pengaturan.nama)}</em>.</h1>
-    <div class="sub">${s.lengkap ? 'Hari ini sudah lengkap. Jaga sampai malam.' : `${s.done} dari ${s.total} kebiasaan sudah dicentang${next ? ` · ${next[1]} pukul ${jam(wt[next[0]])}` : ' · semua waktu sholat hari ini sudah lewat'}.`}
-      ${kini ? ` Sekarang: <b style="color:var(--text)">${esc(kini.judul)}</b>${kini.selesai?'':''}.` : berikut ? ` Berikutnya: <b style="color:var(--text)">${esc(berikut.judul)}</b> pukul ${berikut.mulai}.` : ''}</div>
-    <div class="beranda-sub"><a href="#jadwal">Jadwal</a><a href="#sholat">Sholat</a><a href="#disiplin">Disiplin</a><a href="#fokus">Fokus</a><a href="#jurnal">Jurnal</a><a href="#kuliah">Kuliah</a><a href="#rencana">Planning</a><a href="#keputusan">Keputusan</a><a href="#keuangan">Keuangan</a></div></div>
-    <div class="row"><button class="btn danger" data-act="langgar">Catat pelanggaran</button><button class="btn" data-act="pengaturan">${I.setting}Pengaturan</button></div></div>
+  <header class="langit" data-fase="${faseLangit(nowMin, wt)}"><div class="atas"><div>
+      <div class="eyebrow">${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()} · ${hijri(now)} · ${esc(S.pengaturan.kota)}</div>
+      <h1>${jamSapa}, <em>${esc(S.pengaturan.nama)}</em>.</h1>
+      <div class="sub">${s.lengkap ? 'Hari ini sudah lengkap. Jaga sampai malam.' : `${s.done} dari ${s.total} kebiasaan sudah dicentang.`}
+        ${kini ? ` Sekarang: <b>${esc(kini.judul)}</b>.` : berikut ? ` Berikutnya: <b>${esc(berikut.judul)}</b> pukul ${berikut.mulai}.` : ''}</div></div>
+    <div class="kanan"><span class="jam-besar">${pad(now.getHours())}.${pad(now.getMinutes())}</span>
+      <span class="berikut">${next ? `<b>${next[1]}</b> ${jam(wt[next[0]])} · ${sisaWaktu(wt[next[0]]-nowMin)}` : `Semua waktu sholat hari ini sudah lewat · terbit ${jam(wt.terbit)}`}</span>
+      <div class="aksi"><button class="btn danger" data-act="langgar">Catat pelanggaran</button><button class="btn" data-act="pengaturan">${I.setting}Pengaturan</button></div></div></div>
+    <ol class="strip">${SHOLAT.map(([id,nm]) => `<li class="${next&&next[0]===id?'berikut-ini':wt[id]<=nowMin?'lewat':''}"><span class="n">${nm}</span><span class="w">${jam(wt[id])}</span></li>`).join('')}</ol>
+  </header>
   <div class="grid">
     <div class="c12 tiles">
       ${tile('Hari bersih', st.bersih, st.lastV ? 'sejak '+fmtTgl(st.lastV,false) : 'belum pernah melanggar', st.bersih>=7?'good':'')}
@@ -831,9 +864,7 @@ function vHariIni(){
       ${tile('Kekayaan bersih', rpS(kb), `aset ${rpS(totalAset())} · utang ${rpS(totalUtang())}`, kb>=0?'good':'bad')}
     </div>
 
-    <div class="c12 panel tight"><div class="row between" style="margin-bottom:10px"><span class="eyebrow">Sholat hari ini · ${esc(S.pengaturan.kota)}</span><span class="small muted">${next ? `${next[1]} ${sisaWaktu(wt[next[0]]-nowMin)}` : `Terbit ${jam(wt.terbit)}`}</span></div>
-      <div class="sholat">${SHOLAT.map(([id,nm]) => `<div class="p ${next&&next[0]===id?'next':wt[id]<=nowMin?'past':''}"><span class="n">${nm}</span><span class="w">${jam(wt[id])}</span><span class="s">${next&&next[0]===id?'berikutnya':wt[id]<=nowMin?'sudah masuk':'nanti'}</span></div>`).join('')}</div>
-      ${(() => { const kmrn = addDays(tk,-1); return !statusSholat(kmrn) && kmrn >= awalPakai() ? tanyaSholat(kmrn) : ''; })()}${tanyaSholat(tk)}</div>
+    <div class="c12 panel tight">${(() => { const kmrn = addDays(tk,-1); return !statusSholat(kmrn) && kmrn >= awalPakai() ? tanyaSholat(kmrn) : ''; })()}${tanyaSholat(tk)}</div>
 
     <div class="c6 panel"><h2>Jadwal hari ini <span class="row"><a class="act" href="#jadwal">Seminggu</a></span></h2>
       ${kelas.length ? `<div class="small" style="margin-bottom:8px;color:var(--teal)">Kuliah hari ini: ${kelas.map(c => `<b>${esc(c.mk)}</b> ${c.mulai}–${c.selesai}`).join(' · ')}</div>` : `<div class="small dim" style="margin-bottom:8px">Tidak ada kuliah hari ${HARI[now.getDay()]}.</div>`}
@@ -874,6 +905,7 @@ function vHariIni(){
 
 /* ----- Sholat ----- */
 const sisaWaktu = m => m<60 ? `${m} menit lagi` : `${Math.floor(m/60)} j ${m%60} m lagi`;
+const faseLangit = (nm, wt) => nm < wt.subuh ? 'malam' : nm < wt.terbit ? 'fajar' : nm < 600 ? 'pagi' : nm < wt.ashar ? 'siang' : nm < wt.maghrib ? 'sore' : nm < wt.isya ? 'senja' : 'malam';
 function tanyaSholat(k){
   const s = statusSholat(k); const hariIni = k===todayKey();
   return `<div class="ask ${s}"><div class="q"><b>${hariIni ? 'Sholat hari ini' : 'Sholat ' + fmtTgl(k,false)}, ada yang bolos?</b><span class="small muted">${s==='lengkap' ? 'Alhamdulillah, lima waktu tertunaikan.' : s==='bolos' ? 'Tercatat bolos. Qadha kalau bisa, dan besok jangan diulang.' : (hariIni ? 'Jawab sekali saja: malam setelah Isya, atau besok pagi saat jurnal.' : 'Belum dijawab. Jawab sekarang sambil menulis jurnal pagi.')}</span></div>
@@ -1029,14 +1061,19 @@ function vKuliah(){
 }
 
 /* ----- Rencana 3 tahun ----- */
-function fase3Tahun(){
-  const m = parseKey(S.pengaturan.mulai3Tahun||'2026-09-01'); const out = [];
-  for (let i=0;i<6;i++){ const a = new Date(m.getFullYear(), m.getMonth()+i*6, 1); const b = new Date(m.getFullYear(), m.getMonth()+i*6+6, 0);
-    out.push({ i, mulai:key(a), akhir:key(b), nama: i<4 ? `Semester ${5+i}` : i===4 ? 'Lulus · tahun 1' : 'Tahun 3', sub:`${BLN[a.getMonth()]} ${a.getFullYear()} – ${BLN[b.getMonth()]} ${b.getFullYear()}` }); }
+/* Periode planning selama 3 tahun dari mulai3Tahun. Mode: bulan (36), kuartal (12), tahun (3). */
+const MODE_RENCANA = { bulan:['Per bulan',1], kuartal:['Per 3 bulan',3], tahun:['Per tahun',12] };
+const modeRencana = () => MODE_RENCANA[S.pengaturan.modeRencana] ? S.pengaturan.modeRencana : 'kuartal';
+function faseRencana(){
+  const m = parseKey(S.pengaturan.mulai3Tahun||'2026-09-01'); const mode = modeRencana(); const lebar = MODE_RENCANA[mode][1]; const out = [];
+  for (let i=0; i*lebar<36; i++){ const a = new Date(m.getFullYear(), m.getMonth()+i*lebar, 1); const b = new Date(m.getFullYear(), m.getMonth()+i*lebar+lebar, 0);
+    const nama = mode==='bulan' ? `${BULAN[a.getMonth()]} ${a.getFullYear()}` : mode==='kuartal' ? `Kuartal ${i+1}` : `Tahun ${i+1}`;
+    const sub = mode==='bulan' ? `bulan ke-${i+1} dari 36` : `${BLN[a.getMonth()]} ${a.getFullYear()} – ${BLN[b.getMonth()]} ${b.getFullYear()}`;
+    out.push({ i, mulai:key(a), akhir:key(b), nama, sub }); }
   return out;
 }
 function vRencana(){
-  const items = S.rencana.items||[]; const tk = todayKey(); const fase = fase3Tahun(); const filter = S.tab.rencanaKat||'Semua';
+  const items = S.rencana.items||[]; const tk = todayKey(); const fase = faseRencana(); const filter = S.tab.rencanaKat||'Semua'; const mode = modeRencana();
   const shown = items.filter(x => filter==='Semua' || x.kategori===filter);
   const done = items.filter(x=>x.selesai).length; const avg = items.length ? Math.round(items.reduce((n,x)=>n+(x.selesai?100:+x.progres||0),0)/items.length) : 0;
   const mulai = parseKey(S.pengaturan.mulai3Tahun||'2026-09-01'); const lewat = Math.max(0, Math.min(100, Math.round((new Date()-mulai)/(3*365.25*864e5)*100)));
@@ -1046,14 +1083,16 @@ function vRencana(){
     <input type="range" min="0" max="100" step="5" value="${x.selesai?100:x.progres||0}" data-act="rencana-progres" data-id="${x.id}" ${x.selesai?'disabled':''}>
     <div class="row between"><label class="row small muted" style="cursor:pointer"><input type="checkbox" data-act="rencana-selesai" data-id="${x.id}" ${x.selesai?'checked':''}> Tandai selesai</label></div></div>`;
   return `
-  <div class="topbar"><div><div class="eyebrow">${fmtTgl(S.pengaturan.mulai3Tahun||'2026-09-01',false)} ${(S.pengaturan.mulai3Tahun||'2026').slice(0,4)} → 2029</div><h1 class="serif"><em>Planning</em></h1><div class="sub">Target dipisah per semester supaya tiap enam bulan ada yang bisa dicek. Angka bawaan hanya usulan; ubah sesukamu.</div></div>
-    <div class="row"><select data-field="rencanaKat" style="width:auto"><option>Semua</option>${KATEGORI_RENCANA.map(k=>`<option ${filter===k?'selected':''}>${k}</option>`).join('')}</select><button class="btn primary" data-act="rencana-tambah">Tambah target</button></div></div>
+  <div class="topbar"><div><div class="eyebrow">${fmtTgl(S.pengaturan.mulai3Tahun||'2026-09-01',false)} ${(S.pengaturan.mulai3Tahun||'2026').slice(0,4)} → 2029</div><h1 class="serif"><em>Planning</em></h1><div class="sub">Target dibagi ${MODE_RENCANA[mode][0].toLowerCase()} selama 3 tahun; periode yang kosong disembunyikan. Ganti pembagiannya di sebelah kanan.</div></div>
+    <div class="row"><select data-field="rencanaMode" style="width:auto">${Object.entries(MODE_RENCANA).map(([k,[l]]) => `<option value="${k}" ${mode===k?'selected':''}>${l}</option>`).join('')}</select><select data-field="rencanaKat" style="width:auto"><option>Semua</option>${KATEGORI_RENCANA.map(k=>`<option ${filter===k?'selected':''}>${k}</option>`).join('')}</select><button class="btn primary" data-act="rencana-tambah">Tambah target</button></div></div>
   <div class="grid">
     <div class="c4">${tile('Waktu berjalan', lewat+'%', 'dari 3 tahun', 'gold')}</div>
     <div class="c4">${tile('Rata-rata progres', avg+'%', `${items.length} target`, 'teal')}</div>
     <div class="c4">${tile('Selesai', done, 'target tercapai', done?'good':'')}</div>
-    <div class="c12 panel" style="padding:8px 20px"><div class="tl">${fase.map(f => { const list = shown.filter(x => x.target>=f.mulai && x.target<=f.akhir); const cls = f.akhir<tk?'past':f.mulai>tk?'future':''; return `<div class="ph ${cls}"><b>${f.nama}</b><span>${f.sub}</span></div><div class="cards">${list.map(card).join('')||'<div class="dim small" style="padding:8px 0">Belum ada target di fase ini.</div>'}</div>`; }).join('')}
-      ${(() => { const luar = shown.filter(x => x.target < fase[0].mulai || x.target > fase[5].akhir); return luar.length ? `<div class="ph future"><b>Di luar rentang</b><span>sebelum/sesudah 3 tahun</span></div><div class="cards">${luar.map(card).join('')}</div>` : ''; })()}</div></div>
+    <div class="c12 panel" style="padding:8px 20px"><div class="tl">${(() => { const isi = f => shown.some(x => x.target>=f.mulai && x.target<=f.akhir); const iKini = fase.findIndex(f => tk>=f.mulai && tk<=f.akhir);
+      // periode kosong disembunyikan kecuali periode sekarang dan berikutnya, supaya daftar bulan/kuartal tidak panjang
+      return fase.filter((f,i) => isi(f) || i===iKini || i===iKini+1); })().map(f => { const list = shown.filter(x => x.target>=f.mulai && x.target<=f.akhir); const cls = f.akhir<tk?'past':f.mulai>tk?'future':''; return `<div class="ph ${cls}"><b>${f.nama}</b><span>${f.sub}</span></div><div class="cards">${list.map(card).join('')||'<div class="dim small" style="padding:8px 0">Belum ada target di fase ini.</div>'}</div>`; }).join('')}
+      ${(() => { const luar = shown.filter(x => x.target < fase[0].mulai || x.target > fase[fase.length-1].akhir); return luar.length ? `<div class="ph future"><b>Di luar rentang</b><span>sebelum/sesudah 3 tahun</span></div><div class="cards">${luar.map(card).join('')}</div>` : ''; })()}</div></div>
   </div>`;
 }
 
@@ -1545,7 +1584,7 @@ window.addEventListener('hashchange', route);
 
 /* penjaga tamu: boleh lihat & berpindah halaman, tapi setiap upaya mengisi/mengubah diarahkan ke Masuk/Daftar */
 const AKSI_BEBAS = new Set(['tab','jurnal-hari-ini','jurnal-buka','jadwal-geser','masuk','daftar','keluar','mode-coba','lupa-sandi']);
-const FIELD_BEBAS = new Set(['sholatBulan','bulanTx','jurnalTgl','rencanaKat']);
+const FIELD_BEBAS = new Set(['sholatBulan','bulanTx','jurnalTgl','rencanaKat','rencanaMode']);
 const diModal = el => !!el.closest('#modal, .bebas-tamu');
 document.addEventListener('click', e => { if (!tamu) return; const el = e.target.closest('[data-act]'); if (!el || diModal(el) || AKSI_BEBAS.has(el.dataset.act)) return; e.preventDefault(); e.stopImmediatePropagation(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
 document.addEventListener('focusin', e => { if (!tamu) return; const el = e.target; if (!['INPUT','TEXTAREA','SELECT'].includes(el.tagName) || diModal(el) || FIELD_BEBAS.has(el.dataset.field)) return; el.blur(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
@@ -1645,6 +1684,7 @@ document.addEventListener('change', async e => {
   else if (field==='bulanTx') { S.bulanTx = el.value; render(); }
   else if (field==='jurnalTgl') { S.jurnalTgl = el.value; render(); }
   else if (field==='rencanaKat') { S.tab.rencanaKat = el.value; render(); }
+  else if (field==='rencanaMode') { S.pengaturan.modeRencana = el.value; render(); if (!tamu) await store.set('pengaturan/utama', S.pengaturan); }
 });
 
 // jurnal: simpan otomatis saat berhenti mengetik
