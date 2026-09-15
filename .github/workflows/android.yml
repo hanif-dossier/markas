@@ -1,0 +1,48 @@
+# Membangun APK Markasku (Android) di GitHub Actions supaya tidak perlu Android Studio di laptop.
+# Hasilnya diunduh dari tab Actions → run terbaru → Artifacts → markasku-debug.
+name: android
+on:
+  push:
+    branches: [main]
+    paths: ['aplikasi/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: aplikasi } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: aplikasi/package-lock.json }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npx cap sync android
+      - run: chmod +x android/gradlew
+      - name: Bangun APK debug
+        run: cd android && ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: markasku-debug
+          path: aplikasi/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Bangun AAB rilis (kalau kunci tanda tangan sudah ada)
+        if: ${{ secrets.KEYSTORE_B64 != '' }}
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > android/markasku.jks
+          cd android && ./gradlew bundleRelease assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file=$PWD/markasku.jks \
+            -Pandroid.injected.signing.store.password="$KEYSTORE_PASS" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEYSTORE_PASS"
+      - uses: actions/upload-artifact@v4
+        if: ${{ secrets.KEYSTORE_B64 != '' }}
+        with:
+          name: markasku-rilis
+          path: |
+            aplikasi/android/app/build/outputs/bundle/release/app-release.aab
+            aplikasi/android/app/build/outputs/apk/release/app-release.apk

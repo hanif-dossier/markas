@@ -1155,8 +1155,18 @@ function putarAdzan(suara, volume){
   audioAdzan.play().catch(() => toast('Browser belum mengizinkan suara. Ketuk layar sekali, lalu coba lagi.', true));
 }
 function hentikanAdzan(){ if (audioAdzan) { try { audioAdzan.pause(); } catch {} audioAdzan = null; } }
+// ---- Aplikasi Android (Capacitor): alarm adzan native yang berbunyi walau aplikasi tertutup ----
+// Halaman ini dimuat dari markasku.my.id di dalam WebView aplikasi; Capacitor menyuntikkan window.Capacitor.
+const NATIF = () => { try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch { return false; } };
+const pluginAdzan = () => { try { const C = window.Capacitor; return C.registerPlugin ? C.registerPlugin('Adzan') : C.Plugins.Adzan; } catch { return null; } };
+async function sinkronAdzanNatif(){
+  if (!NATIF()) return null; const P = pluginAdzan(); if (!P) return null;
+  const a = aturAdzan(), p = (S && S.pengaturan) || DEF.pengaturan;
+  try { return await P.atur({ aktif: !!a.aktif, suara: a.suara, volume: +a.volume || 0, waktu: a.waktu, lat: +p.lat, lng: +p.lng, kota: p.kota || '' }); }
+  catch (e) { console.warn('adzan natif', e); return null; }
+}
 function cekAdzan(){
-  const a = aturAdzan(); if (!a.aktif || tamu) return;
+  const a = aturAdzan(); if (!a.aktif || tamu || NATIF()) return;
   const now = new Date(), nm = now.getHours()*60 + now.getMinutes(), tk = todayKey();
   const wt = waktuSholat(now, S.pengaturan.lat, S.pengaturan.lng);
   for (const [id, nama] of SHOLAT) {
@@ -1885,17 +1895,21 @@ function modalPengaturan(){
   <div class="form cols2">${F('Suara', `<select name="adzanSuara">${SUARA_ADZAN.map(([v,l]) => `<option value="${v}" ${a.suara===v?'selected':''}>${l}</option>`).join('')}</select>`)}
   ${F('Volume', `<div class="row" style="gap:8px"><input type="range" name="adzanVolume" min="0" max="100" value="${a.volume}" style="flex:1"><button type="button" class="btn sm" data-act="adzan-coba">Coba</button><button type="button" class="btn sm ghost" data-act="adzan-stop">Stop</button></div>`)}</div>
   <div class="f">Waktu yang dibunyikan<div class="daypick">${SHOLAT.map(([id,nm]) => `<label><input type="checkbox" name="adzanWaktu" value="${id}" ${a.waktu[id]?'checked':''}><span>${nm}</span></label>`).join('')}</div></div>
-  <div class="small dim">Suara adzan di atas berbunyi selama Markasku sedang terbuka.</div>
-  <label class="row" style="gap:10px;cursor:pointer;margin-top:6px"><input type="checkbox" name="pushAktif" id="pushAktif" ${pengguna?'':'disabled'}> <span>Kirim <b>notifikasi ke HP ini</b> tiap waktu sholat, walau Markasku tertutup${pengguna?'':' (masuk dulu)'}</span></label>
-  <div class="small dim">Notifikasi dikirim dari server Markasku sesuai jam sholat kotamu (bunyi nada notifikasi HP, bukan adzan penuh). Aktifkan di tiap HP/browser yang mau menerima. Di iPhone, pasang Markasku ke layar utama dulu.</div>`; })()}
+  ${NATIF() ? `<div class="small dim">Di aplikasi Android, adzan berbunyi walau Markasku tertutup dan layar mati. Kalau tidak berbunyi, ketuk <b>Izin alarm</b> lalu <b>Abaikan hemat baterai</b> (sekali saja).</div>
+  <div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="adzan-izin">Izin alarm</button><button type="button" class="btn sm ghost" data-act="adzan-baterai">Abaikan hemat baterai</button><span class="small dim" id="adzanStatus"></span></div>`
+  : `<div class="small dim">Suara adzan di atas berbunyi selama Markasku sedang terbuka. Mau adzan berbunyi walau aplikasi tertutup? Pasang <a href="https://markasku.my.id/#akun" onclick="return false">aplikasi Android Markasku</a>.</div>`}
+  ${NATIF() ? '' : `<label class="row" style="gap:10px;cursor:pointer;margin-top:6px"><input type="checkbox" name="pushAktif" id="pushAktif" ${pengguna?'':'disabled'}> <span>Kirim <b>notifikasi ke HP ini</b> tiap waktu sholat, walau Markasku tertutup${pengguna?'':' (masuk dulu)'}</span></label>
+  <div class="small dim">Notifikasi dikirim dari server Markasku sesuai jam sholat kotamu (bunyi nada notifikasi HP, bukan adzan penuh). Aktifkan di tiap HP/browser yang mau menerima. Di iPhone, pasang Markasku ke layar utama dulu.</div>`}`; })()}
   ${ACTIONS()}</form>`,
   async (d, fd) => { p.nama = d.nama; p.mulai3Tahun = d.mulai3Tahun; p.tema = d.tema || 'waktu';
     const aktif = d.adzanAktif === 'on'; const waktu = {}; SHOLAT.forEach(([id]) => waktu[id] = false); fd.getAll('adzanWaktu').forEach(id => waktu[id] = true);
     p.adzan = { aktif, suara: d.adzanSuara || 'adzan-1', volume: +d.adzanVolume || 0, waktu };
     if (aktif) { try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {} }
     if (d.pushAktif === 'on') { if (await daftarPush()) toast('Notifikasi adzan ke HP ini aktif'); } else await hapusPush();
-    terapkanTema(); if (d.kota!=='__manual' && KOTA[d.kota]) { p.kota = d.kota; [p.lat,p.lng] = KOTA[d.kota]; } else { p.kota = 'Lokasi manual'; p.lat = +d.lat; p.lng = +d.lng; } await store.set('pengaturan/utama', p); toast('Pengaturan disimpan'); render(); });
+    terapkanTema(); if (d.kota!=='__manual' && KOTA[d.kota]) { p.kota = d.kota; [p.lat,p.lng] = KOTA[d.kota]; } else { p.kota = 'Lokasi manual'; p.lat = +d.lat; p.lng = +d.lng; } await store.set('pengaturan/utama', p); toast('Pengaturan disimpan'); render(); sinkronAdzanNatif(); });
   langgananPush().then(sub => { const c = document.getElementById('pushAktif'); if (c && sub && pengguna) c.checked = true; });
+  if (NATIF()) { const P = pluginAdzan(); if (P) P.status().then(st => { const el = document.getElementById('adzanStatus'); if (!el) return;
+    el.textContent = !st.izinAlarm ? 'Izin alarm belum diberikan' : !st.izinNotif ? 'Izin notifikasi belum diberikan' : st.berikutNama ? 'Alarm berikutnya: ' + st.berikutNama + ' ' + new Date(st.berikutMs).toTimeString().slice(0,5).replace(':','.') : 'Alarm belum aktif'; }).catch(() => {}); }
 }
 
 /* ================= ROUTER & EVENT ================= */
@@ -1939,8 +1953,11 @@ document.addEventListener('click', async e => {
     case 'masuk': e.preventDefault(); vMasuk('', 'masuk'); break;
     case 'daftar': e.preventDefault(); vMasuk('', 'daftar'); break;
     case 'keluar': if (pengguna) await sb.auth.signOut(); localStorage.removeItem(LS+'mode-coba'); location.reload(); break;
-    case 'adzan-coba': { const m = $('#modal'); putarAdzan(m.querySelector('[name=adzanSuara]').value, m.querySelector('[name=adzanVolume]').value); break; }
-    case 'adzan-stop': hentikanAdzan(); break;
+    case 'adzan-coba': { const m = $('#modal'); const suara = m.querySelector('[name=adzanSuara]').value, volume = m.querySelector('[name=adzanVolume]').value;
+      if (NATIF() && pluginAdzan()) pluginAdzan().coba({ suara, volume: +volume }).catch(() => putarAdzan(suara, volume)); else putarAdzan(suara, volume); break; }
+    case 'adzan-stop': hentikanAdzan(); if (NATIF() && pluginAdzan()) pluginAdzan().stop().catch(() => {}); break;
+    case 'adzan-izin': if (pluginAdzan()) pluginAdzan().mintaIzinAlarm().catch(() => {}); break;
+    case 'adzan-baterai': if (pluginAdzan()) pluginAdzan().abaikanBaterai().catch(() => {}); break;
     case 'masukan-muat': await muatMasukan(); break;
     case 'masukan-balas': { const { error } = await sb.from('markas_masukan').update({ dibalas: el.dataset.v==='1' }).eq('id', +id); if (error) return toast(error.message, true); await muatMasukan(); break; }
     case 'ekspor': { const semua = { diekspor: new Date().toISOString(), akun: pengguna ? pengguna.email : (tamu ? 'contoh' : 'mode-coba'), pengaturan:S.pengaturan, harian:S.harian, kuliah:S.kuliah, rencana:S.rencana, keputusan:S.keputusan, fokus:S.fokus, jadwal:S.jadwal, aruskas:S.aruskas, aset:S.aset };
@@ -2058,7 +2075,7 @@ document.addEventListener('submit', async e => {
   $('#main').innerHTML = '<div class="empty" style="margin-top:40px">Memuat…</div>';
   await store.init();
   await loadAll(); terapkanTema(); if (!tamu) await jalankanRutin(); route();
-  setInterval(cekAdzan, 20000); setInterval(terapkanTema, 60000);
+  setInterval(cekAdzan, 20000); setInterval(terapkanTema, 60000); sinkronAdzanNatif();
   if (tamu) { /* lihat-lihat dulu; Masuk/Daftar ada di bar atas & pojok kiri bawah */ }
   else if (!S.pengaturan.nama) { const n = localStorage.getItem(LS+'nama-daftar') || ''; if (n) { S.pengaturan.nama = n; await store.set('pengaturan/utama', S.pengaturan); render(); } else { toast('Isi nama dan kotamu dulu'); modalPengaturan(); } }
   if ('serviceWorker' in navigator && (location.hostname.endsWith('github.io') || location.hostname.endsWith('markasku.my.id'))) navigator.serviceWorker.register('sw.js').catch(() => {});

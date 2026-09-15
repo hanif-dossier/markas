@@ -1,0 +1,7 @@
+{
+  "appId": "my.id.markasku",
+  "appName": "Markasku",
+  "webDir": "www",
+  "server": { "url": "https://markasku.my.id", "cleartext": false },
+  "android": { "allowMixedContent": false, "backgroundColor": "#1b1230" }
+}
