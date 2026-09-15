@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="ikon-192.png?v=2" type="image/png">
 <link rel="apple-touch-icon" href="ikon-180.png?v=2">
-<title>Markas</title>
+<title>Markasku</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
 </head>
@@ -499,7 +499,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mu
 
 <div class="app">
   <aside class="rail">
-    <div class="brand"><div class="name">Markas</div><div class="tag">Pusat kendali diri</div></div>
+    <div class="brand"><div class="name">Markasku</div><div class="tag">Pusat kendali diri</div></div>
     <nav class="nav" id="nav"></nav>
     <div class="foot">
       <span class="store" id="storeBadge"><i></i>Menyambung…</span>
@@ -515,7 +515,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mu
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 /* =====================================================================
-   Markas — dasbor pribadi untuk siapa saja (produk umum, 15 Sep 2026)
+   Markasku — dasbor pribadi untuk siapa saja (produk umum, 15 Sep 2026)
    Bagian: ikon → util → penyimpanan → waktu sholat → data bawaan →
            logika (streak) → tampilan per halaman → router & event
    ===================================================================== */
@@ -574,7 +574,7 @@ const store = {
       const galat = new URLSearchParams(location.hash.slice(1)).get('error_description');
       history.replaceState(null, '', location.pathname + '#hari-ini');
       if (galat) setTimeout(() => toast(galat.replace(/\+/g, ' '), true), 400);
-      else if (pengguna) setTimeout(() => toast('Email terkonfirmasi. Selamat datang di Markas!'), 400);
+      else if (pengguna) setTimeout(() => toast('Email terkonfirmasi. Selamat datang di Markasku!'), 400);
     }
     const b = $('#storeBadge');
     if (pengguna) { b.className = 'store cloud'; b.innerHTML = `<i></i>${esc(pengguna.email)} · <a href="#" data-act="keluar" style="color:inherit">keluar</a>`; }
@@ -643,7 +643,7 @@ function vMasuk(pesan='', mode='masuk'){
       vMasuk('Email <b>' + esc(email) + '</b> sudah punya akun (akun situs Hanif Dossier berlaku di sini juga). Masuk dengan sandi yang sama, atau klik <b>Lupa sandi</b>.', 'masuk');
       $('#modal form[data-form="masuk"] [name=email]').value = email; $('#modal form[data-form="masuk"] [name=sandi]').focus(); return; }
     try { localStorage.setItem(LS+'nama-daftar', d.nama.trim()); } catch {}
-    vMasuk('Akun dibuat. Buka email <b>' + esc(email) + '</b> dan klik tombol konfirmasinya: kamu langsung masuk ke Markas. Tidak ada email? Cek folder spam.', 'masuk');
+    vMasuk('Akun dibuat. Buka email <b>' + esc(email) + '</b> dan klik tombol konfirmasinya: kamu langsung masuk ke Markasku. Tidak ada email? Cek folder spam.', 'masuk');
     $('#modal form[data-form="masuk"] [name=email]').value = email; };
   m.querySelector('[data-act="lupa-sandi"]').onclick = async () => { const email = m.querySelector('form[data-form="masuk"] [name=email]').value.trim(); if (!email) return toast('Isi email dulu', true);
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: alur }); toast(error ? error.message : 'Tautan ganti sandi dikirim ke ' + email, !!error); };
@@ -651,7 +651,7 @@ function vMasuk(pesan='', mode='masuk'){
   setTimeout(() => { const first = m.querySelector('form[data-form="'+mode+'"] input'); if (first) first.focus(); }, 30);
 }
 
-/* ---------- data contoh untuk tamu (belum masuk): supaya isi Markas terlihat nyata ---------- */
+/* ---------- data contoh untuk tamu (belum masuk): supaya isi Markasku terlihat nyata ---------- */
 function contohHarian(){
   const out = {}; const tk = todayKey();
   for (let i = 27; i >= 0; i--) {
@@ -1116,7 +1116,7 @@ function terapkanTema(){
   const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = terang ? '#F6F7FA' : '#121826';
 }
 
-/* ---------- alarm adzan: berbunyi saat waktu sholat masuk, selama Markas terbuka ---------- */
+/* ---------- alarm adzan: berbunyi saat waktu sholat masuk, selama Markasku terbuka ---------- */
 const VAPID_PUBLIC = 'BKr72RqlP2yvvInlH99wrGVBAPXa3DL44jEXb6un2uMGZZDI9hrhfIw_yYS6u9rDdMciYIIhz6BX4QzkwgH4JUE';
 const pushDidukung = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 const b64keUint8 = b => { const p = '='.repeat((4 - b.length % 4) % 4); const r = atob((b + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
@@ -1124,7 +1124,7 @@ async function langgananPush(){ try { const reg = await navigator.serviceWorker.
 /* daftar/perbarui: minta izin, buat langganan di browser ini, simpan bersama koordinat & waktu pilihan */
 async function daftarPush(){
   if (!pengguna) { toast('Masuk dulu supaya notifikasi bisa dikirim ke HP ini.', true); return false; }
-  if (!pushDidukung()) { toast('Browser ini tidak mendukung notifikasi dorong. Di iPhone: pasang Markas ke layar utama dulu.', true); return false; }
+  if (!pushDidukung()) { toast('Browser ini tidak mendukung notifikasi dorong. Di iPhone: pasang Markasku ke layar utama dulu.', true); return false; }
   const izin = await Notification.requestPermission(); if (izin !== 'granted') { toast('Izin notifikasi ditolak. Aktifkan di pengaturan browser.', true); return false; }
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
@@ -1796,9 +1796,9 @@ function vAkun(){
       <span class="k">Masuk terakhir</span><span class="v">${tglPanjang(pengguna.last_sign_in_at)}</span>
       <span class="k">Hari tercatat</span><span class="v">${Object.keys(S.harian).length} hari · ${(S.aruskas.transaksi||[]).length} transaksi</span></div>
     <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="pengaturan">Nama, kota, tema &amp; alarm adzan</button><button class="btn ghost" data-act="keluar">Keluar</button></div>`
-  : modeCoba ? `<p class="dim">Kamu memakai Markas tanpa akun. Data tersimpan di browser ini saja dan tidak ikut ke HP lain. Daftar gratis supaya datamu aman di cloud; data mode coba bisa disalin ke akun setelah masuk.</p>
+  : modeCoba ? `<p class="dim">Kamu memakai Markasku tanpa akun. Data tersimpan di browser ini saja dan tidak ikut ke HP lain. Daftar gratis supaya datamu aman di cloud; data mode coba bisa disalin ke akun setelah masuk.</p>
     <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="daftar">Daftar (gratis)</button><button class="btn ghost" data-act="masuk">Masuk</button><button class="btn ghost" data-act="pengaturan">Ubah nama &amp; kota</button></div>`
-  : `<p class="dim">Masuk atau daftar untuk punya Markas sendiri. Gratis, datamu hanya bisa dibaca oleh akunmu.</p>
+  : `<p class="dim">Masuk atau daftar untuk punya Markasku sendiri. Gratis, datamu hanya bisa dibaca oleh akunmu.</p>
     <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="daftar">Daftar (gratis)</button><button class="btn ghost" data-act="masuk">Masuk</button></div>`;
   return `
   <div class="topbar"><div><div class="eyebrow">Akun</div><h1 class="serif">Akun &amp; <em>pengaturan</em></h1><div class="sub">${status}</div></div></div>
@@ -1810,25 +1810,25 @@ function vAkun(){
       <div class="actions" style="justify-content:flex-start"><button class="btn primary" type="submit">Simpan sandi baru</button></div></form>
       <div class="small dim" style="margin-top:8px">Lupa sandi lama? Keluar, lalu klik <b>Lupa sandi</b> di jendela masuk; tautan ganti sandi dikirim ke email.</div></div>` : ''}
     <div class="c6 panel"><h2>Data</h2>
-      <p class="dim">Semua isian Markas: jurnal, sholat, kebiasaan, keuangan, hutang, planning, keputusan.</p>
+      <p class="dim">Semua isian Markasku: jurnal, sholat, kebiasaan, keuangan, hutang, planning, keputusan.</p>
       <div class="actions" style="justify-content:flex-start;flex-wrap:wrap">
         <button class="btn ghost" data-act="ekspor">Unduh salinan (JSON)</button>
         ${pengguna && nLokal ? `<button class="btn ghost" data-act="salin-lokal">Salin ${nLokal} dokumen mode coba ke akun ini</button>` : ''}
         ${pengguna || modeCoba ? '<button class="btn danger" data-act="hapus-semua">Hapus semua data</button>' : ''}
       </div>
-      ${pengguna ? '<div class="small dim" style="margin-top:8px">Menghapus data mengosongkan Markas-mu tapi akun tetap ada. Menghapus akun (di bawah) menghapus keduanya.</div>' : ''}</div>
+      ${pengguna ? '<div class="small dim" style="margin-top:8px">Menghapus data mengosongkan Markasku-mu tapi akun tetap ada. Menghapus akun (di bawah) menghapus keduanya.</div>' : ''}</div>
     <div class="c6 panel"><h2>Aplikasi</h2><div class="kv teks">
       <span class="k">Alamat</span><span class="v"><a href="https://markasku.my.id/" style="color:var(--gold-2)">markasku.my.id</a></span>
-      <span class="k">Pasang di HP</span><span class="v">Buka alamat di atas di Chrome/Safari HP → menu ⋮ atau Bagikan → <b>Tambahkan ke layar utama</b>. Markas jadi aplikasi sendiri, tanpa bilah alamat.</span>
+      <span class="k">Pasang di HP</span><span class="v">Buka alamat di atas di Chrome/Safari HP → menu ⋮ atau Bagikan → <b>Tambahkan ke layar utama</b>. Markasku jadi aplikasi sendiri, tanpa bilah alamat.</span>
       <span class="k">Privasi</span><span class="v">Setiap orang hanya bisa membaca dan mengubah datanya sendiri (kebijakan baris di database). Tidak ada iklan, tidak ada pelacak.</span></div>
       ${pengguna ? `<div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn danger" data-act="hapus-akun">Hapus akun saya</button></div>
       <div class="small dim" style="margin-top:8px">Akun, email, dan seluruh datamu dihapus permanen. Tidak bisa dibatalkan.</div>` : ''}</div>
     <div class="c12 panel bebas-tamu"><h2>Saran, kritik &amp; bantuan</h2>
-      <div class="nilai" id="nilaiMarkas"><span class="q">Suka Markas?</span>
+      <div class="nilai" id="nilaiMarkas"><span class="q">Suka Markasku?</span>
         <button class="btn sm ${nilaiSaya()===true?'on':''}" data-act="nilai" data-v="1">👍 Suka<b data-n="suka">…</b></button>
         <button class="btn sm ${nilaiSaya()===false?'on':''}" data-act="nilai" data-v="0">👎 Kurang<b data-n="tidak">…</b></button>
         <span class="ringkas" data-n="ringkas"></span></div>
-      <p class="dim">Ada yang kurang, membingungkan, atau rusak? Tulis di sini. Pesan masuk langsung ke pembuat Markas dan dibaca satu per satu.</p>
+      <p class="dim">Ada yang kurang, membingungkan, atau rusak? Tulis di sini. Pesan masuk langsung ke pembuat Markasku dan dibaca satu per satu.</p>
       <form class="form" data-form="masukan">
         <div class="form cols2">${F('Jenis', '<select name="jenis"><option value="saran">Saran fitur</option><option value="kritik">Kritik</option><option value="masalah">Masalah / error</option><option value="tanya">Pertanyaan</option></select>')}
         ${pengguna ? '' : F('Email (opsional, kalau mau dibalas)', '<input type="email" name="email" autocomplete="email">')}</div>
@@ -1839,7 +1839,7 @@ function vAkun(){
       <div id="daftarMasukan" class="dim small">Klik "Muat masukan terbaru".</div></div>` : ''}
   </div>`;
 }
-const PEMILIK = 'ac358e3f-0316-48eb-a09a-3ac6ee8e0739'; // akun pembuat Markas: bisa membaca tabel markas_masukan
+const PEMILIK = 'ac358e3f-0316-48eb-a09a-3ac6ee8e0739'; // akun pembuat Markasku: bisa membaca tabel markas_masukan
 /* jempol: satu suara per akun (atau per browser untuk tamu), tersimpan di tabel markas_nilai */
 const pengenalNilai = () => { if (pengguna) return 'u:' + pengguna.id; let p = null; try { p = localStorage.getItem(LS+'pengenal'); if (!p) { p = 'b:' + uid() + uid(); localStorage.setItem(LS+'pengenal', p); } } catch { p = 'b:sesi'; } return p; };
 const nilaiSaya = () => { try { const v = localStorage.getItem(LS+'nilai'); return v==='1' ? true : v==='0' ? false : null; } catch { return null; } };
@@ -1885,9 +1885,9 @@ function modalPengaturan(){
   <div class="form cols2">${F('Suara', `<select name="adzanSuara">${SUARA_ADZAN.map(([v,l]) => `<option value="${v}" ${a.suara===v?'selected':''}>${l}</option>`).join('')}</select>`)}
   ${F('Volume', `<div class="row" style="gap:8px"><input type="range" name="adzanVolume" min="0" max="100" value="${a.volume}" style="flex:1"><button type="button" class="btn sm" data-act="adzan-coba">Coba</button><button type="button" class="btn sm ghost" data-act="adzan-stop">Stop</button></div>`)}</div>
   <div class="f">Waktu yang dibunyikan<div class="daypick">${SHOLAT.map(([id,nm]) => `<label><input type="checkbox" name="adzanWaktu" value="${id}" ${a.waktu[id]?'checked':''}><span>${nm}</span></label>`).join('')}</div></div>
-  <div class="small dim">Suara adzan di atas berbunyi selama Markas sedang terbuka.</div>
-  <label class="row" style="gap:10px;cursor:pointer;margin-top:6px"><input type="checkbox" name="pushAktif" id="pushAktif" ${pengguna?'':'disabled'}> <span>Kirim <b>notifikasi ke HP ini</b> tiap waktu sholat, walau Markas tertutup${pengguna?'':' (masuk dulu)'}</span></label>
-  <div class="small dim">Notifikasi dikirim dari server Markas sesuai jam sholat kotamu (bunyi nada notifikasi HP, bukan adzan penuh). Aktifkan di tiap HP/browser yang mau menerima. Di iPhone, pasang Markas ke layar utama dulu.</div>`; })()}
+  <div class="small dim">Suara adzan di atas berbunyi selama Markasku sedang terbuka.</div>
+  <label class="row" style="gap:10px;cursor:pointer;margin-top:6px"><input type="checkbox" name="pushAktif" id="pushAktif" ${pengguna?'':'disabled'}> <span>Kirim <b>notifikasi ke HP ini</b> tiap waktu sholat, walau Markasku tertutup${pengguna?'':' (masuk dulu)'}</span></label>
+  <div class="small dim">Notifikasi dikirim dari server Markasku sesuai jam sholat kotamu (bunyi nada notifikasi HP, bukan adzan penuh). Aktifkan di tiap HP/browser yang mau menerima. Di iPhone, pasang Markasku ke layar utama dulu.</div>`; })()}
   ${ACTIONS()}</form>`,
   async (d, fd) => { p.nama = d.nama; p.mulai3Tahun = d.mulai3Tahun; p.tema = d.tema || 'waktu';
     const aktif = d.adzanAktif === 'on'; const waktu = {}; SHOLAT.forEach(([id]) => waktu[id] = false); fd.getAll('adzanWaktu').forEach(id => waktu[id] = true);
@@ -1901,7 +1901,7 @@ function modalPengaturan(){
 /* ================= ROUTER & EVENT ================= */
 function render(){
   const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan, akun:vAkun }[v] || vHariIni;
-  const barTamu = tamu ? `<div class="tamu"><div class="t"><b>Ini contoh isi Markas.</b> Semua angka di sini data contoh. Masuk atau daftar (gratis) untuk mengisi dan menyimpan data sendiri.</div><div class="a"><button class="btn ghost" data-act="masuk">Masuk</button><button class="btn primary" data-act="daftar">Daftar</button></div></div>` : '';
+  const barTamu = tamu ? `<div class="tamu"><div class="t"><b>Ini contoh isi Markasku.</b> Semua angka di sini data contoh. Masuk atau daftar (gratis) untuk mengisi dan menyimpan data sendiri.</div><div class="a"><button class="btn ghost" data-act="masuk">Masuk</button><button class="btn primary" data-act="daftar">Daftar</button></div></div>` : '';
   $('#main').innerHTML = barTamu + fn();
   if (v==='akun') muatNilai();
   const navHtml = VIEWS.map(([id,l,ic]) => `<a href="#${id}" class="${v===id?'on':''}"><span class="ic">${I[ic]}</span><span>${l}</span></a>`).join('');
@@ -1949,7 +1949,7 @@ document.addEventListener('click', async e => {
       if (!confirm(`Salin ${n} dokumen mode coba ke akun ${pengguna.email}? Dokumen dengan nama sama di akun akan ditimpa.`)) return;
       let ok = 0; for (const [path, doc] of Object.entries(L)) { if (await store.set(path, doc)) ok++; }
       toast(`${ok} dokumen disalin ke akun`); await loadAll(); render(); break; }
-    case 'hapus-semua': { if (!confirm('Hapus SEMUA data Markas-mu? Jurnal, sholat, keuangan, hutang, planning: semuanya. Tidak bisa dibatalkan.')) return;
+    case 'hapus-semua': { if (!confirm('Hapus SEMUA data Markasku-mu? Jurnal, sholat, keuangan, hutang, planning: semuanya. Tidak bisa dibatalkan.')) return;
       if (prompt('Ketik HAPUS untuk melanjutkan') !== 'HAPUS') return toast('Dibatalkan');
       if (pengguna) { const { error } = await sb.from('markas_dokumen').delete().eq('user_id', pengguna.id); if (error) return toast('Gagal: ' + error.message, true); }
       else { try { Object.keys(localStorage).filter(k => k.startsWith(LS) && k.includes('/')).forEach(k => localStorage.removeItem(k)); } catch {} }
@@ -1957,7 +1957,7 @@ document.addEventListener('click', async e => {
     case 'hapus-akun': { if (!pengguna) return; if (!confirm(`Hapus akun ${pengguna.email} beserta seluruh datanya secara permanen?`)) return;
       if (prompt('Ketik email akunmu untuk konfirmasi') !== pengguna.email) return toast('Email tidak cocok, dibatalkan', true);
       const { error } = await sb.rpc('hapus_akun_saya'); if (error) return toast('Gagal menghapus akun: ' + error.message, true);
-      try { await sb.auth.signOut(); } catch {} localStorage.removeItem(LS+'mode-coba'); toast('Akun dihapus. Terima kasih sudah memakai Markas.'); setTimeout(() => location.reload(), 1200); break; }
+      try { await sb.auth.signOut(); } catch {} localStorage.removeItem(LS+'mode-coba'); toast('Akun dihapus. Terima kasih sudah memakai Markasku.'); setTimeout(() => location.reload(), 1200); break; }
     case 'jurnal-hari-ini': S.jurnalTgl = todayKey(); render(); break;
     case 'jurnal-buka': S.jurnalTgl = el.dataset.tgl; render(); window.scrollTo(0,0); break;
     case 'kuliah-hapus': S.kuliah.items = S.kuliah.items.filter(c=>c.id!==id); await store.set('kuliah/semester5', S.kuliah); render(); break;
@@ -2040,7 +2040,7 @@ document.addEventListener('submit', async e => {
   if (which==='masukan') { if (!sb) return toast('Tidak tersambung', true);
     const baris = { user_id: pengguna ? pengguna.id : null, email: pengguna ? pengguna.email : (d.email||'').trim() || null, jenis: d.jenis, pesan: d.pesan.trim(), halaman: (sessionStorage.getItem(LS+'halaman-sebelum')||'') };
     const { error } = await sb.from('markas_masukan').insert(baris); if (error) return toast('Gagal mengirim: ' + error.message, true);
-    f.reset(); return toast('Terkirim. Terima kasih, pesanmu dibaca langsung oleh pembuat Markas.'); }
+    f.reset(); return toast('Terkirim. Terima kasih, pesanmu dibaca langsung oleh pembuat Markasku.'); }
   if (which==='kuliah') { S.kuliah.items = (S.kuliah.items||[]).filter(c=>!c.contoh); S.kuliah.items.push({ id:uid(), hari:+d.hari, mulai:d.mulai, selesai:d.selesai, mk:d.mk, ruang:d.ruang, dosen:d.dosen }); await store.set('kuliah/semester5', S.kuliah); toast('Sesi kuliah ditambahkan'); }
   else if (which==='fokus') { S.fokus.items = S.fokus.items||[]; S.fokus.items.push({ id:uid(), jenis:d.jenis, judul:d.judul, tenggat:d.tenggat||'', nominal:+d.nominal||0, mataUang:d.mataUang||'IDR', catatan:d.catatan||'', selesai:false }); await store.set('fokus/daftar', S.fokus); toast('Ditambahkan'); }
   else if (which==='keputusan') { S.keputusan.items = S.keputusan.items||[]; S.keputusan.items.push({ id:uid(), tanggal:d.tanggal, keputusan:d.keputusan, alasan:d.alasan, alternatif:d.alternatif, tinjau:d.tinjau, hasil:'', status:'' }); await store.set('keputusan/daftar', S.keputusan); toast('Keputusan dicatat'); }

@@ -1,4 +1,4 @@
-# Markas — pusat kendali diri
+# Markasku — pusat kendali diri
 
 Aplikasi web (bisa dipasang di HP) untuk siapa saja: jadwal sholat kota sendiri,
 checklist kebiasaan, hari bersih & streak disiplin, jurnal pagi, arus kas, bayar
@@ -24,8 +24,8 @@ Penyimpanan: satu baris per dokumen per pengguna (`pengaturan/utama`, `harian/<t
 Belum masuk → "Mode coba" menyimpan di `localStorage` browser itu saja.
 
 Akun memakai proyek Supabase yang sama dengan Hanif Dossier (`fqpktykrkpqaztnpqgxz`).
-Pendaftar Markas diberi metadata `aplikasi: 'markas'`; mereka juga masuk tabel
-`anggota` lewat trigger lama dengan status `menunggu`, itu tidak berpengaruh ke Markas.
+Pendaftar Markasku diberi metadata `aplikasi: 'markas'`; mereka juga masuk tabel
+`anggota` lewat trigger lama dengan status `menunggu`, itu tidak berpengaruh ke Markasku.
 
 ## Memperbarui
 
@@ -37,7 +37,7 @@ GitHub Pages membangun ±30 detik. Uji lokal: `preview_start markas` (port 8085)
 ## Suara adzan
 
 `suara/adzan-1.mp3`, `adzan-2.mp3`, `adzan-3.mp3` diunduh dari islamcan.com (koleksi adzan gratis)
-untuk alarm adzan di Pengaturan. Alarm berbunyi hanya selama Markas terbuka (keterbatasan browser).
+untuk alarm adzan di Pengaturan. Alarm berbunyi hanya selama Markasku terbuka (keterbatasan browser).
 
 ## Foto langit
 

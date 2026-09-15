@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
       if (r.waktu && r.waktu[id] === false) continue;
       const t = wt[id]; if (nm < t || nm > t + 2) continue;           // jendela 3 menit, jaga-jaga cron terlambat
       const kunci = `${tk}:${id}`; if (r.terakhir === kunci) continue;
-      const isi = JSON.stringify({ title: `Waktu ${nama} telah masuk`, body: `Pukul ${jam(t)}${r.kota ? " · " + r.kota : ""}. Ketuk untuk mencentang di Markas.`, url: "https://markasku.my.id/#jadwal", tag: "adzan-" + id });
+      const isi = JSON.stringify({ title: `Waktu ${nama} telah masuk`, body: `Pukul ${jam(t)}${r.kota ? " · " + r.kota : ""}. Ketuk untuk mencentang di Markasku.`, url: "https://markasku.my.id/#jadwal", tag: "adzan-" + id });
       try {
         await webpush.sendNotification(r.langganan, isi, { TTL: 300, urgency: "high" });
         kirim++; await sb.from("markas_push").update({ terakhir: kunci, diperbarui: new Date().toISOString() }).eq("endpoint", r.endpoint);
