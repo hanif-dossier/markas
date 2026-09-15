@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="ikon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="ikon-180.png">
+<link rel="icon" href="ikon-192.png?v=2" type="image/png">
+<link rel="apple-touch-icon" href="ikon-180.png?v=2">
 <title>Markas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -1117,6 +1117,28 @@ function terapkanTema(){
 }
 
 /* ---------- alarm adzan: berbunyi saat waktu sholat masuk, selama Markas terbuka ---------- */
+const VAPID_PUBLIC = 'BKr72RqlP2yvvInlH99wrGVBAPXa3DL44jEXb6un2uMGZZDI9hrhfIw_yYS6u9rDdMciYIIhz6BX4QzkwgH4JUE';
+const pushDidukung = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const b64keUint8 = b => { const p = '='.repeat((4 - b.length % 4) % 4); const r = atob((b + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from([...r].map(c => c.charCodeAt(0))); };
+async function langgananPush(){ try { const reg = await navigator.serviceWorker.getRegistration(); return reg ? await reg.pushManager.getSubscription() : null; } catch { return null; } }
+/* daftar/perbarui: minta izin, buat langganan di browser ini, simpan bersama koordinat & waktu pilihan */
+async function daftarPush(){
+  if (!pengguna) { toast('Masuk dulu supaya notifikasi bisa dikirim ke HP ini.', true); return false; }
+  if (!pushDidukung()) { toast('Browser ini tidak mendukung notifikasi dorong. Di iPhone: pasang Markas ke layar utama dulu.', true); return false; }
+  const izin = await Notification.requestPermission(); if (izin !== 'granted') { toast('Izin notifikasi ditolak. Aktifkan di pengaturan browser.', true); return false; }
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64keUint8(VAPID_PUBLIC) });
+  const p = S.pengaturan, a = aturAdzan();
+  const { error } = await sb.from('markas_push').upsert({ endpoint: sub.endpoint, user_id: pengguna.id, langganan: sub.toJSON(), lat: p.lat, lng: p.lng, kota: p.kota, tz: -new Date().getTimezoneOffset(), waktu: a.waktu, aktif: true, diperbarui: new Date().toISOString() }, { onConflict: 'endpoint' });
+  if (error) { toast('Gagal mendaftar notifikasi: ' + error.message, true); return false; }
+  return true;
+}
+async function hapusPush(){
+  const sub = await langgananPush(); if (!sub) return;
+  try { await sb.from('markas_push').delete().eq('endpoint', sub.endpoint); } catch {}
+  try { await sub.unsubscribe(); } catch {}
+}
 const SUARA_ADZAN = [['adzan-1','Adzan 1'],['adzan-2','Adzan 2'],['adzan-3','Adzan 3'],['bip','Nada singkat saja']];
 const adzanDefault = () => ({ aktif:false, suara:'adzan-1', volume:80, waktu:{ subuh:true, dzuhur:true, ashar:true, maghrib:true, isya:true } });
 const aturAdzan = () => Object.assign(adzanDefault(), (S.pengaturan && S.pengaturan.adzan) || {});
@@ -1863,13 +1885,17 @@ function modalPengaturan(){
   <div class="form cols2">${F('Suara', `<select name="adzanSuara">${SUARA_ADZAN.map(([v,l]) => `<option value="${v}" ${a.suara===v?'selected':''}>${l}</option>`).join('')}</select>`)}
   ${F('Volume', `<div class="row" style="gap:8px"><input type="range" name="adzanVolume" min="0" max="100" value="${a.volume}" style="flex:1"><button type="button" class="btn sm" data-act="adzan-coba">Coba</button><button type="button" class="btn sm ghost" data-act="adzan-stop">Stop</button></div>`)}</div>
   <div class="f">Waktu yang dibunyikan<div class="daypick">${SHOLAT.map(([id,nm]) => `<label><input type="checkbox" name="adzanWaktu" value="${id}" ${a.waktu[id]?'checked':''}><span>${nm}</span></label>`).join('')}</div></div>
-  <div class="small dim">Adzan berbunyi selama Markas sedang terbuka (di browser atau aplikasi yang dipasang di HP). Kalau Markas ditutup, HP tidak bisa dibunyikan dari sini; untuk itu pakai aplikasi adzan bawaan HP.</div>`; })()}
+  <div class="small dim">Suara adzan di atas berbunyi selama Markas sedang terbuka.</div>
+  <label class="row" style="gap:10px;cursor:pointer;margin-top:6px"><input type="checkbox" name="pushAktif" id="pushAktif" ${pengguna?'':'disabled'}> <span>Kirim <b>notifikasi ke HP ini</b> tiap waktu sholat, walau Markas tertutup${pengguna?'':' (masuk dulu)'}</span></label>
+  <div class="small dim">Notifikasi dikirim dari server Markas sesuai jam sholat kotamu (bunyi nada notifikasi HP, bukan adzan penuh). Aktifkan di tiap HP/browser yang mau menerima. Di iPhone, pasang Markas ke layar utama dulu.</div>`; })()}
   ${ACTIONS()}</form>`,
   async (d, fd) => { p.nama = d.nama; p.mulai3Tahun = d.mulai3Tahun; p.tema = d.tema || 'waktu';
     const aktif = d.adzanAktif === 'on'; const waktu = {}; SHOLAT.forEach(([id]) => waktu[id] = false); fd.getAll('adzanWaktu').forEach(id => waktu[id] = true);
     p.adzan = { aktif, suara: d.adzanSuara || 'adzan-1', volume: +d.adzanVolume || 0, waktu };
     if (aktif) { try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {} }
+    if (d.pushAktif === 'on') { if (await daftarPush()) toast('Notifikasi adzan ke HP ini aktif'); } else await hapusPush();
     terapkanTema(); if (d.kota!=='__manual' && KOTA[d.kota]) { p.kota = d.kota; [p.lat,p.lng] = KOTA[d.kota]; } else { p.kota = 'Lokasi manual'; p.lat = +d.lat; p.lng = +d.lng; } await store.set('pengaturan/utama', p); toast('Pengaturan disimpan'); render(); });
+  langgananPush().then(sub => { const c = document.getElementById('pushAktif'); if (c && sub && pengguna) c.checked = true; });
 }
 
 /* ================= ROUTER & EVENT ================= */

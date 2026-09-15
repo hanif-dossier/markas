@@ -117,3 +117,38 @@ end;
 $$;
 revoke all on function public.kirim_nilai(text, boolean) from public;
 grant execute on function public.kirim_nilai(text, boolean) to anon, authenticated;
+
+-- ---------------------------------------------------------------
+-- Notifikasi adzan (Web Push) walau Markas tertutup.
+-- Klien menyimpan langganan push + koordinatnya di sini; Edge Function
+-- "adzan-push" (supabase/functions/adzan-push) dipanggil pg_cron tiap menit
+-- dan mengirim notifikasi saat waktu sholat masuk. Dijalankan 15 Sep 2026.
+-- ---------------------------------------------------------------
+create table if not exists public.markas_push (
+  endpoint   text primary key,
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  langganan  jsonb not null,
+  lat        double precision not null,
+  lng        double precision not null,
+  kota       text,
+  tz         integer not null default 420,      -- selisih menit dari UTC (WIB = 420)
+  waktu      jsonb not null default '{"subuh":true,"dzuhur":true,"ashar":true,"maghrib":true,"isya":true}',
+  aktif      boolean not null default true,
+  terakhir   text,                              -- "YYYY-MM-DD:subuh" yang terakhir dikirim
+  dibuat     timestamptz not null default now(),
+  diperbarui timestamptz not null default now()
+);
+alter table public.markas_push enable row level security;
+drop policy if exists "push milik sendiri" on public.markas_push;
+create policy "push milik sendiri" on public.markas_push
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- pg_cron + pg_net: panggil Edge Function tiap menit (ganti <CRON_KEY> dengan isi .push.env)
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+select cron.schedule('adzan-push-tiap-menit', '* * * * *', $$
+  select net.http_post(
+    url := 'https://fqpktykrkpqaztnpqgxz.supabase.co/functions/v1/adzan-push',
+    headers := '{"Content-Type":"application/json","x-cron-key":"<CRON_KEY>"}'::jsonb,
+    body := '{}'::jsonb);
+$$);
