@@ -39,19 +39,24 @@ GitHub Pages membangun ±30 detik. Uji lokal: `preview_start markas` (port 8085)
 `suara/adzan-1.mp3`, `adzan-2.mp3`, `adzan-3.mp3` diunduh dari islamcan.com (koleksi adzan gratis)
 untuk alarm adzan di Pengaturan. Alarm berbunyi hanya selama Markasku terbuka (keterbatasan browser).
 
-## Foto langit
+## Gambar langit (lukisan)
 
-`langit/{fajar,pagi,siang,sore,senja,malam}.jpg` (1920×860, ±190–480 KB) untuk kepala
-langit Beranda, dan `*-kecil.jpg` (640px) untuk latar halaman yang diburamkan; keduanya
-berganti mengikuti fase waktu sholat. Lima dari Pexels (bebas dipakai tanpa atribusi),
-dipilih 15 Sep 2026 karena paling "hidup": fajar 122253 (Masjid Putra, fajar merah muda
-berpantul di danau), pagi 35583536 (kubah biru Istanbul, langit berawan), siang 35188224
-(Masjid Sheikh Zayed dan kolam pantul), sore 6798525 (matahari terbenam di Bosphorus),
-malam 17414580 (masjid berlampu dan Jembatan Galata berpantul di air).
+`langit/{fajar,pagi,siang,sore,senja,malam}.jpg` (1920×860) untuk kepala Beranda dan
+`*-kecil.jpg` (640px) untuk latar halaman yang diburamkan; berganti mengikuti fase waktu
+sholat. Temanya **adegan kehidupan dunia Islam klasik yang hidup**, bukan foto bangunan:
 
-Fase **senja** memakai gambar kiriman pemilik, "Ottoman bazaar at evening"
-(`langit/senja.jpg`), ditajamkan 4x dengan Real-ESRGAN dari 735×490. Versi HD utuh:
-`langit/bazar-senja-hd.jpg` (2940×1960). Ikon aplikasi (`ikon-*.png?v=3`) juga dipotong
-dari gambar ini: kubah dan menara di depan matahari terbenam. Foto senja lama dari
-Pexels disimpan sebagai `langit/senja-awan.jpg`; foto fase lain yang lama ada di riwayat git.
+- fajar: Ivan Aivazovsky, *View of Constantinople and the Bosphorus* (matahari terbit, kapal, orang di tepi pantai)
+- pagi: Alberto Pasini, *Market Day in Constantinople* (pasar ramai di tepi Bosphorus)
+- siang: Gustav Bauernfeind, *A Street Scene, Damascus* (jalanan pasar, unta, pedagang)
+- sore: Ivan Aivazovsky, *Konstantinopel* (langit jingga, masjid dan perahu)
+- senja: "Ottoman bazaar at evening", gambar kiriman pemilik, ditajamkan 4x dengan Real-ESRGAN
+  (HD utuh: `langit/bazar-senja-hd.jpg`)
+- malam: Ivan Aivazovsky, *Bosporus with the Hagia Sophia and the Maiden's Tower in the Moonlight*
 
+Semua lukisan domain publik dari Wikimedia Commons (pelukis wafat lebih dari 100 tahun
+lalu), aman untuk Play Store. Cadangan yang sudah dipotong ada di `langit/pilihan/`
+(kapal berkabut untuk fajar, pasar Kairo karya Biseo untuk pagi, Bayram karya Zonaro untuk
+siang, cahaya petang Aivazovsky untuk sore, Menara Galata purnama untuk malam): tinggal
+salin menimpa `langit/<fase>.jpg` lalu buat ulang versi kecil 640×287. Foto Pexels lama
+ada di riwayat git (commit 2c3f960). Ikon aplikasi (`ikon-*.png?v=3`) dipotong dari
+gambar bazar senja.
