@@ -4,7 +4,7 @@ Aplikasi web (bisa dipasang di HP) untuk siapa saja: jadwal sholat kota sendiri,
 checklist kebiasaan, hari bersih & streak disiplin, jurnal pagi, arus kas, bayar
 hutang per minggu, target financial freedom, rencana 3 tahun, dan catatan keputusan.
 
-Alamat: <https://hanif-dossier.github.io/markas/>
+Alamat: <https://markasku.my.id/> (alamat lama hanif-dossier.github.io/markas/ dialihkan ke sini)
 
 Ini **salinan produk** dari dasbor pribadi pemilik (`D:\Ai Agent\dashboard-pribadi\`,
 Markas Hanif). Yang pribadi tidak disentuh; yang di sini isinya kosong/contoh dan
