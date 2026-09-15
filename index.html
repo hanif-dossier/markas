@@ -80,6 +80,7 @@ h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
 .store.cloud i{background:var(--good);box-shadow:0 0 8px var(--good)}
 .store.local i{background:var(--warn)}
 main{padding:26px 30px 90px;max-width:1240px;width:100%}
+html.tangkap .tamu{display:none}
 .tamu{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:-4px 0 18px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(90deg,rgba(227,178,90,.12),transparent)}
 .tamu .t{color:var(--muted);font-size:13.5px}.tamu .t b{color:var(--gold-2)}.tamu .a{display:flex;gap:8px;flex-wrap:wrap}
 .masuk-tab{display:flex;gap:6px;margin-bottom:14px}.masuk-tab button{flex:1;padding:9px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;cursor:pointer}.masuk-tab button.on{background:var(--gold);color:#1a1405;border-color:var(--gold);font-weight:700}
@@ -1157,6 +1158,7 @@ function putarAdzan(suara, volume){
 function hentikanAdzan(){ if (audioAdzan) { try { audioAdzan.pause(); } catch {} audioAdzan = null; } }
 // ---- Aplikasi Android (Capacitor): alarm adzan native yang berbunyi walau aplikasi tertutup ----
 // Halaman ini dimuat dari markasku.my.id di dalam WebView aplikasi; Capacitor menyuntikkan window.Capacitor.
+if (/tangkap/.test(location.search)) document.documentElement.classList.add('tangkap');   // mode tangkapan layar (Play Store): sembunyikan bilah tamu
 const NATIF = () => { try { return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); } catch { return false; } };
 const pluginAdzan = () => { try { const C = window.Capacitor; return C.registerPlugin ? C.registerPlugin('Adzan') : C.Plugins.Adzan; } catch { return null; } };
 async function sinkronAdzanNatif(){
