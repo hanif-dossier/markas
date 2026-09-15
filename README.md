@@ -38,3 +38,10 @@ GitHub Pages membangun ±30 detik. Uji lokal: `preview_start markas` (port 8085)
 
 `suara/adzan-1.mp3`, `adzan-2.mp3`, `adzan-3.mp3` diunduh dari islamcan.com (koleksi adzan gratis)
 untuk alarm adzan di Pengaturan. Alarm berbunyi hanya selama Markas terbuka (keterbatasan browser).
+
+## Foto langit
+
+`langit/{fajar,pagi,siang,sore,senja,malam}.jpg` (1600×720, ±50–180 KB) dari Pexels
+(lisensi Pexels: bebas dipakai tanpa atribusi). ID foto: fajar 35642508, pagi 29198922,
+siang 13257827, sore 21939867, senja 4796416, malam 18928472. Dipakai untuk kepala
+langit Beranda dan latar halaman (diburamkan) sesuai fase waktu sholat.

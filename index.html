@@ -155,6 +155,33 @@ main{padding:26px 30px 90px;max-width:1240px;width:100%}
 .langit[data-fase="senja"]::after{background:radial-gradient(ellipse 70% 50% at 58% 112%,rgba(255,140,80,.6),transparent 70%)}
 .langit[data-fase="malam"]::after{background:radial-gradient(circle at 62% 14%,#F7F2DC 0 12px,rgba(247,242,220,.35) 13px 20px,rgba(247,242,220,.08) 21px 56px,transparent 76px)}
 body[data-tema="terang"] .mobile-nav{background:rgba(246,247,250,.94)}
+/* ---- foto langit HD (langit/<fase>.jpg): kepala Beranda memakai foto asli, gradasi lama jadi cadangan saat foto belum termuat ---- */
+.langit{background-size:cover;background-position:center 42%;text-shadow:0 1px 10px rgba(0,0,0,.35)}
+.langit[data-fase="fajar"]{background-image:linear-gradient(180deg,rgba(8,12,30,.55) 0%,rgba(8,12,30,.18) 40%,rgba(8,12,30,.5) 100%),url(langit/fajar.jpg)}
+.langit[data-fase="pagi"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.5) 100%),url(langit/pagi.jpg)}
+.langit[data-fase="siang"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.5) 100%),url(langit/siang.jpg)}
+.langit[data-fase="sore"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.5) 100%),url(langit/sore.jpg)}
+.langit[data-fase="senja"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.18) 40%,rgba(8,12,30,.5) 100%),url(langit/senja.jpg)}
+.langit[data-fase="malam"]{background-image:linear-gradient(180deg,rgba(8,12,30,.45) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.55) 100%),url(langit/malam.jpg)}
+/* matahari/bulan/bintang gambar disembunyikan: sudah ada di fotonya */
+.langit::after,.langit .bintang{display:none}
+.langit .masjid{opacity:.32}
+.langit .strip{background:rgba(6,12,28,.42)}
+.langit .aksi .btn{background:rgba(10,14,28,.35);border-color:rgba(255,255,255,.35)}
+/* latar halaman hidup: foto fase yang sama, diburamkan dan dilembutkan di belakang semua panel */
+body::before{content:"";position:fixed;inset:-40px;z-index:-1;pointer-events:none;background-position:center;background-size:cover;filter:blur(26px) saturate(1.15);opacity:.42;transition:opacity .8s}
+body[data-tema="terang"]::before{opacity:.32}
+body[data-fase="fajar"]::before{background-image:url(langit/fajar.jpg)}
+body[data-fase="pagi"]::before{background-image:url(langit/pagi.jpg)}
+body[data-fase="siang"]::before{background-image:url(langit/siang.jpg)}
+body[data-fase="sore"]::before{background-image:url(langit/sore.jpg)}
+body[data-fase="senja"]::before{background-image:url(langit/senja.jpg)}
+body[data-fase="malam"]::before{background-image:url(langit/malam.jpg)}
+/* panel sedikit tembus supaya latar terasa, tapi tetap terbaca */
+.panel,.tile,.rail{background-color:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.tile{background-color:color-mix(in srgb,var(--panel-2) 86%,transparent)}
+.rail{background-image:none}
+@media (prefers-reduced-motion:reduce){body::before{filter:blur(26px)}}
 /* latar halaman ikut langit: bagian atas halaman berwarna redup sesuai fase, meluruh ke warna dasar */
 body[data-fase="fajar"]{--langit-atas:#2C2548}body[data-fase="pagi"]{--langit-atas:#17325E}body[data-fase="siang"]{--langit-atas:#16375F}body[data-fase="sore"]{--langit-atas:#33273A}body[data-fase="senja"]{--langit-atas:#2E2040}body[data-fase="malam"]{--langit-atas:#0F1636}
 body[data-tema="terang"][data-fase="fajar"]{--langit-atas:#EBDDE4}body[data-tema="terang"][data-fase="pagi"]{--langit-atas:#D6E5F5}body[data-tema="terang"][data-fase="siang"]{--langit-atas:#D3E3F3}body[data-tema="terang"][data-fase="sore"]{--langit-atas:#F1E0C9}body[data-tema="terang"][data-fase="senja"]{--langit-atas:#E9D5D6}body[data-tema="terang"][data-fase="malam"]{--langit-atas:#D9DCE8}
