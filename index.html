@@ -49,7 +49,7 @@ body[data-tema="terang"]{
 }
 *{box-sizing:border-box}
 html{background:var(--bg)}
-body{margin:0;background:radial-gradient(1200px 600px at 80% -10%, rgba(227,178,90,.07), transparent 60%),radial-gradient(900px 500px at -10% 100%, rgba(99,199,191,.06), transparent 60%),var(--bg);transition:background .6s,color .6s;color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.5;min-height:100vh}
+body{margin:0;--langit-atas:var(--bg);background:linear-gradient(180deg,var(--langit-atas) 0%,var(--bg) 46vh) fixed,var(--bg);transition:background .8s,color .6s;color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.5;min-height:100vh}
 a{color:var(--gold-2)}
 button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
@@ -155,6 +155,9 @@ main{padding:26px 30px 90px;max-width:1240px;width:100%}
 .langit[data-fase="senja"]::after{background:radial-gradient(ellipse 70% 50% at 58% 112%,rgba(255,140,80,.6),transparent 70%)}
 .langit[data-fase="malam"]::after{background:radial-gradient(circle at 86% 24%,#F7F2DC 0 13px,rgba(247,242,220,.35) 14px 22px,rgba(247,242,220,.08) 23px 60px,transparent 80px)}
 body[data-tema="terang"] .mobile-nav{background:rgba(246,247,250,.94)}
+/* latar halaman ikut langit: bagian atas halaman berwarna redup sesuai fase, meluruh ke warna dasar */
+body[data-fase="fajar"]{--langit-atas:#2C2548}body[data-fase="pagi"]{--langit-atas:#17325E}body[data-fase="siang"]{--langit-atas:#16375F}body[data-fase="sore"]{--langit-atas:#33273A}body[data-fase="senja"]{--langit-atas:#2E2040}body[data-fase="malam"]{--langit-atas:#0F1636}
+body[data-tema="terang"][data-fase="fajar"]{--langit-atas:#EBDDE4}body[data-tema="terang"][data-fase="pagi"]{--langit-atas:#D6E5F5}body[data-tema="terang"][data-fase="siang"]{--langit-atas:#D3E3F3}body[data-tema="terang"][data-fase="sore"]{--langit-atas:#F1E0C9}body[data-tema="terang"][data-fase="senja"]{--langit-atas:#E9D5D6}body[data-tema="terang"][data-fase="malam"]{--langit-atas:#D9DCE8}
 .langit .atas{display:flex;justify-content:space-between;align-items:flex-start;gap:12px 24px;flex-wrap:wrap}
 .langit .eyebrow{color:rgba(255,255,255,.82)}
 .langit h1{font-family:var(--serif);font-size:34px;line-height:1.05;font-weight:400;margin:4px 0 0;text-shadow:0 1px 12px rgba(0,0,0,.25)}
@@ -1010,6 +1013,7 @@ function terapkanTema(){
   const p = S.pengaturan || DEF.pengaturan; const t = p.tema || 'waktu'; let terang = t === 'terang';
   if (t === 'waktu') { const now = new Date(); const wt = waktuSholat(now, p.lat ?? DEF.pengaturan.lat, p.lng ?? DEF.pengaturan.lng); terang = ['pagi','siang','sore'].includes(faseLangit(now.getHours()*60 + now.getMinutes(), wt)); }
   document.body.dataset.tema = terang ? 'terang' : 'gelap';
+  { const now = new Date(); const wt = waktuSholat(now, p.lat ?? DEF.pengaturan.lat, p.lng ?? DEF.pengaturan.lng); document.body.dataset.fase = faseLangit(now.getHours()*60 + now.getMinutes(), wt); }
   const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = terang ? '#F6F7FA' : '#121826';
 }
 
