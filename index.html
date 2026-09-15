@@ -459,7 +459,7 @@ function vMasuk(pesan=''){
       <span class="k">Hari ini</span><span class="v">Jadwal sholat kotamu, checklist kebiasaan, jurnal pagi, arus kas bulan ini</span>
       <span class="k">Disiplin</span><span class="v">Hari bersih, streak, dan reset otomatis kalau melanggar aturanmu sendiri</span>
       <span class="k">Keuangan</span><span class="v">Catat pengeluaran 10 detik, bayar hutang per minggu, target financial freedom</span>
-      <span class="k">Rencana</span><span class="v">Target 3 tahun per semester dan catatan keputusan yang ditinjau ulang</span></div></div>
+      <span class="k">Planning</span><span class="v">Target 3 tahun per semester dan catatan keputusan yang ditinjau ulang</span></div></div>
   </div>`;
   $('#nav').innerHTML = ''; $('#mnav').innerHTML = '';
   const root = $('#main');
@@ -714,7 +714,7 @@ function lineChart(points){ // [{label, v}]
 /* ================= HALAMAN ================= */
 const VIEWS = [
   ['hari-ini','Hari ini','home'],['jadwal','Jadwal','jadwal'],['sholat','Sholat','sholat'],['disiplin','Disiplin','disiplin'],['fokus','Fokus','fokus'],['jurnal','Jurnal','jurnal'],
-  ['kuliah','Kuliah','kuliah'],['rencana','Rencana 3 tahun','rencana'],['keputusan','Keputusan','keputusan'],['keuangan','Keuangan','uang']
+  ['kuliah','Kuliah','kuliah'],['rencana','Planning','rencana'],['keputusan','Keputusan','keputusan'],['keuangan','Keuangan','uang']
 ];
 
 /* ----- Hari ini ----- */
@@ -940,7 +940,7 @@ function vRencana(){
     <input type="range" min="0" max="100" step="5" value="${x.selesai?100:x.progres||0}" data-act="rencana-progres" data-id="${x.id}" ${x.selesai?'disabled':''}>
     <div class="row between"><label class="row small muted" style="cursor:pointer"><input type="checkbox" data-act="rencana-selesai" data-id="${x.id}" ${x.selesai?'checked':''}> Tandai selesai</label></div></div>`;
   return `
-  <div class="topbar"><div><div class="eyebrow">${fmtTgl(S.pengaturan.mulai3Tahun||'2026-09-01',false)} ${(S.pengaturan.mulai3Tahun||'2026').slice(0,4)} → 2029</div><h1 class="serif">Rencana <em>tiga tahun</em></h1><div class="sub">Target dipisah per semester supaya tiap enam bulan ada yang bisa dicek. Angka bawaan hanya usulan; ubah sesukamu.</div></div>
+  <div class="topbar"><div><div class="eyebrow">${fmtTgl(S.pengaturan.mulai3Tahun||'2026-09-01',false)} ${(S.pengaturan.mulai3Tahun||'2026').slice(0,4)} → 2029</div><h1 class="serif"><em>Planning</em></h1><div class="sub">Target dipisah per semester supaya tiap enam bulan ada yang bisa dicek. Angka bawaan hanya usulan; ubah sesukamu.</div></div>
     <div class="row"><select data-field="rencanaKat" style="width:auto"><option>Semua</option>${KATEGORI_RENCANA.map(k=>`<option ${filter===k?'selected':''}>${k}</option>`).join('')}</select><button class="btn primary" data-act="rencana-tambah">Tambah target</button></div></div>
   <div class="grid">
     <div class="c4">${tile('Waktu berjalan', lewat+'%', 'dari 3 tahun', 'gold')}</div>
