@@ -131,15 +131,16 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mu
 .tabs button.on{background:var(--panel-3);color:var(--text)}
 
 /* checks */
-.check{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg-2);cursor:pointer;user-select:none}
+.check{display:flex;align-items:center;gap:10px;padding:7px 10px;min-height:36px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg-2);cursor:pointer;user-select:none}
 .check:hover{border-color:var(--line-2)}
-.check .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line-2);display:grid;place-items:center;flex:none;transition:all .15s}
-.check .box svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:all .15s}
+.check .box{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--line-2);display:grid;place-items:center;flex:none;transition:all .15s}
+.check .box svg{width:11px;height:11px;opacity:0;transform:scale(.6);transition:all .15s}
 .check.on{border-color:rgba(72,209,138,.35);background:var(--good-dim)}
 .check.on .box{background:var(--good);border-color:var(--good);color:#06301b}
 .check.on .box svg{opacity:1;transform:scale(1)}
-.check .t{flex:1;font-weight:600}
-.check .t small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+.check .t{flex:1;font-weight:600;font-size:13px;line-height:1.25;min-width:0}
+.check .t small{display:block;color:var(--muted);font-weight:500;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stack.rapat{gap:6px}
 .check .mono{color:var(--muted);font-size:12.5px}
 
 /* prayer strip */
@@ -839,7 +840,7 @@ function vHariIni(){
       ${agendaHari(tk, true)}</div>
 
     <div class="c6 panel"><h2>Kebiasaan hari ini <span class="row"><a class="act" href="#jadwal" data-act="tab" data-k="jadwal" data-v="atur">Jadwal</a><a class="act" href="#disiplin">Atur aturan</a></span></h2>
-      <div class="stack">${aturanHarian().map(a => { const jm = jamBlok(tk, a.id); return `<div class="check ${h.kebiasaan[a.id]?'on':''}" data-act="kebiasaan" data-id="${a.id}"><span class="box">${I.check}</span><span class="t">${esc(a.nama)}<small>${esc(a.ket||'')}</small></span><span class="jam">${jm ? jm : `<a href="#" data-act="aturan-edit" data-id="${a.id}" title="Beri jam supaya masuk jadwal">jadwalkan</a>`}</span></div>`; }).join('')}</div>
+      <div class="stack rapat">${aturanHarian().map(a => { const jm = jamBlok(tk, a.id); return `<div class="check ${h.kebiasaan[a.id]?'on':''}" data-act="kebiasaan" data-id="${a.id}"><span class="box">${I.check}</span><span class="t">${esc(a.nama)}<small>${esc(a.ket||'')}</small></span><span class="jam">${jm ? jm : `<a href="#" data-act="aturan-edit" data-id="${a.id}" title="Beri jam supaya masuk jadwal">jadwalkan</a>`}</span></div>`; }).join('')}</div>
       ${belumJadwal ? `<div class="small dim" style="margin-top:8px">${belumJadwal} kebiasaan belum punya jam. Ketuk "jadwalkan" supaya masuk ke jadwal harian.</div>` : ''}
       ${(h.pelanggaran||[]).length ? `<hr class="sep"><div class="pill bad">Hari ini ada ${(h.pelanggaran).length} pelanggaran · streak direset</div>` : ''}
     </div>
