@@ -387,7 +387,28 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mu
 /* charts */
 .chart{width:100%;height:auto;display:block}
 .chart text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
-.chart .grid line{stroke:var(--line);stroke-width:1}
+.chart .grid line{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
+.chart .nilai{font-size:9.5px;fill:var(--text);font-weight:600}
+.chart .bulan-kini{fill:var(--gold-2);font-weight:700}
+.donut{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
+.donut svg{width:150px;height:150px}
+.donut .tengah{font-family:var(--mono);font-size:15px;font-weight:600;fill:var(--text)}
+.donut .tengah2{font-size:9.5px;fill:var(--muted)}
+.donut .ket{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.donut .ket div{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center}
+.donut .ket i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.donut .ket b{font-family:var(--mono);font-weight:600}
+@media (max-width:560px){.donut{grid-template-columns:1fr;justify-items:center}.donut .ket{width:100%}}
+/* busur matahari + siluet masjid di kepala langit */
+.langit .busur{display:block;width:100%;height:auto;margin-top:8px}
+.langit .masjid{display:block;width:min(100%,520px);height:auto;margin:-4px auto -2px;opacity:.45}
+.langit .strip li{position:relative}
+.langit .strip .ik{display:block;width:16px;height:16px;margin:0 auto 2px;opacity:.85}
+.langit .strip .ik svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.langit .strip .sisa{display:block;font-size:10px;opacity:.85;margin-top:1px}
+.langit .strip .maju{position:absolute;left:8px;right:8px;bottom:3px;height:3px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
+.langit .strip .maju b{display:block;height:100%;background:#F5D28A;border-radius:2px}
+@media (max-width:760px){.langit .strip .ik{width:14px;height:14px}.langit .strip .ik svg{width:14px;height:14px}.langit .strip .sisa{display:none}.langit[data-fase="siang"]::after{background:radial-gradient(circle at 88% 7%,#FFFCEB 0 14px,rgba(255,250,225,.5) 15px 24px,rgba(255,250,225,.1) 25px 60px,transparent 90px)}.langit[data-fase="malam"]::after{background:radial-gradient(circle at 88% 8%,#F7F2DC 0 11px,rgba(247,242,220,.35) 12px 18px,rgba(247,242,220,.08) 19px 50px,transparent 70px)}}
 .bars{display:flex;flex-direction:column;gap:8px}
 .bar{display:grid;grid-template-columns:120px 1fr 110px;gap:10px;align-items:center;font-size:12.5px}
 .bar .tr{height:10px;background:var(--panel-3);border-radius:99px;overflow:hidden}
@@ -906,24 +927,46 @@ function heatmap(weeks=16){
   while (d <= today) { const s = skorHari(d); let c = ''; if (s.langgar) c='v'; else if (s.done>0) { const r = s.done/s.total; c = r>=1?'l3':r>=.6?'l2':'l1'; } html += `<i class="${c}${d===today?' today':''}" title="${fmtTgl(d)}: ${s.done}/${s.total}${s.langgar?' · ada pelanggaran':''}"></i>`; d = addDays(d,1); }
   return html + '</div>';
 }
-function barChart(series, opts={}){ // series: [{label, values:{a,b,c}}], opts.keys [[key,color]]
-  const W = 600, H = 190, padL = 44, padB = 26, padT = 10; const keys = opts.keys;
+function barChart(series, opts={}){ // series: [{label, values:{a,b,c}, kini}], opts.keys [[key,color]]
+  const W = 600, H = 200, padL = 58, padB = 26, padT = 14, padR = 8; const keys = opts.keys;
   const max = Math.max(1, ...series.flatMap(s => keys.map(([k]) => +s.values[k]||0)));
   const step = Math.pow(10, Math.floor(Math.log10(max))); const nice = Math.ceil(max/step)*step;
-  const gw = (W-padL)/series.length, bw = Math.min(22, (gw-10)/keys.length);
-  let g = '<g class="grid">'; for (let i=0;i<=4;i++){ const y = padT + (H-padT-padB)*(1-i/4); g += `<line x1="${padL}" x2="${W}" y1="${y}" y2="${y}"/><text x="${padL-6}" y="${y+3}" text-anchor="end">${rpS(nice*i/4).replace('Rp','')}</text>`; } g += '</g>';
-  let bars = ''; series.forEach((s,i) => { const x0 = padL + gw*i + (gw - bw*keys.length - 3*(keys.length-1))/2; keys.forEach(([k,color],j) => { const v = +s.values[k]||0; const h = (H-padT-padB)*v/nice; bars += `<rect x="${x0+j*(bw+3)}" y="${H-padB-h}" width="${bw}" height="${h}" rx="3" fill="${color}" opacity="${v?1:.25}"><title>${s.label} · ${k}: ${rp(v)}</title></rect>`; }); bars += `<text x="${padL+gw*i+gw/2}" y="${H-8}" text-anchor="middle">${s.label}</text>`; });
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${g}${bars}</svg>`;
+  const gw = (W-padL-padR)/series.length, bw = Math.min(20, (gw-14)/keys.length), gap = 4;
+  const uid = 'g' + Math.random().toString(36).slice(2,7);
+  let defs = '<defs>' + keys.map(([k,c],j) => `<linearGradient id="${uid}${j}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="${c}" stop-opacity=".55"/></linearGradient>`).join('') + '</defs>';
+  let g = '<g class="grid">'; for (let i=0;i<=4;i++){ const y = padT + (H-padT-padB)*(1-i/4); g += `<line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end">${rpS(nice*i/4).replace('Rp','')}</text>`; } g += '</g>';
+  let bars = ''; series.forEach((s,i) => { const x0 = padL + gw*i + (gw - bw*keys.length - gap*(keys.length-1))/2;
+    if (s.kini) bars += `<rect x="${(padL+gw*i+2).toFixed(1)}" y="${padT-6}" width="${(gw-4).toFixed(1)}" height="${H-padB-padT+6}" rx="8" fill="var(--gold)" opacity=".07"/>`;
+    keys.forEach(([k,color],j) => { const v = +s.values[k]||0; const h = Math.max(v ? 3 : 1.5, (H-padT-padB)*v/nice); const x = x0+j*(bw+gap), y = H-padB-h;
+      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="4" fill="${v?`url(#${uid}${j})`:'var(--line)'}"><title>${s.label} · ${k}: ${rp(v)}</title></rect>`;
+      if (v && h > 16 && series.length <= 6) bars += `<text class="nilai" x="${(x+bw/2).toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle" opacity=".9">${rpS(v).replace('Rp','')}</text>`; });
+    bars += `<text class="${s.kini?'bulan-kini':''}" x="${(padL+gw*i+gw/2).toFixed(1)}" y="${H-8}" text-anchor="middle">${s.label}</text>`; });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${defs}${g}${bars}</svg>`;
+}
+/* donat: komposisi (pengeluaran per kategori, aset per jenis) */
+function donutChart(items, judul, sub){ // items: [{label, v, color}]
+  const total = items.reduce((n,x) => n + (+x.v||0), 0); if (!total) return '<div class="empty">Belum ada data.</div>';
+  const R = 60, r = 42, C = 75; let a0 = -Math.PI/2; const seg = items.filter(x => x.v>0).sort((a,b)=>b.v-a.v).map(x => { const a1 = a0 + 2*Math.PI*x.v/total; const big = a1-a0 > Math.PI ? 1 : 0;
+    const p = (ang, rad) => `${(C+rad*Math.cos(ang)).toFixed(2)},${(C+rad*Math.sin(ang)).toFixed(2)}`;
+    const d = `M${p(a0,R)} A${R},${R} 0 ${big} 1 ${p(a1,R)} L${p(a1,r)} A${r},${r} 0 ${big} 0 ${p(a0,r)} Z`; a0 = a1;
+    return `<path d="${d}" fill="${x.color}" stroke="var(--panel)" stroke-width="2"><title>${x.label}: ${rp(x.v)} (${pct(x.v,total)}%)</title></path>`; }).join('');
+  return `<div class="donut"><svg viewBox="0 0 150 150">${seg}<text class="tengah" x="75" y="72" text-anchor="middle">${judul}</text><text class="tengah2" x="75" y="88" text-anchor="middle">${sub}</text></svg>
+    <div class="ket">${items.filter(x=>x.v>0).sort((a,b)=>b.v-a.v).map(x => `<div><i style="background:${x.color}"></i><span>${esc(x.label)}</span><b>${pct(x.v,total)}% · ${rpS(x.v)}</b></div>`).join('')}</div></div>`;
 }
 function lineChart(points){ // [{label, v}]
   const W = 600, H = 170, padL = 48, padB = 24, padT = 12, padR = 12; if (points.length<2) return '<div class="empty">Isi nilai aset minimal dua bulan untuk melihat grafik.</div>';
   const vals = points.map(p=>p.v); const lo = Math.min(0, ...vals), hi = Math.max(...vals)||1; const span = hi-lo || 1;
   const X = i => padL + (W-padL-padR)*i/(points.length-1), Y = v => padT + (H-padT-padB)*(1-(v-lo)/span);
   let g = '<g class="grid">'; for (let i=0;i<=3;i++){ const v = lo + span*i/3; g += `<line x1="${padL}" x2="${W-padR}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${padL-6}" y="${Y(v)+3}" text-anchor="end">${rpS(v).replace('Rp','')}</text>`; } g += '</g>';
-  const path = points.map((p,i) => `${i?'L':'M'}${X(i)},${Y(p.v)}`).join(' ');
+  // kurva halus (Catmull-Rom → Bézier)
+  const pts = points.map((p,i) => [X(i), Y(p.v)]); let path = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for (let i=0;i<pts.length-1;i++){ const p0 = pts[i-1]||pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2]||p2;
+    const c1 = [p1[0] + (p2[0]-p0[0])/6, p1[1] + (p2[1]-p0[1])/6], c2 = [p2[0] - (p3[0]-p1[0])/6, p2[1] - (p3[1]-p1[1])/6];
+    path += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`; }
   const area = path + ` L${X(points.length-1)},${Y(lo)} L${X(0)},${Y(lo)} Z`;
+  const akhir = points[points.length-1]; const labelAkhir = `<text class="nilai" x="${(X(points.length-1)-6).toFixed(1)}" y="${(Y(akhir.v)-10).toFixed(1)}" text-anchor="end">${rpS(akhir.v)}</text>`;
   const dots = points.map((p,i) => `<circle cx="${X(i)}" cy="${Y(p.v)}" r="${i===points.length-1?4.5:3}" fill="${i===points.length-1?'var(--gold-2)':'var(--panel)'}" stroke="var(--gold)" stroke-width="2"><title>${p.label}: ${rp(p.v)}</title></circle><text x="${X(i)}" y="${H-6}" text-anchor="middle">${p.label}</text>`).join('');
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--gold)" stop-opacity=".35"/><stop offset="1" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs>${g}<path d="${area}" fill="url(#ga)"/><path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linejoin="round"/>${dots}</svg>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--gold)" stop-opacity=".35"/><stop offset="1" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs>${g}<path d="${area}" fill="url(#ga)"/><path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>${dots}${labelAkhir}</svg>`;
 }
 
 /* ================= HALAMAN ================= */
@@ -955,7 +998,9 @@ function vHariIni(){
     <div class="kanan"><span class="jam-besar">${pad(now.getHours())}.${pad(now.getMinutes())}</span>
       <span class="berikut">${next ? `<b>${next[1]}</b> ${jam(wt[next[0]])} · ${sisaWaktu(wt[next[0]]-nowMin)}` : `Semua waktu sholat hari ini sudah lewat · terbit ${jam(wt.terbit)}`}</span>
       <div class="aksi"><button class="btn danger" data-act="langgar">Catat pelanggaran</button><button class="btn" data-act="pengaturan">${I.setting}Pengaturan</button></div></div></div>
-    <ol class="strip">${SHOLAT.map(([id,nm]) => `<li class="${next&&next[0]===id?'berikut-ini':wt[id]<=nowMin?'lewat':''}"><span class="n">${nm}</span><span class="w">${jam(wt[id])}</span></li>`).join('')}</ol>
+    ${busurLangit(nowMin, wt)}${MASJID}
+    <ol class="strip">${SHOLAT.map(([id,nm], i) => { const berikut = next && next[0]===id; let maju = ''; if (berikut) { const sebelum = i ? wt[SHOLAT[i-1][0]] : Math.max(0, wt[id]-90); const p = Math.max(0, Math.min(100, Math.round((nowMin-sebelum)/(wt[id]-sebelum)*100))); maju = `<span class="sisa">${sisaWaktu(wt[id]-nowMin)}</span><span class="maju"><b style="width:${p}%"></b></span>`; }
+      return `<li class="${berikut?'berikut-ini':wt[id]<=nowMin?'lewat':''}"><span class="ik">${IKON_SHOLAT[id]}</span><span class="n">${nm}</span><span class="w">${jam(wt[id])}</span>${maju}</li>`; }).join('')}</ol>
   </header>
   <div class="grid">
     <div class="c12 tiles">
@@ -1006,6 +1051,25 @@ function vHariIni(){
 
 /* ----- Sholat ----- */
 const sisaWaktu = m => m<60 ? `${m} menit lagi` : `${Math.floor(m/60)} j ${m%60} m lagi`;
+const IKON_SHOLAT = {
+  subuh:'<svg viewBox="0 0 24 24"><path d="M4 17h16M6 13a6 6 0 0 1 12 0M12 3v3M4.5 8l2 2M19.5 8l-2 2"/></svg>',
+  dzuhur:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  ashar:'<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="4"/><path d="M12 4v3M4 13h2M18 13h2M6.3 7.3l1.4 1.4M17.7 7.3l-1.4 1.4M4 20h16"/></svg>',
+  maghrib:'<svg viewBox="0 0 24 24"><path d="M4 17h16M7 17a5 5 0 0 1 10 0M12 5v4M5 9l1.5 1.5M19 9l-1.5 1.5M9 21h6"/></svg>',
+  isya:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/><path d="M17 4l.6 1.4L19 6l-1.4.6L17 8l-.6-1.4L15 6l1.4-.6z" fill="currentColor" stroke="none"/></svg>'
+};
+/* busur perjalanan matahari: garis putus = ufuk, lengkung = terbit→maghrib, titik = 5 waktu, penanda = matahari/bulan */
+function busurLangit(nm, wt){
+  const X = t => 12 + (t/1440)*336, dasar = 50, tinggi = 38;
+  const Y = t => (t > wt.terbit && t < wt.maghrib) ? dasar - Math.sin(Math.PI*(t-wt.terbit)/(wt.maghrib-wt.terbit))*tinggi : dasar;
+  let jalur = ''; for (let t = wt.terbit; t <= wt.maghrib; t += 10) jalur += (jalur?'L':'M') + X(t).toFixed(1) + ' ' + Y(t).toFixed(1);
+  const titik = SHOLAT.map(([k,nmk]) => `<circle cx="${X(wt[k]).toFixed(1)}" cy="${Y(wt[k]).toFixed(1)}" r="3" fill="#fff" fill-opacity="${nm > wt[k] ? .45 : .95}"><title>${nmk} ${jam(wt[k])}</title></circle>`).join('');
+  const siang = nm >= wt.terbit && nm <= wt.maghrib; const cx = X(nm).toFixed(1), cy = Y(nm).toFixed(1);
+  const penanda = siang ? `<circle cx="${cx}" cy="${cy}" r="13" fill="#FFE3A3" fill-opacity=".22"/><circle cx="${cx}" cy="${cy}" r="6.5" fill="#FFE7B0"/>`
+    : `<circle cx="${cx}" cy="${cy}" r="6" fill="#EEF1FF"/><circle cx="${(+cx+3).toFixed(1)}" cy="${(+cy-2).toFixed(1)}" r="5" fill="#1A2350" fill-opacity=".85"/>`;
+  return `<svg class="busur" viewBox="0 0 360 56" aria-label="Posisi matahari hari ini"><line x1="12" y1="${dasar}" x2="348" y2="${dasar}" stroke="#fff" stroke-opacity=".35" stroke-dasharray="2 4"/><path d="${jalur}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.5"/>${titik}${penanda}</svg>`;
+}
+const MASJID = '<svg class="masjid" viewBox="0 0 360 40" aria-hidden="true"><g fill="#060C1C"><rect x="0" y="34" width="360" height="6"/><rect x="110" y="12" width="4" height="22"/><path d="M108 12l4-7 4 7z"/><rect x="246" y="12" width="4" height="22"/><path d="M244 12l4-7 4 7z"/><path d="M150 34v-6a30 30 0 0 1 60 0v6z"/><rect x="179" y="1" width="2" height="6"/><path d="M124 34v-3a12 12 0 0 1 24 0v3zM212 34v-3a12 12 0 0 1 24 0v3z"/><rect x="120" y="26" width="120" height="8"/></g></svg>';
 const faseLangit = (nm, wt) => nm < wt.subuh ? 'malam' : nm < wt.terbit ? 'fajar' : nm < 600 ? 'pagi' : nm < wt.ashar ? 'siang' : nm < wt.maghrib ? 'sore' : nm < wt.isya ? 'senja' : 'malam';
 
 /* ---------- tema: ikut waktu (terang dari terbit sampai Maghrib), gelap, atau terang ---------- */
@@ -1509,9 +1573,13 @@ function vKeuangan(){
         <label class="row small muted full" style="cursor:pointer;gap:8px"><input type="checkbox" data-act="rutin-field" data-id="${x.id}" data-k="ff" ${x.ff!==false?'checked':''}> Ikut dihitung di target financial freedom</label></div>
         <div class="row between small"><span class="dim">${esc(x.ket||'')}</span><button class="btn sm ghost" data-act="rutin-hapus" data-id="${x.id}">Hapus</button></div></div>`).join('') || '<div class="empty">Tidak ada pengeluaran rutin.</div>'}</div>
       <div class="small dim" style="margin-top:10px">Yang aktif otomatis tercatat sebagai pengeluaran tiap minggu. Biaya kuliah tidak di sini: catat manual di kolom atas dengan kategori <b>Kuliah</b>.</div></div>
-    <div class="c12 panel"><h2>Enam bulan terakhir</h2>${barChart(months.map(m => ({label: BLN[+m.slice(5)-1], values: ringkasBulan(m)})), {keys:[['pemasukan','var(--good)'],['pengeluaran','var(--bad)'],['tabungan','var(--teal)']]})}
+    <div class="c8 panel"><h2>Enam bulan terakhir</h2>${barChart(months.map(m => ({label: BLN[+m.slice(5)-1], values: ringkasBulan(m), kini: m===monthKey(new Date())})), {keys:[['pemasukan','var(--good)'],['pengeluaran','var(--bad)'],['tabungan','var(--teal)']]})}
       <div class="legend" style="margin-top:6px"><span><i style="background:var(--good)"></i>Pemasukan</span><span><i style="background:var(--bad)"></i>Pengeluaran</span><span><i style="background:var(--teal)"></i>Tabungan & investasi</span></div>
-      <div class="small dim" style="margin-top:8px">Tabungan & investasi tidak dihitung pengeluaran karena berubah jadi aset, sama seperti di spreadsheet Laporan Keuangan 2026.</div></div>`;
+      <div class="small dim" style="margin-top:8px">Tabungan & investasi tidak dihitung pengeluaran karena berubah jadi aset, sama seperti di spreadsheet Laporan Keuangan 2026.</div></div>
+    <div class="c4 panel"><h2>Ke mana uang ${fmtBulan(S.bulanTx)}</h2>${(() => { const W = { Kebutuhan:'var(--teal)', Keinginan:'var(--warn)', Kuliah:'var(--violet)', Tabungan:'var(--good)', Kewajiban:'var(--bad)' }; const byK = {};
+      (S.aruskas.transaksi||[]).filter(t => t.tanggal.slice(0,7)===S.bulanTx && +t.keluar>0).forEach(t => byK[t.kategori||'Lainnya'] = (byK[t.kategori||'Lainnya']||0) + (+t.keluar||0));
+      const items = Object.entries(byK).map(([k,v]) => ({ label:k, v, color: W[k]||'var(--muted)' })); const tot = items.reduce((a,x)=>a+x.v,0);
+      return donutChart(items, rpS(tot).replace('Rp',''), 'total keluar'); })()}</div>`;
   }
 
   else if (tab==='hutang') {
@@ -1556,7 +1624,7 @@ function vKeuangan(){
       <div class="small dim" style="margin-top:10px">+ Setor menambah nilai aset yang sudah ada, seperti DCA. Kolom nilai dipakai untuk menyesuaikan harga pasar, misalnya saat crypto naik atau turun.</div></div>
     <div class="c4 panel"><h2>Rencana DCA</h2>${(() => { const P = A.filter(a => a.dca && a.dca.aktif && +a.dca.jumlah>0); return P.length ? `<div class="list">${P.map(a => { const s = statusDCA(a); return `<div class="item"><div class="hd"><b>${esc(a.nama)}</b><span class="pill ${s.ok?'good':'warn'}">${s.ok?'sudah '+s.periode:'belum '+s.periode}</span></div><div class="row between small"><span class="muted">${rpS(a.dca.jumlah)} ${jadwalDCA(a.dca)} · ${a.dca.jam||'09:30'}</span><span class="mono">${rpS(s.sudah)} / ${rpS(s.target)}</span></div><div class="prog gold"><b style="width:${Math.min(100, pct(s.sudah, s.target))}%"></b></div>${s.ok?'':`<div><button class="btn sm primary" data-act="setor" data-id="${a.id}">Setor ${rpS(s.target - s.sudah)} sekarang</button></div>`}</div>`; }).join('')}</div>` : '<div class="empty">Belum ada rencana DCA. Klik tombol DCA di baris aset untuk membuat setoran rutin mingguan atau bulanan.</div>'; })()}
       <div class="small dim" style="margin-top:10px">Rencana DCA otomatis muncul di halaman Jadwal pada hari dan jamnya.</div></div>
-    <div class="c6 panel"><h2>Komposisi aset</h2><div class="bars">${Object.entries(byKat).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<div class="bar"><span>${esc(k)}</span><span class="tr"><b style="width:${pct(v,ta)}%;background:${katColor[k]||'var(--muted)'}"></b></span><span class="v">${pct(v,ta)}% · ${rpS(v)}</span></div>`).join('')||'<div class="empty">Belum ada aset.</div>'}</div></div>
+    <div class="c6 panel"><h2>Komposisi aset</h2>${donutChart(Object.entries(byKat).map(([k,v]) => ({ label:k, v, color: katColor[k]||'var(--muted)' })), rpS(ta).replace('Rp',''), 'total aset')}</div>
     <div class="c6 panel"><h2>Perjalanan total aset <button class="act" data-act="riwayat-simpan">Simpan nilai ${fmtBulan(monthKey(new Date()))}</button></h2>${lineChart(riw)}</div>
     <div class="c6 panel"><h2>Riwayat setoran <span class="pill">${(S.aset.setoran||[]).length}</span></h2>${(S.aset.setoran||[]).length ? `<div class="scroll"><table class="tbl"><thead><tr><th>Tanggal</th><th>Aset</th><th class="num">Jumlah</th><th></th></tr></thead><tbody>${S.aset.setoran.slice().sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).slice(0,30).map(s => `<tr><td class="mono">${fmtTgl(s.tanggal,false)}</td><td>${esc((A.find(a=>a.id===s.aset)||{}).nama||'?')}${s.catatan?`<div class="small muted">${esc(s.catatan)}</div>`:''}${s.arus?'':' <span class="pill">tanpa arus kas</span>'}</td><td class="num">${rp(s.jumlah)}</td><td class="num"><button class="btn sm ghost" data-act="setor-batal" data-id="${s.id}">Batalkan</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada setoran. Setoran pertamamu akan tercatat di sini.</div>'}</div>
     <div class="c6 panel"><h2>Utang <button class="act" data-act="utang-tambah">+ Tambah</button></h2><div class="scroll"><table class="tbl"><thead><tr><th>Nama</th><th class="num">Sisa (Rp)</th><th></th></tr></thead><tbody>${U.map(a => `<tr><td><b>${esc(a.nama)}</b>${a.ket?`<div class="small muted">${esc(a.ket)}</div>`:''}</td><td class="num"><input type="number" value="${+a.nilai||0}" data-act="utang-nilai" data-id="${a.id}" style="width:150px;text-align:right;padding:5px 8px"></td><td class="num"><button class="btn sm ghost" data-act="utang-hapus" data-id="${a.id}">×</button></td></tr>`).join('')||'<tr><td colspan="3" class="dim">Tidak ada utang.</td></tr>'}</tbody></table></div>
