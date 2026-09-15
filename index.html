@@ -1027,7 +1027,7 @@ function vHariIni(){
   <header class="langit" data-fase="${faseLangit(nowMin, wt)}"><div class="foto"></div><div class="bintang"></div><div class="atas"><div>
       <div class="eyebrow">${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()} · ${hijri(now)} · ${esc(S.pengaturan.kota)}</div>
       <h1>${jamSapa}, <em>${esc(S.pengaturan.nama)}</em>.</h1>
-      <div class="sub">${s.lengkap ? 'Hari ini sudah lengkap. Jaga sampai malam.' : `${s.done} dari ${s.total} kebiasaan sudah dicentang.`}
+      <div class="sub">${(() => { const sh = h.sholat||{}; const n = sh.status==='lengkap' ? 5 : SHOLAT.filter(([x]) => sh[x]).length; return `Sholat ${n}/5${sh.status==='bolos'?' · ada yang bolos':''} · `; })()}${s.lengkap ? 'hari ini sudah lengkap. Jaga sampai malam.' : `${s.done} dari ${s.total} kebiasaan sudah dicentang.`}
         ${kini ? ` Sekarang: <b>${esc(kini.judul)}</b>.` : berikut ? ` Berikutnya: <b>${esc(berikut.judul)}</b> pukul ${berikut.mulai}.` : ''}</div></div>
     <div class="kanan"><span class="jam-besar">${pad(now.getHours())}.${pad(now.getMinutes())}</span>
       <span class="berikut">${next ? `<b>${next[1]}</b> ${jam(wt[next[0]])} · ${sisaWaktu(wt[next[0]]-nowMin)}` : `Semua waktu sholat hari ini sudah lewat · terbit ${jam(wt.terbit)}`}</span>
@@ -1044,11 +1044,12 @@ function vHariIni(){
       ${tile('Kekayaan bersih', rpS(kb), `aset ${rpS(totalAset())} · utang ${rpS(totalUtang())}`, kb>=0?'good':'bad')}
     </div>
 
-    <div class="c12 panel tight">${(() => { const kmrn = addDays(tk,-1); return !statusSholat(kmrn) && kmrn >= awalPakai() ? tanyaSholat(kmrn) : ''; })()}${tanyaSholat(tk)}</div>
+
 
     <div class="c6 panel"><h2>Jadwal hari ini <span class="row"><a class="act" href="#jadwal">Seminggu</a></span></h2>
       ${kelas.length ? `<div class="small" style="margin-bottom:8px;color:var(--teal)">Kuliah hari ini: ${kelas.map(c => `<b>${esc(c.mk)}</b> ${c.mulai}–${c.selesai}`).join(' · ')}</div>` : `<div class="small dim" style="margin-bottom:8px">Tidak ada kuliah hari ${HARI[now.getDay()]}.</div>`}
       ${barisTenggat(tk, true)}${agendaHari(tk, true)}
+      <div class="small dim" style="margin-top:8px">Ketuk sholat di jadwal untuk mencentangnya; lima tercentang berarti hari ini lengkap. Ada yang bolos? Catat di halaman <a href="#sholat" style="color:var(--gold-2)">Sholat</a>.</div>
       ${belumJadwal ? `<div class="small dim" style="margin-top:10px">Belum dijadwalkan: ${kebiasaanTanpaJadwal().map(a => `<a href="#" data-act="aturan-edit" data-id="${a.id}" style="color:var(--gold-2)">${esc(a.nama)}</a>`).join(' · ')} <span class="dim">· ketuk untuk memberi jam</span></div>` : ''}
       ${(h.pelanggaran||[]).length ? `<hr class="sep"><div class="pill bad">Hari ini ada ${(h.pelanggaran).length} pelanggaran · streak direset</div>` : ''}
     </div>
@@ -1381,7 +1382,7 @@ const awalPakai = () => Object.keys(S.harian).sort()[0] || todayKey(); // hari s
 function blokHari(k){
   const d = parseKey(k), dow = d.getDay(), out = [];
   const wt = waktuSholat(d, S.pengaturan.lat, S.pengaturan.lng);
-  SHOLAT.forEach(([id,n]) => out.push({ id:'sholat-'+id, judul:n, jenis:'sholat', mulai:jam(wt[id]), selesai:jam(wt[id]+15), link:'sholat' }));
+  SHOLAT.forEach(([id,n]) => out.push({ id:'sholat-'+id, judul:n, jenis:'sholat', mulai:jam(wt[id]), selesai:jam(wt[id]+15), link:'sholat:'+id }));
   (S.kuliah.items||[]).filter(c => c.hari===dow).forEach(c => out.push({ id:'kuliah-'+c.id, judul:c.mk, jenis:'kuliah', mulai:c.mulai, selesai:c.selesai, ket:c.ruang||'' }));
   (S.jadwal.agenda||[]).filter(a => a.tanggal===k && a.mulai).forEach(a => out.push({ id:'agenda-'+a.id, judul:a.judul, jenis:'agenda', mulai:a.mulai, selesai:a.selesai||a.mulai, ket:a.ket||'', link:'agenda:'+a.id }));
   const kuliahHariIni = (S.kuliah.items||[]).filter(c => c.hari===dow).map(c => [keMenit(c.mulai), keMenit(c.selesai)]);
@@ -1406,7 +1407,7 @@ function blokHari(k){
 /* true = selesai, false = belum, null = tidak bisa dicek otomatis */
 function selesaiBlok(b, k){
   const l = b.link; if (!l) return null; const h = hari(k);
-  if (l==='sholat') { const s = statusSholat(k); return s==='lengkap' ? true : s==='bolos' ? false : null; }
+  if (l.startsWith('sholat')) { const id = l.split(':')[1]; const sh = h.sholat||{}; if (sh[id]) return true; if (sh.status==='lengkap') return true; if (sh.status==='bolos') return false; return null; }
   if (l==='jurnal') return !!(h.jurnal && (h.jurnal.refleksi || h.jurnal.syukur || h.jurnal.pelajaran || h.jurnal.besok));
   if (l==='catat') return (S.aruskas.transaksi||[]).some(t => t.tanggal===k && !t.rutin);
   if (l==='hutang') { const t = +S.fokus.cicilanMingguan||0, p = bayarMinggu(awalMinggu(k)); return t ? p >= t : p > 0; }
@@ -1416,7 +1417,13 @@ function selesaiBlok(b, k){
 async function klikBlok(link, k){
   if (link && link.startsWith('agenda:')) return modalAgenda(clone((S.jadwal.agenda||[]).find(a => a.id===link.slice(7))));
   if (!link) return;
-  if (link==='sholat') return pergi('sholat');
+  if (link.startsWith('sholat')) { const id = link.split(':')[1]; if (!id) return pergi('sholat');
+    if (k > todayKey()) { toast('Belum waktunya. Centang setelah sholat.', true); return; }
+    const h = hari(k); h.sholat = h.sholat||{};
+    if (h.sholat.status==='lengkap') { SHOLAT.forEach(([x]) => h.sholat[x] = true); delete h.sholat.status; }   // ubah "lengkap" jadi centang per waktu supaya bisa dibatalkan satu-satu
+    h.sholat[id] = !h.sholat[id]; if (h.sholat.status==='bolos' && SHOLAT.every(([x]) => h.sholat[x])) delete h.sholat.status;
+    await simpanHari(k, h); const n = SHOLAT.filter(([x]) => h.sholat[x]).length; const nama = (SHOLAT.find(([x]) => x===id)||[])[1];
+    toast(h.sholat[id] ? (n===5 ? 'Alhamdulillah, lima waktu lengkap hari ini' : `${nama} tercentang · ${n} dari 5`) : `Centang ${nama} dibatalkan`); render(); return; }
   if (link==='jurnal') { S.jurnalTgl = k > todayKey() ? todayKey() : k; return pergi('jurnal'); }
   if (link==='catat') { S.tab.keuangan = 'arus'; return pergi('keuangan'); }
   if (link==='hutang') { S.tab.keuangan = 'hutang'; return pergi('keuangan'); }
