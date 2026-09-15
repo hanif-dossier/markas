@@ -99,3 +99,22 @@ Kode: `idb`, `muatMedia`, `tambahSuara`, `hapusSuara`, `gantiLatar`, `hapusLatar
 memutar suara pilihan itu (`suara: "khusus:<id>"`).
 
 Email kontak resmi: officialmarkasku@gmail.com (privasi.html, listing Play Store).
+
+## Lokasi dunia, metode hitung, bahasa
+
+- **Lokasi**: Pengaturan → kotak cari kota (daftar kota Indonesia lokal + geocoding
+  Open-Meteo, gratis tanpa kunci) atau tombol "📍 Lokasi HP" (Geolocation + Nominatim untuk
+  nama kota dan kode negara). Jam dihitung dari koordinat itu dan **zona waktu perangkat**,
+  jadi pengguna di negara mana pun mendapat jam setempat.
+- **Metode** (`METODE` di index.html, `WaktuSholat.Metode` di Android, `Metode` di Edge
+  Function): Kemenag 20/18, MUIS/JAKIM 20/18, MWL 18/17, ISNA 15/15, Mesir 19,5/17,5,
+  Umm al-Qura 18,5 + Maghrib 90 menit, Karachi 18/18, Diyanet 18/17, UOIF 12/12, Rusia 16/15;
+  Ashar Syafi'i (1×) atau Hanafi (2×). Dipilih otomatis dari kode negara (`NEGARA_METODE`).
+  Lintang tinggi: kalau sudut tidak tercapai (musim panas Eropa), Subuh = terbit − malam/7,
+  Isya = maghrib + malam/7. Metode ikut ke server push lewat `markas_push.waktu.metode`
+  (jsonb, tanpa ubah skema) dan ke Android lewat `AdzanPlugin.atur({metode})`.
+- **Bahasa**: id (asli), en, ar. Kode tetap Indonesia; `KAMUS` (frasa persis) dan `KATA`
+  (hari, bulan, nama sholat, kata umum) diterapkan ke DOM oleh `terjemahkan()` +
+  `MutationObserver`. Arab memakai `dir="rtl"`. Pilihan disimpan di localStorage
+  `markasku-bahasa`; pemilihnya ada di bilah tamu dan Pengaturan → Tampilan. Menambah
+  terjemahan: isi `KAMUS.en` / `KAMUS.ar` (kunci = teks Indonesia persis).
