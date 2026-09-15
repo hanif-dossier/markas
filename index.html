@@ -463,17 +463,25 @@ function vMasuk(pesan='', mode='masuk'){
     <label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
     <label class="f">Kata sandi (min. 6 huruf)<input type="password" name="sandi" required minlength="6" autocomplete="new-password"></label>
     <div class="actions"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">Buat akun</button></div>
-    <div class="small dim" style="margin-top:10px">Setelah mendaftar, cek email untuk tautan konfirmasi, lalu masuk. Datamu hanya bisa dibaca oleh akunmu sendiri.</div>
+    <div class="small dim" style="margin-top:10px">Setelah mendaftar, cek email untuk tautan konfirmasi, lalu masuk. Datamu hanya bisa dibaca oleh akunmu sendiri. Sudah punya akun situs Hanif Dossier? Langsung <a href="#" data-mode="masuk" class="ke-masuk">masuk</a>, akunnya sama.</div>
   </form>`;
   bg.classList.add('show');
   const close = () => { bg.classList.remove('show'); m.innerHTML = ''; };
   m.querySelectorAll('[data-close]').forEach(b => b.onclick = close);
-  m.querySelectorAll('.masuk-tab button').forEach(b => b.onclick = () => vMasuk('', b.dataset.mode));
+  m.querySelectorAll('.masuk-tab button, .ke-masuk').forEach(b => b.onclick = e => { e.preventDefault(); vMasuk('', b.dataset.mode); });
   m.querySelector('form[data-form="masuk"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
     const { error } = await sb.auth.signInWithPassword({ email: d.email.trim(), password: d.sandi }); if (error) return toast(error.message.includes('Invalid') ? 'Email atau sandi salah' : error.message, true); location.reload(); };
   m.querySelector('form[data-form="daftar"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
-    const { error } = await sb.auth.signUp({ email: d.email.trim(), password: d.sandi, options: { data: { nama: d.nama.trim(), aplikasi: 'markas' }, emailRedirectTo: alur } });
-    if (error) return toast(error.message, true); try { localStorage.setItem(LS+'nama-daftar', d.nama.trim()); } catch {} vMasuk('Akun dibuat. Buka email <b>' + esc(d.email) + '</b>, klik tautan konfirmasinya, lalu masuk di sini.', 'masuk'); };
+    const email = d.email.trim();
+    const { data: res, error } = await sb.auth.signUp({ email, password: d.sandi, options: { data: { nama: d.nama.trim(), aplikasi: 'markas' }, emailRedirectTo: alur } });
+    if (error) return toast(error.message, true);
+    // Email sudah terdaftar: Supabase tidak mengirim email apa pun dan mengembalikan user "kosong" (identities = []).
+    if (res && res.user && Array.isArray(res.user.identities) && res.user.identities.length === 0) {
+      vMasuk('Email <b>' + esc(email) + '</b> sudah punya akun (akun situs Hanif Dossier berlaku di sini juga). Masuk dengan sandi yang sama, atau klik <b>Lupa sandi</b>.', 'masuk');
+      $('#modal form[data-form="masuk"] [name=email]').value = email; $('#modal form[data-form="masuk"] [name=sandi]').focus(); return; }
+    try { localStorage.setItem(LS+'nama-daftar', d.nama.trim()); } catch {}
+    vMasuk('Akun dibuat. Buka email <b>' + esc(email) + '</b>, klik tautan konfirmasinya, lalu masuk di sini. Tidak ada email? Cek folder spam.', 'masuk');
+    $('#modal form[data-form="masuk"] [name=email]').value = email; };
   m.querySelector('[data-act="lupa-sandi"]').onclick = async () => { const email = m.querySelector('form[data-form="masuk"] [name=email]').value.trim(); if (!email) return toast('Isi email dulu', true);
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: alur }); toast(error ? error.message : 'Tautan ganti sandi dikirim ke ' + email, !!error); };
   m.querySelector('[data-act="mode-coba"]').onclick = e => { e.preventDefault(); try { localStorage.setItem(LS+'mode-coba', '1'); } catch {} location.reload(); };
