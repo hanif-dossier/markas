@@ -813,7 +813,7 @@ function vHariIni(){
   const mk = monthKey(now), r = ringkasBulan(mk); const kb = totalAset()-totalUtang();
   const rencanaDekat = (S.rencana.items||[]).filter(x => !x.selesai).sort((a,b)=>a.target.localeCompare(b.target)).slice(0,3);
   const s = skorHari(tk); const belumJadwal = kebiasaanTanpaJadwal().length;
-  const bl = blokHari(tk); const kini = bl.find(b => b.m0 <= nowMin && nowMin < b.m1), berikut = bl.find(b => b.m0 > nowMin);
+  const bl = blokHari(tk); const kini = bl.find(b => b.m0 <= nowMin && nowMin < b.m1), berikut = bl.find(b => b.m0 > nowMin && b.jenis!=='sholat');
   const fokusBuka = (S.fokus.items||[]).filter(x=>!x.utama&&!x.selesai).sort((a,b)=>(a.tenggat||'9').localeCompare(b.tenggat||'9'));
   return `
   <div class="topbar"><div><div class="eyebrow">${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()} · ${hijri(now)}</div>
