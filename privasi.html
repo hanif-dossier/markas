@@ -31,6 +31,7 @@
   <ul>
     <li><b>Akun</b>: alamat email dan kata sandi (disimpan terenkripsi oleh Supabase). Dipakai hanya untuk masuk dan memulihkan kata sandi.</li>
     <li><b>Isi Markasku-mu</b>: jadwal, kebiasaan, catatan jurnal, daftar fokus, catatan keuangan, rencana, dan pengaturan (termasuk nama kota atau koordinat yang kamu pilih untuk jadwal sholat). Semua disimpan di basis data Supabase di bawah akunmu dan hanya bisa dibaca olehmu.</li>
+    <li><b>Lokasi</b> (kalau kamu mengaktifkannya): koordinat kota untuk jadwal sholat, disimpan di pengaturanmu; kamu bisa mengubahnya kapan saja.</li>
     <li><b>Notifikasi</b> (kalau kamu mengaktifkannya): alamat langganan push dari browser, koordinat dan zona waktu, supaya server bisa mengirim pengingat waktu sholat.</li>
     <li><b>Masukan</b> (kalau kamu mengirimnya): teks saran atau kritik dan penilaian suka/tidak suka.</li>
   </ul>
@@ -39,7 +40,7 @@
   <h2>Data yang tidak kami ambil</h2>
   <ul>
     <li>Tidak ada pelacakan iklan, tidak ada analitik pihak ketiga, tidak ada penjualan data.</li>
-    <li>Aplikasi Android tidak meminta lokasi GPS. Jadwal sholat dihitung dari kota yang kamu pilih sendiri.</li>
+    <li>Lokasi hanya diambil saat kamu sendiri menekan tombol <b>Aktifkan lokasi</b>, untuk mengisi kota dan menghitung jadwal sholat. Tidak ada pelacakan di latar belakang. Koordinat itu dikirim sekali ke OpenStreetMap (Nominatim) untuk mendapatkan nama kota, lalu disimpan di pengaturanmu.</li>
     <li>Tidak membaca kontak, foto, atau berkas di perangkatmu.</li>
   </ul>
 
@@ -48,6 +49,7 @@
     <li><b>Notifikasi</b>: menampilkan pengingat waktu sholat.</li>
     <li><b>Alarm dan pengingat</b> (alarm tepat waktu): membunyikan adzan tepat pada menitnya walau aplikasi tertutup.</li>
     <li><b>Berjalan di latar depan</b> dan <b>menjaga perangkat tetap bangun</b>: memutar suara adzan sampai selesai.</li>
+    <li><b>Lokasi perkiraan</b> (opsional): dipakai hanya saat tombol Aktifkan lokasi ditekan.</li>
     <li><b>Berjalan saat perangkat dinyalakan</b>: memasang ulang jadwal alarm setelah HP dihidupkan.</li>
     <li><b>Abaikan optimasi baterai</b> (opsional, kamu yang menekan tombolnya): supaya alarm tidak ditunda oleh mode hemat baterai.</li>
   </ul>

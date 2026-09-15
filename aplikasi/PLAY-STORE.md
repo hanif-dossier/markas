@@ -59,7 +59,7 @@ Markasku dibuat untuk dipakai setiap hari: sederhana di HP, lega di laptop.
 
 ## Kuesioner Play Console (jawaban)
 
-- **Keamanan data**: mengumpulkan email (akun), info pribadi lain tidak; data pengguna (isi aplikasi) disimpan
+- **Keamanan data**: mengumpulkan email (akun) dan **lokasi perkiraan** (opsional, hanya saat pengguna menekan Aktifkan lokasi, untuk fungsi aplikasi: jadwal sholat; dibagikan ke OpenStreetMap/Nominatim hanya untuk mencari nama kota); data pengguna (isi aplikasi) disimpan
   di server, terenkripsi saat transit, pengguna bisa minta dihapus (menu Akun). Tidak dibagikan ke pihak ketiga.
 - **Iklan**: tidak ada. **Pembelian dalam aplikasi**: tidak ada.
 - **Rating konten**: kuesioner IARC, semua "tidak" → Semua Umur.
@@ -67,6 +67,7 @@ Markasku dibuat untuk dipakai setiap hari: sederhana di HP, lega di laptop.
 - **Izin sensitif**: `SCHEDULE_EXACT_ALARM` → fungsi inti aplikasi adalah alarm adzan (pengingat waktu sholat
   yang harus tepat menit). `FOREGROUND_SERVICE_MEDIA_PLAYBACK` → memutar suara adzan saat alarm berbunyi.
   `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` → supaya alarm tidak ditunda; hanya diminta kalau pengguna menekan tombolnya.
+  `ACCESS_COARSE/FINE_LOCATION` → hanya saat tombol Aktifkan lokasi ditekan, untuk jadwal sholat; tidak ada lokasi latar belakang.
 - **Aplikasi kesehatan / keuangan?** Bukan; catatan keuangan pribadi manual, tidak terhubung ke bank.
 
 ## Alur unggah pertama
