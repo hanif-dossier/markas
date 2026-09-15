@@ -45,12 +45,12 @@ untuk alarm adzan di Pengaturan. Alarm berbunyi hanya selama Markasku terbuka (k
 `*-kecil.jpg` (640px) untuk latar halaman yang diburamkan; berganti mengikuti fase waktu
 sholat. Aturan pemilik: suasana **hidup bergaya lukisan sinematik, tanpa sosok manusia**.
 
-- fajar: masjid berlentera di hutan berkabut (ilustrasi AI, Pixabay 8464147... lihat `catatan/`)
+- fajar: masjid berlentera di hutan berkabut (ilustrasi Pixabay `2024/02/28/12/50/ai-generated-8602008`)
 - pagi: Ivan Aivazovsky, *View of Constantinople and the Bosphorus* (potongan laut, kapal, matahari; kerumunan di tepi dibuang)
-- siang: kota tua putih berkubah merah (ilustrasi Pixabay)
-- sore: unta di padang saat matahari terbenam, siluet kota di kejauhan (ilustrasi Pixabay)
-- senja: pelabuhan kapal layar saat matahari terbenam (ilustrasi Pixabay, dipotong tanpa dermaga)
-- malam: masjid berlampu berpantul di air di bawah bintang (ilustrasi Pixabay)
+- siang: kota tua putih berkubah merah (ilustrasi Pixabay `2023/11/13/16/10/city-8385926`)
+- sore: unta di padang saat matahari terbenam, siluet kota di kejauhan (ilustrasi Pixabay `2024/05/07/12/26/ai-generated-8745709`)
+- senja: pelabuhan kapal layar saat matahari terbenam (ilustrasi Pixabay `2023/05/26/17/59/ai-generated-8019916`, dipotong tanpa dermaga)
+- malam: masjid berlampu berpantul di air di bawah bintang (ilustrasi Pixabay `2024/01/27/09/46/ai-generated-8535605`)
 
 Ilustrasi Pixabay berlisensi Pixabay Content License (bebas dipakai komersial tanpa
 atribusi); sumbernya hanya 1280 px sehingga ditajamkan 4x dengan Real-ESRGAN lalu
