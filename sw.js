@@ -1,6 +1,6 @@
 // Service worker Markasku: ambil dari jaringan dulu, salinan terakhir dipakai kalau offline (data tetap dari Supabase).
 // Juga menerima Web Push (notifikasi adzan dari Edge Function adzan-push) dan membuka Markasku saat notifikasi diketuk.
-const CACHE = 'markas-v4';
+const CACHE = 'markas-v5';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
 self.addEventListener('fetch', e => {
