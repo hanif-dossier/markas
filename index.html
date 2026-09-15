@@ -1717,7 +1717,7 @@ async function muatNilai(){
 }
 async function kirimNilai(suka){
   if (!sb) return; const pengenal = pengenalNilai();
-  const { error } = await sb.from('markas_nilai').upsert({ pengenal, user_id: pengguna ? pengguna.id : null, suka, diperbarui: new Date().toISOString() }, { onConflict:'pengenal' });
+  const { error } = await sb.rpc('kirim_nilai', { p_pengenal: pengenal, p_suka: suka });
   if (error) return toast('Gagal menyimpan: ' + error.message, true);
   try { localStorage.setItem(LS+'nilai', suka ? '1' : '0'); } catch {}
   toast(suka ? 'Terima kasih! 👍' : 'Terima kasih sudah jujur. Tulis apa yang kurang di bawah, itu yang paling membantu.');

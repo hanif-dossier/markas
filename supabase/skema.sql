@@ -102,3 +102,18 @@ returns json language sql security definer stable set search_path = public as $$
 $$;
 revoke all on function public.nilai_markas() from public;
 grant execute on function public.nilai_markas() to anon, authenticated;
+
+-- Upsert lewat REST gagal untuk anon (ON CONFLICT butuh kebijakan SELECT), jadi suara
+-- dikirim lewat fungsi security definer; kebijakan insert/update langsung dicabut.
+drop policy if exists "nilai kirim" on public.markas_nilai;
+drop policy if exists "nilai ubah" on public.markas_nilai;
+create or replace function public.kirim_nilai(p_pengenal text, p_suka boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if p_pengenal is null or length(p_pengenal) < 3 or length(p_pengenal) > 80 then raise exception 'pengenal tidak sah'; end if;
+  insert into public.markas_nilai (pengenal, user_id, suka) values (p_pengenal, auth.uid(), p_suka)
+  on conflict (pengenal) do update set suka = excluded.suka, user_id = coalesce(excluded.user_id, markas_nilai.user_id), diperbarui = now();
+end;
+$$;
+revoke all on function public.kirim_nilai(text, boolean) from public;
+grant execute on function public.kirim_nilai(text, boolean) to anon, authenticated;
