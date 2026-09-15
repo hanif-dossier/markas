@@ -1440,7 +1440,7 @@ document.addEventListener('submit', async e => {
   if (!pengguna && !localStorage.getItem(LS+'mode-coba')) { vMasuk(); return; }
   await loadAll(); await jalankanRutin(); route();
   if (!S.pengaturan.nama) { const n = localStorage.getItem(LS+'nama-daftar') || ''; if (n) { S.pengaturan.nama = n; await store.set('pengaturan/utama', S.pengaturan); render(); } else { toast('Isi nama dan kotamu dulu'); modalPengaturan(); } }
-  if ('serviceWorker' in navigator && location.hostname.endsWith('github.io')) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && (location.hostname.endsWith('github.io') || location.hostname.endsWith('markasku.my.id'))) navigator.serviceWorker.register('sw.js').catch(() => {});
   setInterval(async () => { const baru = await jalankanRutin(); const sibuk = $('#modalBg').classList.contains('show') || ['TEXTAREA','INPUT','SELECT'].includes(document.activeElement.tagName); if (!sibuk && (S.view==='hari-ini' || baru)) render(); }, 60000);
 })();
 </script>
