@@ -85,3 +85,17 @@ Membangun: tidak perlu Android Studio. Setiap push yang menyentuh `aplikasi/` me
 sudah diisi, workflow juga membuat AAB rilis bertanda tangan untuk Play Store.
 Menjalankan lokal (kalau ada JDK + SDK): `cd aplikasi && npm ci && npx cap sync android &&
 cd android && ./gradlew assembleDebug`.
+
+## Suara dan latar buatan pengguna
+
+Di Pengaturan, pengguna bisa **menambah suara adzan sendiri** (MP3/OGG/WAV ≤ 12 MB) dan
+**mengganti latar Beranda** per fase waktu atau satu gambar untuk semua. Keduanya disimpan
+di IndexedDB perangkat (`markasku-media`: store `suara` dan `latar`), tidak diunggah ke
+server. Gambar dikecilkan lewat canvas jadi 1920 px (kepala) dan 640 px (latar buram).
+Kode: `idb`, `muatMedia`, `tambahSuara`, `hapusSuara`, `gantiLatar`, `hapusLatar`,
+`pasangLatar` (menimpa `.langit .foto` lewat style inline dan `body::before` lewat
+`--latar-khusus`). Di aplikasi Android, berkas suara juga dikirim ke native
+(`AdzanPlugin.simpanSuara` → `filesDir/suara/<id>`) supaya alarm saat aplikasi tertutup
+memutar suara pilihan itu (`suara: "khusus:<id>"`).
+
+Email kontak resmi: officialmarkasku@gmail.com (privasi.html, listing Play Store).
