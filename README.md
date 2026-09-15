@@ -45,3 +45,8 @@ untuk alarm adzan di Pengaturan. Alarm berbunyi hanya selama Markasku terbuka (k
 (lisensi Pexels: bebas dipakai tanpa atribusi). ID foto: fajar 35642508, pagi 29198922,
 siang 13257827, sore 21939867, senja 4796416, malam 18928472. Dipakai untuk kepala
 langit Beranda dan latar halaman (diburamkan) sesuai fase waktu sholat.
+
+Fase **senja** memakai gambar kiriman pemilik, "Ottoman bazaar at evening"
+(`langit/senja.jpg`, potongan lebar 1920×860), ditajamkan 4x dengan Real-ESRGAN dari
+735×490. Versi HD utuh: `langit/bazar-senja-hd.jpg` (2940×1960). Foto senja lama
+dari Pexels disimpan sebagai `langit/senja-awan.jpg` kalau mau dikembalikan.
