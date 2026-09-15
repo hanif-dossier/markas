@@ -155,33 +155,40 @@ main{padding:26px 30px 90px;max-width:1240px;width:100%}
 .langit[data-fase="senja"]::after{background:radial-gradient(ellipse 70% 50% at 58% 112%,rgba(255,140,80,.6),transparent 70%)}
 .langit[data-fase="malam"]::after{background:radial-gradient(circle at 62% 14%,#F7F2DC 0 12px,rgba(247,242,220,.35) 13px 20px,rgba(247,242,220,.08) 21px 56px,transparent 76px)}
 body[data-tema="terang"] .mobile-nav{background:rgba(246,247,250,.94)}
-/* ---- foto langit HD (langit/<fase>.jpg): kepala Beranda memakai foto asli, gradasi lama jadi cadangan saat foto belum termuat ---- */
-.langit{background-size:cover;background-position:center 42%;text-shadow:0 1px 10px rgba(0,0,0,.35)}
-.langit[data-fase="fajar"]{background-image:linear-gradient(180deg,rgba(8,12,30,.55) 0%,rgba(8,12,30,.18) 40%,rgba(8,12,30,.5) 100%),url(langit/fajar.jpg)}
-.langit[data-fase="pagi"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.5) 100%),url(langit/pagi.jpg)}
-.langit[data-fase="siang"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.5) 100%),url(langit/siang.jpg)}
-.langit[data-fase="sore"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.5) 100%),url(langit/sore.jpg)}
-.langit[data-fase="senja"]{background-image:linear-gradient(180deg,rgba(8,12,30,.5) 0%,rgba(8,12,30,.18) 40%,rgba(8,12,30,.5) 100%),url(langit/senja.jpg)}
-.langit[data-fase="malam"]{background-image:linear-gradient(180deg,rgba(8,12,30,.45) 0%,rgba(8,12,30,.15) 40%,rgba(8,12,30,.55) 100%),url(langit/malam.jpg)}
-/* matahari/bulan/bintang gambar disembunyikan: sudah ada di fotonya */
-.langit::after,.langit .bintang{display:none}
-.langit .masjid{opacity:.32}
-.langit .strip{background:rgba(6,12,28,.42)}
-.langit .aksi .btn{background:rgba(10,14,28,.35);border-color:rgba(255,255,255,.35)}
-/* latar halaman hidup: foto fase yang sama, diburamkan dan dilembutkan di belakang semua panel */
-body::before{content:"";position:fixed;inset:-40px;z-index:-1;pointer-events:none;background-position:center;background-size:cover;filter:blur(26px) saturate(1.15);opacity:.42;transition:opacity .8s}
-body[data-tema="terang"]::before{opacity:.32}
-body[data-fase="fajar"]::before{background-image:url(langit/fajar.jpg)}
-body[data-fase="pagi"]::before{background-image:url(langit/pagi.jpg)}
-body[data-fase="siang"]::before{background-image:url(langit/siang.jpg)}
-body[data-fase="sore"]::before{background-image:url(langit/sore.jpg)}
-body[data-fase="senja"]::before{background-image:url(langit/senja.jpg)}
-body[data-fase="malam"]::before{background-image:url(langit/malam.jpg)}
-/* panel sedikit tembus supaya latar terasa, tapi tetap terbaca */
-.panel,.tile,.rail{background-color:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.tile{background-color:color-mix(in srgb,var(--panel-2) 86%,transparent)}
+/* ---- foto langit HD (langit/<fase>.jpg 1920px): lapisan .foto bergerak pelan (Ken Burns), bintang berkelip saat malam ---- */
+.langit{text-shadow:0 1px 10px rgba(0,0,0,.4)}
+.langit .foto{position:absolute;inset:-4%;z-index:-3;background-position:center 55%;background-size:cover;filter:saturate(1.2) contrast(1.06);animation:kenburns 36s ease-in-out infinite alternate;will-change:transform}
+@keyframes kenburns{from{transform:scale(1) translate(0,0)}to{transform:scale(1.09) translate(-1.5%,1%)}}
+.langit[data-fase="fajar"] .foto{background-image:url(langit/fajar.jpg)}
+.langit[data-fase="pagi"] .foto{background-image:url(langit/pagi.jpg)}
+.langit[data-fase="siang"] .foto{background-image:url(langit/siang.jpg)}
+.langit[data-fase="sore"] .foto{background-image:url(langit/sore.jpg)}
+.langit[data-fase="senja"] .foto{background-image:url(langit/senja.jpg)}
+.langit[data-fase="malam"] .foto{background-image:url(langit/malam.jpg)}
+/* ::before = gradasi pelindung teks (bukan bintang lagi); bintang pindah ke .bintang di atas foto */
+.langit::before{opacity:1!important;background-image:linear-gradient(180deg,rgba(6,10,26,.55) 0%,rgba(6,10,26,.12) 38%,rgba(6,10,26,.05) 60%,rgba(6,10,26,.55) 100%)!important;z-index:-2}
+.langit .bintang{z-index:-1;mix-blend-mode:screen}
+.langit[data-fase="malam"] .bintang{opacity:.75}
+.langit::after{display:none}
+.langit .masjid{opacity:.28}
+.langit .strip{background:rgba(6,12,28,.45)}
+.langit .aksi .btn{background:rgba(10,14,28,.38);border-color:rgba(255,255,255,.38)}
+@media (prefers-reduced-motion:reduce){.langit .foto{animation:none}}
+/* latar halaman hidup: versi kecil foto fase yang sama, diburamkan, dibuat lebih terasa */
+body::before{content:"";position:fixed;inset:-60px;z-index:-1;pointer-events:none;background-position:center;background-size:cover;filter:blur(30px) saturate(1.35) brightness(1.05);opacity:.6;transition:opacity .8s}
+body[data-tema="terang"]::before{opacity:.5;filter:blur(30px) saturate(1.25) brightness(1.15)}
+body[data-fase="fajar"]::before{background-image:url(langit/fajar-kecil.jpg)}
+body[data-fase="pagi"]::before{background-image:url(langit/pagi-kecil.jpg)}
+body[data-fase="siang"]::before{background-image:url(langit/siang-kecil.jpg)}
+body[data-fase="sore"]::before{background-image:url(langit/sore-kecil.jpg)}
+body[data-fase="senja"]::before{background-image:url(langit/senja-kecil.jpg)}
+body[data-fase="malam"]::before{background-image:url(langit/malam-kecil.jpg)}
+/* panel tembus sedikit lebih banyak + kaca, supaya warna latar hidup terasa tapi teks tetap terbaca */
+.panel,.tile,.rail{background-color:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2)}
+.tile{background-color:color-mix(in srgb,var(--panel-2) 80%,transparent)}
 .rail{background-image:none}
-@media (prefers-reduced-motion:reduce){body::before{filter:blur(26px)}}
+.mobile-nav{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+
 /* latar halaman ikut langit: bagian atas halaman berwarna redup sesuai fase, meluruh ke warna dasar */
 body[data-fase="fajar"]{--langit-atas:#2C2548}body[data-fase="pagi"]{--langit-atas:#17325E}body[data-fase="siang"]{--langit-atas:#16375F}body[data-fase="sore"]{--langit-atas:#33273A}body[data-fase="senja"]{--langit-atas:#2E2040}body[data-fase="malam"]{--langit-atas:#0F1636}
 body[data-tema="terang"][data-fase="fajar"]{--langit-atas:#EBDDE4}body[data-tema="terang"][data-fase="pagi"]{--langit-atas:#D6E5F5}body[data-tema="terang"][data-fase="siang"]{--langit-atas:#D3E3F3}body[data-tema="terang"][data-fase="sore"]{--langit-atas:#F1E0C9}body[data-tema="terang"][data-fase="senja"]{--langit-atas:#E9D5D6}body[data-tema="terang"][data-fase="malam"]{--langit-atas:#D9DCE8}
@@ -1017,7 +1024,7 @@ function vHariIni(){
   const bl = blokHari(tk); const kini = bl.find(b => b.m0 <= nowMin && nowMin < b.m1), berikut = bl.find(b => b.m0 > nowMin && b.jenis!=='sholat');
   const fokusBuka = (S.fokus.items||[]).filter(x=>!x.utama&&!x.selesai).sort((a,b)=>(a.tenggat||'9').localeCompare(b.tenggat||'9'));
   return `
-  <header class="langit" data-fase="${faseLangit(nowMin, wt)}"><div class="bintang"></div><div class="atas"><div>
+  <header class="langit" data-fase="${faseLangit(nowMin, wt)}"><div class="foto"></div><div class="bintang"></div><div class="atas"><div>
       <div class="eyebrow">${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()} · ${hijri(now)} · ${esc(S.pengaturan.kota)}</div>
       <h1>${jamSapa}, <em>${esc(S.pengaturan.nama)}</em>.</h1>
       <div class="sub">${s.lengkap ? 'Hari ini sudah lengkap. Jaga sampai malam.' : `${s.done} dari ${s.total} kebiasaan sudah dicentang.`}
@@ -1096,7 +1103,7 @@ function busurLangit(nm, wt){
     : `<circle cx="${cx}" cy="${cy}" r="6" fill="#EEF1FF"/><circle cx="${(+cx+3).toFixed(1)}" cy="${(+cy-2).toFixed(1)}" r="5" fill="#1A2350" fill-opacity=".85"/>`;
   return `<svg class="busur" viewBox="0 0 360 56" aria-label="Posisi matahari hari ini"><line x1="12" y1="${dasar}" x2="348" y2="${dasar}" stroke="#fff" stroke-opacity=".35" stroke-dasharray="2 4"/><path d="${jalur}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.5"/>${titik}${penanda}</svg>`;
 }
-const MASJID = '<svg class="masjid" viewBox="0 0 360 40" aria-hidden="true"><g fill="#060C1C"><rect x="0" y="34" width="360" height="6"/><rect x="110" y="12" width="4" height="22"/><path d="M108 12l4-7 4 7z"/><rect x="246" y="12" width="4" height="22"/><path d="M244 12l4-7 4 7z"/><path d="M150 34v-6a30 30 0 0 1 60 0v6z"/><rect x="179" y="1" width="2" height="6"/><path d="M124 34v-3a12 12 0 0 1 24 0v3zM212 34v-3a12 12 0 0 1 24 0v3z"/><rect x="120" y="26" width="120" height="8"/></g></svg>';
+const MASJID = '<svg class="masjid" viewBox="0 0 360 44" aria-hidden="true"><g fill="#060C1C"><rect x="0" y="39" width="360" height="5"/><rect x="96" y="14" width="3.5" height="25"/><path d="M94 14c0-4 2-7 3.8-9 1.8 2 3.8 5 3.8 9z"/><circle cx="97.8" cy="3.6" r="1.2"/><rect x="260" y="14" width="3.5" height="25"/><path d="M258 14c0-4 2-7 3.8-9 1.8 2 3.8 5 3.8 9z"/><circle cx="261.8" cy="3.6" r="1.2"/><path d="M148 39V30c0-10 10-18 20-24 4-3 8-6 12-9 4 3 8 6 12 9 10 6 20 14 20 24v9z"/><rect x="179" y="0" width="2" height="6"/><path d="M118 39v-6c0-7 6-11 11-14 5 3 11 7 11 14v6zM220 39v-6c0-7 6-11 11-14 5 3 11 7 11 14v6z"/><path d="M104 39v-7h14v7zM242 39v-7h14v7z"/><rect x="104" y="33" width="152" height="6"/></g></svg>';
 const faseLangit = (nm, wt) => nm < wt.subuh ? 'malam' : nm < wt.terbit ? 'fajar' : nm < 600 ? 'pagi' : nm < wt.ashar ? 'siang' : nm < wt.maghrib ? 'sore' : nm < wt.isya ? 'senja' : 'malam';
 
 /* ---------- tema: ikut waktu (terang dari terbit sampai Maghrib), gelap, atau terang ---------- */

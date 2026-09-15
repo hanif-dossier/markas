@@ -1,5 +1,5 @@
 // Service worker Markas: ambil dari jaringan dulu, salinan terakhir dipakai kalau offline (data tetap dari Supabase).
-const CACHE = 'markas-v1';
+const CACHE = 'markas-v2';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
 self.addEventListener('fetch', e => {
