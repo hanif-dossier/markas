@@ -74,3 +74,31 @@ create policy "masukan baca pemilik" on public.markas_masukan
 drop policy if exists "masukan ubah pemilik" on public.markas_masukan;
 create policy "masukan ubah pemilik" on public.markas_masukan
   for update to authenticated using (auth.uid() = 'ac358e3f-0316-48eb-a09a-3ac6ee8e0739');
+
+-- ---------------------------------------------------------------
+-- Jempol suka / tidak (seperti Play Store) di halaman Akun.
+-- Satu suara per pengenal (akun: "u:<uid>", tamu: "b:<acak>" di localStorage).
+-- Siapa pun boleh mengirim/mengubah suaranya; jumlahnya dibaca lewat fungsi
+-- nilai_markas() (security definer) supaya baris mentah tetap tertutup.
+-- Dijalankan di SQL Editor 15 Sep 2026.
+-- ---------------------------------------------------------------
+create table if not exists public.markas_nilai (
+  pengenal   text primary key,
+  user_id    uuid references auth.users (id) on delete set null,
+  suka       boolean not null,
+  dibuat     timestamptz not null default now(),
+  diperbarui timestamptz not null default now()
+);
+alter table public.markas_nilai enable row level security;
+drop policy if exists "nilai kirim" on public.markas_nilai;
+create policy "nilai kirim" on public.markas_nilai for insert to anon, authenticated with check (true);
+drop policy if exists "nilai ubah" on public.markas_nilai;
+create policy "nilai ubah" on public.markas_nilai for update to anon, authenticated using (true) with check (true);
+drop policy if exists "nilai baca pemilik" on public.markas_nilai;
+create policy "nilai baca pemilik" on public.markas_nilai for select to authenticated using (auth.uid() = 'ac358e3f-0316-48eb-a09a-3ac6ee8e0739');
+create or replace function public.nilai_markas()
+returns json language sql security definer stable set search_path = public as $$
+  select json_build_object('suka', count(*) filter (where suka), 'tidak', count(*) filter (where not suka)) from public.markas_nilai;
+$$;
+revoke all on function public.nilai_markas() from public;
+grant execute on function public.nilai_markas() to anon, authenticated;
