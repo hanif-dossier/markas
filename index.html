@@ -770,7 +770,8 @@ function lineChart(points){ // [{label, v}]
 /* ================= HALAMAN ================= */
 const VIEWS = [
   ['hari-ini','Hari ini','home'],['jadwal','Jadwal','jadwal'],['sholat','Sholat','sholat'],['disiplin','Disiplin','disiplin'],['fokus','Fokus','fokus'],['jurnal','Jurnal','jurnal'],
-  ['kuliah','Kuliah','kuliah'],['rencana','Planning','rencana'],['keputusan','Keputusan','keputusan'],['keuangan','Keuangan','uang']
+  ['kuliah','Kuliah','kuliah'],['rencana','Planning','rencana'],['keputusan','Keputusan','keputusan'],['keuangan','Keuangan','uang'],
+  ['akun','Akun','setting']
 ];
 
 /* ----- Hari ini ----- */
@@ -1371,6 +1372,73 @@ function modalRutin(){
   async d => { S.aruskas.rutin = S.aruskas.rutin||[]; S.aruskas.rutin.push({ id:uid(), nama:d.nama, jumlah:+d.jumlah||0, kategori:d.kategori, hari:+d.hari, mulai:d.mulai, aktif:true, lewati:[] });
     await store.set('keuangan/aruskas', S.aruskas); const n = await jalankanRutin(); toast(`Ditambahkan${n?`, ${n} minggu tercatat`:''}`); render(); });
 }
+/* ---------- Akun & pengaturan ---------- */
+const tglPanjang = iso => { if (!iso) return '-'; const d = new Date(iso); return `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`; };
+const docLokal = () => { const out = {}; try { for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith(LS) && k.includes('/')) out[k.slice(LS.length)] = JSON.parse(localStorage.getItem(k)); } } catch {} return out; };
+function vAkun(){
+  const p = S.pengaturan, modeCoba = !pengguna && !tamu, nLokal = pengguna ? Object.keys(docLokal()).length : 0;
+  const status = pengguna ? '<span class="store cloud"><i></i>Tersimpan di cloud, bisa dibuka dari HP dan laptop mana pun</span>'
+    : modeCoba ? '<span class="store local"><i></i>Mode coba: data hanya di browser ini, hilang kalau cache dibersihkan</span>'
+    : '<span class="store"><i></i>Belum masuk: yang tampil adalah data contoh</span>';
+  const akun = pengguna ? `<div class="kv">
+      <span class="k">Email</span><span class="v">${esc(pengguna.email)}</span>
+      <span class="k">Nama panggilan</span><span class="v">${esc(p.nama||'-')}</span>
+      <span class="k">Kota sholat</span><span class="v">${esc(p.kota||'-')}</span>
+      <span class="k">Terdaftar</span><span class="v">${tglPanjang(pengguna.created_at)}</span>
+      <span class="k">Masuk terakhir</span><span class="v">${tglPanjang(pengguna.last_sign_in_at)}</span>
+      <span class="k">Hari tercatat</span><span class="v">${Object.keys(S.harian).length} hari · ${(S.aruskas.transaksi||[]).length} transaksi</span></div>
+    <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="pengaturan">Ubah nama, kota &amp; awal planning</button><button class="btn ghost" data-act="keluar">Keluar</button></div>`
+  : modeCoba ? `<p class="dim">Kamu memakai Markas tanpa akun. Data tersimpan di browser ini saja dan tidak ikut ke HP lain. Daftar gratis supaya datamu aman di cloud; data mode coba bisa disalin ke akun setelah masuk.</p>
+    <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="daftar">Daftar (gratis)</button><button class="btn ghost" data-act="masuk">Masuk</button><button class="btn ghost" data-act="pengaturan">Ubah nama &amp; kota</button></div>`
+  : `<p class="dim">Masuk atau daftar untuk punya Markas sendiri. Gratis, datamu hanya bisa dibaca oleh akunmu.</p>
+    <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="daftar">Daftar (gratis)</button><button class="btn ghost" data-act="masuk">Masuk</button></div>`;
+  return `
+  <div class="topbar"><div><div class="eyebrow">Akun</div><h1 class="serif">Akun &amp; <em>pengaturan</em></h1><div class="sub">${status}</div></div></div>
+  <div class="grid">
+    <div class="c6 panel"><h2>Akun</h2>${akun}</div>
+    ${pengguna ? `<div class="c6 panel"><h2>Ganti kata sandi</h2>
+      <form class="form" data-form="sandi">${F('Kata sandi baru (min. 6 huruf)', '<input type="password" name="sandi" minlength="6" required autocomplete="new-password">')}
+      ${F('Ulangi kata sandi baru', '<input type="password" name="sandi2" minlength="6" required autocomplete="new-password">')}
+      <div class="actions" style="justify-content:flex-start"><button class="btn primary" type="submit">Simpan sandi baru</button></div></form>
+      <div class="small dim" style="margin-top:8px">Lupa sandi lama? Keluar, lalu klik <b>Lupa sandi</b> di jendela masuk; tautan ganti sandi dikirim ke email.</div></div>` : ''}
+    <div class="c6 panel"><h2>Data</h2>
+      <p class="dim">Semua isian Markas: jurnal, sholat, kebiasaan, keuangan, hutang, planning, keputusan.</p>
+      <div class="actions" style="justify-content:flex-start;flex-wrap:wrap">
+        <button class="btn ghost" data-act="ekspor">Unduh salinan (JSON)</button>
+        ${pengguna && nLokal ? `<button class="btn ghost" data-act="salin-lokal">Salin ${nLokal} dokumen mode coba ke akun ini</button>` : ''}
+        ${pengguna || modeCoba ? '<button class="btn danger" data-act="hapus-semua">Hapus semua data</button>' : ''}
+      </div>
+      ${pengguna ? '<div class="small dim" style="margin-top:8px">Menghapus data mengosongkan Markas-mu tapi akun tetap ada. Menghapus akun (di bawah) menghapus keduanya.</div>' : ''}</div>
+    <div class="c6 panel"><h2>Aplikasi</h2><div class="kv">
+      <span class="k">Alamat</span><span class="v"><a href="https://markasku.my.id/" style="color:var(--gold-2)">markasku.my.id</a></span>
+      <span class="k">Pasang di HP</span><span class="v">Buka alamat di atas di Chrome/Safari HP → menu ⋮ atau Bagikan → <b>Tambahkan ke layar utama</b>. Markas jadi aplikasi sendiri, tanpa bilah alamat.</span>
+      <span class="k">Privasi</span><span class="v">Setiap orang hanya bisa membaca dan mengubah datanya sendiri (kebijakan baris di database). Tidak ada iklan, tidak ada pelacak.</span></div>
+      ${pengguna ? `<div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn danger" data-act="hapus-akun">Hapus akun saya</button></div>
+      <div class="small dim" style="margin-top:8px">Akun, email, dan seluruh datamu dihapus permanen. Tidak bisa dibatalkan.</div>` : ''}</div>
+    <div class="c12 panel bebas-tamu"><h2>Saran, kritik &amp; bantuan</h2>
+      <p class="dim">Ada yang kurang, membingungkan, atau rusak? Tulis di sini. Pesan masuk langsung ke pembuat Markas dan dibaca satu per satu.</p>
+      <form class="form" data-form="masukan">
+        <div class="form cols2">${F('Jenis', '<select name="jenis"><option value="saran">Saran fitur</option><option value="kritik">Kritik</option><option value="masalah">Masalah / error</option><option value="tanya">Pertanyaan</option></select>')}
+        ${pengguna ? '' : F('Email (opsional, kalau mau dibalas)', '<input type="email" name="email" autocomplete="email">')}</div>
+        ${F('Pesan', '<textarea name="pesan" rows="4" minlength="3" maxlength="2000" required placeholder="Ceritakan sejelas mungkin. Kalau error: di halaman mana, apa yang diklik, apa yang muncul."></textarea>')}
+        <div class="actions" style="justify-content:flex-start"><button class="btn primary" type="submit">Kirim</button></div></form></div>
+    ${pengguna && pengguna.id === PEMILIK ? `<div class="c12 panel"><h2>Masukan pengguna <span class="eyebrow">hanya terlihat oleh pemilik</span></h2>
+      <div class="actions" style="justify-content:flex-start;margin-bottom:10px"><button class="btn ghost" data-act="masukan-muat">Muat masukan terbaru</button></div>
+      <div id="daftarMasukan" class="dim small">Klik "Muat masukan terbaru".</div></div>` : ''}
+  </div>`;
+}
+const PEMILIK = 'ac358e3f-0316-48eb-a09a-3ac6ee8e0739'; // akun pembuat Markas: bisa membaca tabel markas_masukan
+async function muatMasukan(){
+  const box = $('#daftarMasukan'); if (!box) return; box.textContent = 'Memuat…';
+  const { data, error } = await sb.from('markas_masukan').select('id,email,jenis,pesan,halaman,dibuat,dibalas').order('dibuat', { ascending:false }).limit(50);
+  if (error) { box.textContent = 'Gagal: ' + error.message; return; }
+  if (!data.length) { box.textContent = 'Belum ada masukan.'; return; }
+  const J = { saran:'Saran', kritik:'Kritik', masalah:'Masalah', tanya:'Pertanyaan' };
+  box.className = ''; box.innerHTML = data.map(m => `<div class="cls" style="margin-bottom:8px;${m.dibalas?'opacity:.55':''}"><div class="small dim">${tglPanjang(m.dibuat)} · <b>${J[m.jenis]||esc(m.jenis)}</b> · ${esc(m.email||'tanpa email')}${m.halaman?' · #'+esc(m.halaman):''}</div>
+    <div style="white-space:pre-wrap;margin:4px 0">${esc(m.pesan)}</div><button class="btn ghost" style="padding:4px 10px;font-size:12px" data-act="masukan-balas" data-id="${m.id}" data-v="${m.dibalas?0:1}">${m.dibalas?'Tandai belum dibalas':'Tandai sudah dibalas'}</button></div>`).join('');
+}
+function unduhJson(nama, obj){ const b = new Blob([JSON.stringify(obj, null, 2)], { type:'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = nama; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+
 function modalPengaturan(){
   const p = S.pengaturan;
   modal(`<h3>Pengaturan</h3><form class="form">${F('Nama panggilan', `<input type="text" name="nama" value="${esc(p.nama)}" required>`)}
@@ -1383,20 +1451,20 @@ function modalPengaturan(){
 
 /* ================= ROUTER & EVENT ================= */
 function render(){
-  const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan }[v] || vHariIni;
+  const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan, akun:vAkun }[v] || vHariIni;
   const barTamu = tamu ? `<div class="tamu"><div class="t"><b>Ini contoh isi Markas.</b> Semua angka di sini data contoh. Masuk atau daftar (gratis) untuk mengisi dan menyimpan data sendiri.</div><div class="a"><button class="btn ghost" data-act="masuk">Masuk</button><button class="btn primary" data-act="daftar">Daftar</button></div></div>` : '';
   $('#main').innerHTML = barTamu + fn();
   const navHtml = VIEWS.map(([id,l,ic]) => `<a href="#${id}" class="${v===id?'on':''}"><span class="ic">${I[ic]}</span><span>${l}</span></a>`).join('');
   $('#nav').innerHTML = navHtml; $('#mnav').innerHTML = navHtml;
   const n = new Date(); $('#footDate').textContent = `${n.getDate()} ${BULAN[n.getMonth()]} ${n.getFullYear()} · ${hijri(n)}`;
 }
-function route(){ const h = (location.hash||'#hari-ini').slice(1); S.view = VIEWS.some(v=>v[0]===h) ? h : 'hari-ini'; render(); window.scrollTo(0,0); }
+function route(){ const h = (location.hash||'#hari-ini').slice(1); try { if (S.view && S.view!=='akun' && h==='akun') sessionStorage.setItem(LS+'halaman-sebelum', S.view); } catch {} S.view = VIEWS.some(v=>v[0]===h) ? h : 'hari-ini'; render(); window.scrollTo(0,0); }
 window.addEventListener('hashchange', route);
 
 /* penjaga tamu: boleh lihat & berpindah halaman, tapi setiap upaya mengisi/mengubah diarahkan ke Masuk/Daftar */
 const AKSI_BEBAS = new Set(['tab','jurnal-hari-ini','jurnal-buka','jadwal-geser','masuk','daftar','keluar','mode-coba','lupa-sandi']);
 const FIELD_BEBAS = new Set(['sholatBulan','bulanTx','jurnalTgl','rencanaKat']);
-const diModal = el => !!el.closest('#modal');
+const diModal = el => !!el.closest('#modal, .bebas-tamu');
 document.addEventListener('click', e => { if (!tamu) return; const el = e.target.closest('[data-act]'); if (!el || diModal(el) || AKSI_BEBAS.has(el.dataset.act)) return; e.preventDefault(); e.stopImmediatePropagation(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
 document.addEventListener('focusin', e => { if (!tamu) return; const el = e.target; if (!['INPUT','TEXTAREA','SELECT'].includes(el.tagName) || diModal(el) || FIELD_BEBAS.has(el.dataset.field)) return; el.blur(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
 document.addEventListener('change', e => { if (!tamu) return; const el = e.target; if (diModal(el) || FIELD_BEBAS.has(el.dataset.field)) return; e.stopImmediatePropagation(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
@@ -1420,6 +1488,23 @@ document.addEventListener('click', async e => {
     case 'masuk': e.preventDefault(); vMasuk('', 'masuk'); break;
     case 'daftar': e.preventDefault(); vMasuk('', 'daftar'); break;
     case 'keluar': if (pengguna) await sb.auth.signOut(); localStorage.removeItem(LS+'mode-coba'); location.reload(); break;
+    case 'masukan-muat': await muatMasukan(); break;
+    case 'masukan-balas': { const { error } = await sb.from('markas_masukan').update({ dibalas: el.dataset.v==='1' }).eq('id', +id); if (error) return toast(error.message, true); await muatMasukan(); break; }
+    case 'ekspor': { const semua = { diekspor: new Date().toISOString(), akun: pengguna ? pengguna.email : (tamu ? 'contoh' : 'mode-coba'), pengaturan:S.pengaturan, harian:S.harian, kuliah:S.kuliah, rencana:S.rencana, keputusan:S.keputusan, fokus:S.fokus, jadwal:S.jadwal, aruskas:S.aruskas, aset:S.aset };
+      unduhJson('markas-' + todayKey() + '.json', semua); toast('Salinan data diunduh'); break; }
+    case 'salin-lokal': { const L = docLokal(); const n = Object.keys(L).length; if (!n) return toast('Tidak ada data mode coba di browser ini');
+      if (!confirm(`Salin ${n} dokumen mode coba ke akun ${pengguna.email}? Dokumen dengan nama sama di akun akan ditimpa.`)) return;
+      let ok = 0; for (const [path, doc] of Object.entries(L)) { if (await store.set(path, doc)) ok++; }
+      toast(`${ok} dokumen disalin ke akun`); await loadAll(); render(); break; }
+    case 'hapus-semua': { if (!confirm('Hapus SEMUA data Markas-mu? Jurnal, sholat, keuangan, hutang, planning: semuanya. Tidak bisa dibatalkan.')) return;
+      if (prompt('Ketik HAPUS untuk melanjutkan') !== 'HAPUS') return toast('Dibatalkan');
+      if (pengguna) { const { error } = await sb.from('markas_dokumen').delete().eq('user_id', pengguna.id); if (error) return toast('Gagal: ' + error.message, true); }
+      else { try { Object.keys(localStorage).filter(k => k.startsWith(LS) && k.includes('/')).forEach(k => localStorage.removeItem(k)); } catch {} }
+      toast('Semua data dihapus'); setTimeout(() => location.reload(), 900); break; }
+    case 'hapus-akun': { if (!pengguna) return; if (!confirm(`Hapus akun ${pengguna.email} beserta seluruh datanya secara permanen?`)) return;
+      if (prompt('Ketik email akunmu untuk konfirmasi') !== pengguna.email) return toast('Email tidak cocok, dibatalkan', true);
+      const { error } = await sb.rpc('hapus_akun_saya'); if (error) return toast('Gagal menghapus akun: ' + error.message, true);
+      try { await sb.auth.signOut(); } catch {} localStorage.removeItem(LS+'mode-coba'); toast('Akun dihapus. Terima kasih sudah memakai Markas.'); setTimeout(() => location.reload(), 1200); break; }
     case 'jurnal-hari-ini': S.jurnalTgl = todayKey(); render(); break;
     case 'jurnal-buka': S.jurnalTgl = el.dataset.tgl; render(); window.scrollTo(0,0); break;
     case 'kuliah-hapus': S.kuliah.items = S.kuliah.items.filter(c=>c.id!==id); await store.set('kuliah/semester5', S.kuliah); render(); break;
@@ -1489,6 +1574,12 @@ document.addEventListener('input', e => {
 document.addEventListener('submit', async e => {
   const f = e.target; const which = f.dataset.form; if (!which) return; e.preventDefault();
   const d = Object.fromEntries(new FormData(f).entries());
+  if (which==='sandi') { if (d.sandi !== d.sandi2) return toast('Kata sandi tidak sama', true);
+    const { error } = await sb.auth.updateUser({ password: d.sandi }); if (error) return toast(error.message, true); f.reset(); return toast('Kata sandi diganti'); }
+  if (which==='masukan') { if (!sb) return toast('Tidak tersambung', true);
+    const baris = { user_id: pengguna ? pengguna.id : null, email: pengguna ? pengguna.email : (d.email||'').trim() || null, jenis: d.jenis, pesan: d.pesan.trim(), halaman: (sessionStorage.getItem(LS+'halaman-sebelum')||'') };
+    const { error } = await sb.from('markas_masukan').insert(baris); if (error) return toast('Gagal mengirim: ' + error.message, true);
+    f.reset(); return toast('Terkirim. Terima kasih, pesanmu dibaca langsung oleh pembuat Markas.'); }
   if (which==='kuliah') { S.kuliah.items = (S.kuliah.items||[]).filter(c=>!c.contoh); S.kuliah.items.push({ id:uid(), hari:+d.hari, mulai:d.mulai, selesai:d.selesai, mk:d.mk, ruang:d.ruang, dosen:d.dosen }); await store.set('kuliah/semester5', S.kuliah); toast('Sesi kuliah ditambahkan'); }
   else if (which==='fokus') { S.fokus.items = S.fokus.items||[]; S.fokus.items.push({ id:uid(), jenis:d.jenis, judul:d.judul, tenggat:d.tenggat||'', catatan:d.catatan||'', selesai:false }); await store.set('fokus/daftar', S.fokus); toast('Ditambahkan'); }
   else if (which==='keputusan') { S.keputusan.items = S.keputusan.items||[]; S.keputusan.items.push({ id:uid(), tanggal:d.tanggal, keputusan:d.keputusan, alasan:d.alasan, alternatif:d.alternatif, tinjau:d.tinjau, hasil:'', status:'' }); await store.set('keputusan/daftar', S.keputusan); toast('Keputusan dicatat'); }
