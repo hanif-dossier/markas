@@ -30,12 +30,26 @@
   --serif:"Instrument Serif", Georgia, "Times New Roman", serif;
   --sans:"Manrope", "Segoe UI", system-ui, sans-serif;
   --mono:"JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+/* Tema terang: dipakai otomatis dari terbit sampai Maghrib (pengaturan "ikut waktu"), atau kalau dipilih tetap. */
+body[data-tema="terang"]{
+  color-scheme: light;
+  --bg:#EDF0F5; --bg-2:#F6F7FA;
+  --panel:#FFFFFF; --panel-2:#F3F5F9; --panel-3:#E5E9F0;
+  --line:#D8DDE7; --line-2:#C3CBDA;
+  --text:#161B26; --muted:#5B6579; --dim:#8A94A8;
+  --gold:#C99A32; --gold-2:#9E7418; --gold-dim:rgba(201,154,50,.14);
+  --teal:#1B8F86; --teal-dim:rgba(27,143,134,.12);
+  --good:#1E9E5A; --good-dim:rgba(30,158,90,.12);
+  --warn:#C27A0E; --warn-dim:rgba(194,122,14,.12);
+  --bad:#D23A4C; --bad-dim:rgba(210,58,76,.12);
+  --violet:#5F4FD8;
   --r:14px; --r-sm:9px;
   --shadow:0 18px 40px -20px rgba(0,0,0,.7);
 }
 *{box-sizing:border-box}
 html{background:var(--bg)}
-body{margin:0;background:radial-gradient(1200px 600px at 80% -10%, rgba(227,178,90,.07), transparent 60%),radial-gradient(900px 500px at -10% 100%, rgba(99,199,191,.06), transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.5;min-height:100vh}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%, rgba(227,178,90,.07), transparent 60%),radial-gradient(900px 500px at -10% 100%, rgba(99,199,191,.06), transparent 60%),var(--bg);transition:background .6s,color .6s;color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.5;min-height:100vh}
 a{color:var(--gold-2)}
 button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
@@ -95,7 +109,22 @@ main{padding:26px 30px 90px;max-width:1240px;width:100%}
 .langit[data-fase="senja"]{background:linear-gradient(180deg,#211A49 0%,#843A59 55%,#E9814F 100%)}
 .langit[data-fase="malam"]{background:linear-gradient(180deg,#0A1230 0%,#16224A 60%,#2A2F5E 100%)}
 .langit::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 1s;background-image:radial-gradient(1.2px 1.2px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 28% 42%,#fff 50%,transparent 51%),radial-gradient(1.4px 1.4px at 46% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 63% 30%,#fff 50%,transparent 51%),radial-gradient(1.3px 1.3px at 78% 16%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 88% 40%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 36% 24%,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 70% 8%,#fff 50%,transparent 51%)}
-.langit[data-fase="malam"]::before,.langit[data-fase="fajar"]::before{opacity:.8}
+.langit[data-fase="malam"]::before,.langit[data-fase="fajar"]::before{opacity:.85}
+/* malam: lapisan bintang kedua (lebih banyak, berkelip pelan) */
+.langit .bintang{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity 1s;
+  background-image:radial-gradient(1px 1px at 5% 60%,#fff 50%,transparent 51%),radial-gradient(1.3px 1.3px at 9% 30%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 17% 72%,#fff 50%,transparent 51%),radial-gradient(1.1px 1.1px at 21% 10%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 25% 55%,#fff 50%,transparent 51%),radial-gradient(1.4px 1.4px at 33% 38%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 40% 66%,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 44% 22%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 52% 48%,#fff 50%,transparent 51%),radial-gradient(1.3px 1.3px at 57% 8%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 60% 74%,#fff 50%,transparent 51%),radial-gradient(1.1px 1.1px at 67% 36%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 73% 58%,#fff 50%,transparent 51%),radial-gradient(1.4px 1.4px at 81% 26%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 85% 64%,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 92% 12%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 95% 46%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 13% 88%,#fff 50%,transparent 51%),radial-gradient(1.1px 1.1px at 48% 86%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 76% 84%,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 30% 92%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 64% 92%,#fff 50%,transparent 51%)}
+.langit[data-fase="malam"] .bintang{opacity:.9;animation:kelip 4s ease-in-out infinite alternate}
+.langit[data-fase="fajar"] .bintang{opacity:.35}
+@keyframes kelip{from{opacity:.55}to{opacity:1}}
+/* matahari / bulan: lapisan ::after, posisinya ikut fase */
+.langit::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:opacity 1s}
+.langit[data-fase="fajar"]::after{background:radial-gradient(ellipse 60% 45% at 22% 112%,rgba(255,176,130,.55),transparent 70%)}
+.langit[data-fase="pagi"]::after{background:radial-gradient(circle at 16% 88%,#FFF6CF 0 24px,rgba(255,214,140,.9) 25px 38px,rgba(255,190,110,.45) 39px 105px,transparent 170px)}
+.langit[data-fase="siang"]::after{background:radial-gradient(circle at 63% 12%,#FFFCEB 0 15px,rgba(255,250,225,.5) 16px 26px,rgba(255,250,225,.1) 27px 70px,transparent 100px)}
+.langit[data-fase="sore"]::after{background:radial-gradient(circle at 82% 82%,#FFE7A6 0 30px,rgba(255,176,86,.85) 31px 48px,rgba(255,126,64,.4) 49px 135px,transparent 210px)}
+.langit[data-fase="senja"]::after{background:radial-gradient(ellipse 70% 50% at 58% 112%,rgba(255,140,80,.6),transparent 70%)}
+.langit[data-fase="malam"]::after{background:radial-gradient(circle at 86% 24%,#F7F2DC 0 13px,rgba(247,242,220,.35) 14px 22px,rgba(247,242,220,.08) 23px 60px,transparent 80px)}
+body[data-tema="terang"] .mobile-nav{background:rgba(246,247,250,.94)}
 .langit .atas{display:flex;justify-content:space-between;align-items:flex-start;gap:12px 24px;flex-wrap:wrap}
 .langit .eyebrow{color:rgba(255,255,255,.82)}
 .langit h1{font-family:var(--serif);font-size:34px;line-height:1.05;font-weight:400;margin:4px 0 0;text-shadow:0 1px 12px rgba(0,0,0,.25)}
@@ -846,7 +875,7 @@ function vHariIni(){
   const bl = blokHari(tk); const kini = bl.find(b => b.m0 <= nowMin && nowMin < b.m1), berikut = bl.find(b => b.m0 > nowMin && b.jenis!=='sholat');
   const fokusBuka = (S.fokus.items||[]).filter(x=>!x.utama&&!x.selesai).sort((a,b)=>(a.tenggat||'9').localeCompare(b.tenggat||'9'));
   return `
-  <header class="langit" data-fase="${faseLangit(nowMin, wt)}"><div class="atas"><div>
+  <header class="langit" data-fase="${faseLangit(nowMin, wt)}"><div class="bintang"></div><div class="atas"><div>
       <div class="eyebrow">${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()} · ${hijri(now)} · ${esc(S.pengaturan.kota)}</div>
       <h1>${jamSapa}, <em>${esc(S.pengaturan.nama)}</em>.</h1>
       <div class="sub">${s.lengkap ? 'Hari ini sudah lengkap. Jaga sampai malam.' : `${s.done} dari ${s.total} kebiasaan sudah dicentang.`}
@@ -906,6 +935,44 @@ function vHariIni(){
 /* ----- Sholat ----- */
 const sisaWaktu = m => m<60 ? `${m} menit lagi` : `${Math.floor(m/60)} j ${m%60} m lagi`;
 const faseLangit = (nm, wt) => nm < wt.subuh ? 'malam' : nm < wt.terbit ? 'fajar' : nm < 600 ? 'pagi' : nm < wt.ashar ? 'siang' : nm < wt.maghrib ? 'sore' : nm < wt.isya ? 'senja' : 'malam';
+
+/* ---------- tema: ikut waktu (terang dari terbit sampai Maghrib), gelap, atau terang ---------- */
+function terapkanTema(){
+  const p = S.pengaturan || DEF.pengaturan; const t = p.tema || 'waktu'; let terang = t === 'terang';
+  if (t === 'waktu') { const now = new Date(); const wt = waktuSholat(now, p.lat ?? DEF.pengaturan.lat, p.lng ?? DEF.pengaturan.lng); terang = ['pagi','siang','sore'].includes(faseLangit(now.getHours()*60 + now.getMinutes(), wt)); }
+  document.body.dataset.tema = terang ? 'terang' : 'gelap';
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = terang ? '#F6F7FA' : '#121826';
+}
+
+/* ---------- alarm adzan: berbunyi saat waktu sholat masuk, selama Markas terbuka ---------- */
+const SUARA_ADZAN = [['adzan-1','Adzan 1'],['adzan-2','Adzan 2'],['adzan-3','Adzan 3'],['bip','Nada singkat saja']];
+const adzanDefault = () => ({ aktif:false, suara:'adzan-1', volume:80, waktu:{ subuh:true, dzuhur:true, ashar:true, maghrib:true, isya:true } });
+const aturAdzan = () => Object.assign(adzanDefault(), (S.pengaturan && S.pengaturan.adzan) || {});
+let audioAdzan = null;
+function bip(vol){
+  try { const c = new (window.AudioContext || window.webkitAudioContext)(); [0,.35,.7].forEach((t,i) => { const o = c.createOscillator(), g = c.createGain(); o.frequency.value = [880,988,1174][i]; g.gain.value = 0; o.connect(g).connect(c.destination);
+    o.start(c.currentTime + t); g.gain.linearRampToValueAtTime(vol*.5, c.currentTime + t + .03); g.gain.linearRampToValueAtTime(0, c.currentTime + t + .3); o.stop(c.currentTime + t + .32); }); } catch {}
+}
+function putarAdzan(suara, volume){
+  const vol = Math.max(0, Math.min(1, (+volume||0)/100));
+  if (audioAdzan) { try { audioAdzan.pause(); } catch {} audioAdzan = null; }
+  if (suara === 'bip') { bip(vol); return; }
+  audioAdzan = new Audio('suara/' + suara + '.mp3'); audioAdzan.volume = vol;
+  audioAdzan.play().catch(() => toast('Browser belum mengizinkan suara. Ketuk layar sekali, lalu coba lagi.', true));
+}
+function hentikanAdzan(){ if (audioAdzan) { try { audioAdzan.pause(); } catch {} audioAdzan = null; } }
+function cekAdzan(){
+  const a = aturAdzan(); if (!a.aktif || tamu) return;
+  const now = new Date(), nm = now.getHours()*60 + now.getMinutes(), tk = todayKey();
+  const wt = waktuSholat(now, S.pengaturan.lat, S.pengaturan.lng);
+  for (const [id, nama] of SHOLAT) {
+    if (!a.waktu[id] || wt[id] !== nm) continue;
+    const kunci = LS + 'adzan-terakhir'; if (localStorage.getItem(kunci) === tk + ':' + id) continue;
+    try { localStorage.setItem(kunci, tk + ':' + id); } catch {}
+    putarAdzan(a.suara, a.volume); toast(`Waktu ${nama} telah masuk · ${jam(wt[id])}`);
+    try { if ('Notification' in window && Notification.permission === 'granted') new Notification('Waktu ' + nama + ' telah masuk', { body: 'Pukul ' + jam(wt[id]) + ' · ' + (S.pengaturan.kota||''), icon: 'ikon-192.png' }); } catch {}
+  }
+}
 function tanyaSholat(k){
   const s = statusSholat(k); const hariIni = k===todayKey();
   return `<div class="ask ${s}"><div class="q"><b>${hariIni ? 'Sholat hari ini' : 'Sholat ' + fmtTgl(k,false)}, ada yang bolos?</b><span class="small muted">${s==='lengkap' ? 'Alhamdulillah, lima waktu tertunaikan.' : s==='bolos' ? 'Tercatat bolos. Qadha kalau bisa, dan besok jangan diulang.' : (hariIni ? 'Jawab sekali saja: malam setelah Isya, atau besok pagi saat jurnal.' : 'Belum dijawab. Jawab sekarang sambil menulis jurnal pagi.')}</span></div>
@@ -1508,7 +1575,7 @@ function vAkun(){
       <span class="k">Terdaftar</span><span class="v">${tglPanjang(pengguna.created_at)}</span>
       <span class="k">Masuk terakhir</span><span class="v">${tglPanjang(pengguna.last_sign_in_at)}</span>
       <span class="k">Hari tercatat</span><span class="v">${Object.keys(S.harian).length} hari · ${(S.aruskas.transaksi||[]).length} transaksi</span></div>
-    <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="pengaturan">Ubah nama, kota &amp; awal planning</button><button class="btn ghost" data-act="keluar">Keluar</button></div>`
+    <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="pengaturan">Nama, kota, tema &amp; alarm adzan</button><button class="btn ghost" data-act="keluar">Keluar</button></div>`
   : modeCoba ? `<p class="dim">Kamu memakai Markas tanpa akun. Data tersimpan di browser ini saja dan tidak ikut ke HP lain. Daftar gratis supaya datamu aman di cloud; data mode coba bisa disalin ke akun setelah masuk.</p>
     <div class="actions" style="margin-top:14px;justify-content:flex-start"><button class="btn primary" data-act="daftar">Daftar (gratis)</button><button class="btn ghost" data-act="masuk">Masuk</button><button class="btn ghost" data-act="pengaturan">Ubah nama &amp; kota</button></div>`
   : `<p class="dim">Masuk atau daftar untuk punya Markas sendiri. Gratis, datamu hanya bisa dibaca oleh akunmu.</p>
@@ -1566,8 +1633,22 @@ function modalPengaturan(){
   ${F('Kota (untuk jadwal sholat)', `<select name="kota">${Object.keys(KOTA).map(k=>`<option ${p.kota===k?'selected':''}>${k}</option>`).join('')}<option value="__manual" ${!KOTA[p.kota]?'selected':''}>Koordinat manual</option></select>`)}
   <div class="form cols2">${F('Lintang', `<input type="number" name="lat" step="0.0001" value="${p.lat}">`)}${F('Bujur', `<input type="number" name="lng" step="0.0001" value="${p.lng}">`)}</div>
   ${F('Awal periode planning (3 tahun)', `<input type="date" name="mulai3Tahun" value="${p.mulai3Tahun||'2026-09-01'}">`)}
-  <div class="small dim">Koordinat otomatis mengikuti kota yang dipilih; isi manual hanya bila kotamu tidak ada di daftar.</div>${ACTIONS()}</form>`,
-  async d => { p.nama = d.nama; p.mulai3Tahun = d.mulai3Tahun; if (d.kota!=='__manual' && KOTA[d.kota]) { p.kota = d.kota; [p.lat,p.lng] = KOTA[d.kota]; } else { p.kota = 'Lokasi manual'; p.lat = +d.lat; p.lng = +d.lng; } await store.set('pengaturan/utama', p); toast('Pengaturan disimpan'); render(); });
+  <div class="small dim">Koordinat otomatis mengikuti kota yang dipilih; isi manual hanya bila kotamu tidak ada di daftar.</div>
+  <hr class="sep"><h3 style="margin:0">Tampilan</h3>
+  ${F('Tema halaman', `<select name="tema"><option value="waktu" ${(p.tema||'waktu')==='waktu'?'selected':''}>Ikut waktu: terang dari terbit sampai Maghrib, gelap setelahnya</option><option value="gelap" ${p.tema==='gelap'?'selected':''}>Selalu gelap</option><option value="terang" ${p.tema==='terang'?'selected':''}>Selalu terang</option></select>`)}
+  <hr class="sep"><h3 style="margin:0">Alarm adzan</h3>
+  ${(() => { const a = aturAdzan(); return `
+  <label class="row" style="gap:10px;cursor:pointer"><input type="checkbox" name="adzanAktif" ${a.aktif?'checked':''}> <span>Bunyikan adzan saat waktu sholat masuk</span></label>
+  <div class="form cols2">${F('Suara', `<select name="adzanSuara">${SUARA_ADZAN.map(([v,l]) => `<option value="${v}" ${a.suara===v?'selected':''}>${l}</option>`).join('')}</select>`)}
+  ${F('Volume', `<div class="row" style="gap:8px"><input type="range" name="adzanVolume" min="0" max="100" value="${a.volume}" style="flex:1"><button type="button" class="btn sm" data-act="adzan-coba">Coba</button><button type="button" class="btn sm ghost" data-act="adzan-stop">Stop</button></div>`)}</div>
+  <div class="f">Waktu yang dibunyikan<div class="daypick">${SHOLAT.map(([id,nm]) => `<label><input type="checkbox" name="adzanWaktu" value="${id}" ${a.waktu[id]?'checked':''}><span>${nm}</span></label>`).join('')}</div></div>
+  <div class="small dim">Adzan berbunyi selama Markas sedang terbuka (di browser atau aplikasi yang dipasang di HP). Kalau Markas ditutup, HP tidak bisa dibunyikan dari sini; untuk itu pakai aplikasi adzan bawaan HP.</div>`; })()}
+  ${ACTIONS()}</form>`,
+  async (d, fd) => { p.nama = d.nama; p.mulai3Tahun = d.mulai3Tahun; p.tema = d.tema || 'waktu';
+    const aktif = d.adzanAktif === 'on'; const waktu = {}; SHOLAT.forEach(([id]) => waktu[id] = false); fd.getAll('adzanWaktu').forEach(id => waktu[id] = true);
+    p.adzan = { aktif, suara: d.adzanSuara || 'adzan-1', volume: +d.adzanVolume || 0, waktu };
+    if (aktif) { try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {} }
+    terapkanTema(); if (d.kota!=='__manual' && KOTA[d.kota]) { p.kota = d.kota; [p.lat,p.lng] = KOTA[d.kota]; } else { p.kota = 'Lokasi manual'; p.lat = +d.lat; p.lng = +d.lng; } await store.set('pengaturan/utama', p); toast('Pengaturan disimpan'); render(); });
 }
 
 /* ================= ROUTER & EVENT ================= */
@@ -1610,6 +1691,8 @@ document.addEventListener('click', async e => {
     case 'masuk': e.preventDefault(); vMasuk('', 'masuk'); break;
     case 'daftar': e.preventDefault(); vMasuk('', 'daftar'); break;
     case 'keluar': if (pengguna) await sb.auth.signOut(); localStorage.removeItem(LS+'mode-coba'); location.reload(); break;
+    case 'adzan-coba': { const m = $('#modal'); putarAdzan(m.querySelector('[name=adzanSuara]').value, m.querySelector('[name=adzanVolume]').value); break; }
+    case 'adzan-stop': hentikanAdzan(); break;
     case 'masukan-muat': await muatMasukan(); break;
     case 'masukan-balas': { const { error } = await sb.from('markas_masukan').update({ dibalas: el.dataset.v==='1' }).eq('id', +id); if (error) return toast(error.message, true); await muatMasukan(); break; }
     case 'ekspor': { const semua = { diekspor: new Date().toISOString(), akun: pengguna ? pengguna.email : (tamu ? 'contoh' : 'mode-coba'), pengaturan:S.pengaturan, harian:S.harian, kuliah:S.kuliah, rencana:S.rencana, keputusan:S.keputusan, fokus:S.fokus, jadwal:S.jadwal, aruskas:S.aruskas, aset:S.aset };
@@ -1720,7 +1803,8 @@ document.addEventListener('submit', async e => {
 (async () => {
   $('#main').innerHTML = '<div class="empty" style="margin-top:40px">Memuat…</div>';
   await store.init();
-  await loadAll(); if (!tamu) await jalankanRutin(); route();
+  await loadAll(); terapkanTema(); if (!tamu) await jalankanRutin(); route();
+  setInterval(cekAdzan, 20000); setInterval(terapkanTema, 60000);
   if (tamu) { /* lihat-lihat dulu; Masuk/Daftar ada di bar atas & pojok kiri bawah */ }
   else if (!S.pengaturan.nama) { const n = localStorage.getItem(LS+'nama-daftar') || ''; if (n) { S.pengaturan.nama = n; await store.set('pengaturan/utama', S.pengaturan); render(); } else { toast('Isi nama dan kotamu dulu'); modalPengaturan(); } }
   if ('serviceWorker' in navigator && (location.hostname.endsWith('github.io') || location.hostname.endsWith('markasku.my.id'))) navigator.serviceWorker.register('sw.js').catch(() => {});

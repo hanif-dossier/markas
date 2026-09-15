@@ -33,3 +33,8 @@ Pendaftar Markas diberi metadata `aplikasi: 'markas'`; mereka juga masuk tabel
 git add -A && git commit -m "..." && git push
 ```
 GitHub Pages membangun ±30 detik. Uji lokal: `preview_start markas` (port 8085).
+
+## Suara adzan
+
+`suara/adzan-1.mp3`, `adzan-2.mp3`, `adzan-3.mp3` diunduh dari islamcan.com (koleksi adzan gratis)
+untuk alarm adzan di Pengaturan. Alarm berbunyi hanya selama Markas terbuka (keterbatasan browser).
