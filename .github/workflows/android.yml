@@ -9,6 +9,8 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      ADA_KUNCI: ${{ secrets.KEYSTORE_B64 != '' }}
     defaults: { run: { working-directory: aplikasi } }
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +29,7 @@ jobs:
           name: markasku-debug
           path: aplikasi/android/app/build/outputs/apk/debug/app-debug.apk
       - name: Bangun AAB rilis (kalau kunci tanda tangan sudah ada)
-        if: ${{ secrets.KEYSTORE_B64 != '' }}
+        if: ${{ env.ADA_KUNCI == 'true' }}
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
@@ -40,7 +42,7 @@ jobs:
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$KEYSTORE_PASS"
       - uses: actions/upload-artifact@v4
-        if: ${{ secrets.KEYSTORE_B64 != '' }}
+        if: ${{ env.ADA_KUNCI == 'true' }}
         with:
           name: markasku-rilis
           path: |
