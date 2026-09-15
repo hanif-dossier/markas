@@ -9,7 +9,10 @@ const SHOLAT: [string, string][] = [["subuh", "Subuh"], ["dzuhur", "Dzuhur"], ["
 const pad = (n: number) => String(n).padStart(2, "0");
 const jam = (m: number) => `${pad(Math.floor(m / 60) % 24)}.${pad(m % 60)}`;
 
-function waktuSholat(y: number, m: number, d: number, lat: number, lng: number, tz: number) {
+type Metode = { subuh: number; isya: number; isyaMenit: number; asr: number };
+const METODE_BAWAAN: Metode = { subuh: 20, isya: 18, isyaMenit: 0, asr: 1 };   // Kemenag, bayangan Ashar 1× (Syafi'i)
+
+function waktuSholat(y: number, m: number, d: number, lat: number, lng: number, tz: number, met: Metode = METODE_BAWAAN) {
   const rad = Math.PI / 180;
   const a = Math.floor((14 - m) / 12), yy = y + 4800 - a, mm = m + 12 * a - 3;
   const jd = d + Math.floor((153 * mm + 2) / 5) + 365 * yy + Math.floor(yy / 4) - Math.floor(yy / 100) + Math.floor(yy / 400) - 32045 - 0.5 + (12 - tz) / 24;
@@ -22,10 +25,15 @@ function waktuSholat(y: number, m: number, d: number, lat: number, lng: number, 
   const EqT = q / 15 - RA;
   const noon = 12 + tz - lng / 15 - EqT;
   const la = lat * rad;
-  const T = (ang: number) => { const c = (-Math.sin(ang * rad) - Math.sin(la) * Math.sin(decl)) / (Math.cos(la) * Math.cos(decl)); return Math.acos(Math.max(-1, Math.min(1, c))) / rad / 15; };
-  const asr = () => { const t = 1 + Math.tan(Math.abs(la - decl)); const ang = Math.atan(1 / t); const c = (Math.sin(ang) - Math.sin(la) * Math.sin(decl)) / (Math.cos(la) * Math.cos(decl)); return Math.acos(Math.max(-1, Math.min(1, c))) / rad / 15; };
+  const cosT = (ang: number) => (-Math.sin(ang * rad) - Math.sin(la) * Math.sin(decl)) / (Math.cos(la) * Math.cos(decl));
+  const T = (ang: number) => Math.acos(Math.max(-1, Math.min(1, cosT(ang)))) / rad / 15;
+  const asr = () => { const t = (met.asr || 1) + Math.tan(Math.abs(la - decl)); const ang = Math.atan(1 / t); const c = (Math.sin(ang) - Math.sin(la) * Math.sin(decl)) / (Math.cos(la) * Math.cos(decl)); return Math.acos(Math.max(-1, Math.min(1, c))) / rad / 15; };
   const toMin = (h: number) => Math.round(((h % 24) + 24) % 24 * 60);
-  return { subuh: toMin(noon - T(20)) + 2, dzuhur: toMin(noon) + 2, ashar: toMin(noon + asr()) + 2, maghrib: toMin(noon + T(0.833)) + 2, isya: toMin(noon + T(18)) + 2 } as Record<string, number>;
+  const terbit = noon - T(0.833), maghrib = noon + T(0.833), malam = 24 - (maghrib - terbit);
+  let subuh = noon - T(met.subuh), isya = met.isyaMenit ? maghrib + met.isyaMenit / 60 : noon + T(met.isya);
+  if (Math.abs(cosT(met.subuh)) > 1) subuh = terbit - malam / 7;                       // lintang tinggi: sepertujuh malam
+  if (!met.isyaMenit && Math.abs(cosT(met.isya)) > 1) isya = maghrib + malam / 7;
+  return { subuh: toMin(subuh) + 2, dzuhur: toMin(noon) + 2, ashar: toMin(noon + asr()) + 2, maghrib: toMin(maghrib) + 2, isya: toMin(isya) + 2 } as Record<string, number>;
 }
 
 Deno.serve(async (req) => {
@@ -38,7 +46,8 @@ Deno.serve(async (req) => {
   for (const r of rows ?? []) {
     const lokal = new Date(now + (r.tz ?? 420) * 60000);   // kolom UTC dari tanggal yang sudah digeser = waktu lokal pengguna
     const y = lokal.getUTCFullYear(), m = lokal.getUTCMonth() + 1, d = lokal.getUTCDate(), nm = lokal.getUTCHours() * 60 + lokal.getUTCMinutes();
-    const wt = waktuSholat(y, m, d, r.lat, r.lng, (r.tz ?? 420) / 60);
+    const met: Metode = { ...METODE_BAWAAN, ...((r.waktu && r.waktu.metode) || {}) };   // metode negara pengguna, disimpan di kolom waktu (jsonb)
+    const wt = waktuSholat(y, m, d, r.lat, r.lng, (r.tz ?? 420) / 60, met);
     const tk = `${y}-${pad(m)}-${pad(d)}`;
     for (const [id, nama] of SHOLAT) {
       if (r.waktu && r.waktu[id] === false) continue;

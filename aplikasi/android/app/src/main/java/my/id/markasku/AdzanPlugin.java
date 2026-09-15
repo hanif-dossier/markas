@@ -41,6 +41,13 @@ public class AdzanPlugin extends Plugin {
         if (lng != null) e.putLong("lng", Double.doubleToLongBits(lng));
         JSObject waktu = call.getObject("waktu");
         for (String id : WaktuSholat.ID) e.putBoolean("waktu_" + id, waktu == null || waktu.optBoolean(id, true));
+        JSObject metode = call.getObject("metode");   // {subuh, isya, isyaMenit, asr} dari metodeAktif() di index.html
+        if (metode != null) {
+            e.putLong("m_subuh", Double.doubleToLongBits(metode.optDouble("subuh", 20)));
+            e.putLong("m_isya", Double.doubleToLongBits(metode.optDouble("isya", 18)));
+            e.putLong("m_isyaMenit", Double.doubleToLongBits(metode.optDouble("isyaMenit", 0)));
+            e.putInt("m_asr", metode.optInt("asr", 1));
+        }
         e.apply();
         Penjadwal.jadwalkan(getContext());
         if (call.getBoolean("aktif", false) && Build.VERSION.SDK_INT >= 33 && getPermissionState("notif") != PermissionState.GRANTED) {

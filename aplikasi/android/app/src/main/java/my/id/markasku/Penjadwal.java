@@ -33,9 +33,10 @@ public final class Penjadwal {
         double lat = Double.longBitsToDouble(p.getLong("lat", Double.doubleToLongBits(-6.2)));
         double lng = Double.longBitsToDouble(p.getLong("lng", Double.doubleToLongBits(106.8167)));
         long sekarang = System.currentTimeMillis() + 60_000;   // lewati waktu yang baru saja berbunyi
+        WaktuSholat.Metode metode = WaktuSholat.Metode.dari(p);
         Calendar hari = Calendar.getInstance();
         for (int tambah = 0; tambah < 3; tambah++) {
-            int[] menit = WaktuSholat.hitung(hari, lat, lng);
+            int[] menit = WaktuSholat.hitung(hari, lat, lng, metode);
             for (int i = 0; i < 5; i++) {
                 if (!p.getBoolean("waktu_" + WaktuSholat.ID[i], true)) continue;
                 Calendar t = (Calendar) hari.clone();
