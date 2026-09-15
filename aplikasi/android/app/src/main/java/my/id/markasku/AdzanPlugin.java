@@ -100,6 +100,29 @@ public class AdzanPlugin extends Plugin {
         call.resolve();
     }
 
+    /** Berkas suara unggahan pengguna: filesDir/suara/<id> (tanpa ekstensi; MediaPlayer mengenali isinya). */
+    public static java.io.File berkasSuara(Context ctx, String id) {
+        java.io.File dir = new java.io.File(ctx.getFilesDir(), "suara"); if (!dir.exists()) dir.mkdirs();
+        return new java.io.File(dir, id.replaceAll("[^A-Za-z0-9_-]", ""));
+    }
+
+    /** Terima suara dari halaman web (base64) dan simpan supaya layanan alarm bisa memutarnya saat aplikasi tertutup. */
+    @PluginMethod
+    public void simpanSuara(PluginCall call) {
+        String id = call.getString("id"), data = call.getString("data");
+        if (id == null || data == null) { call.reject("id dan data wajib"); return; }
+        try (java.io.FileOutputStream out = new java.io.FileOutputStream(berkasSuara(getContext(), id))) {
+            out.write(android.util.Base64.decode(data, android.util.Base64.DEFAULT));
+            call.resolve();
+        } catch (Exception e) { call.reject("gagal menyimpan: " + e.getMessage()); }
+    }
+
+    @PluginMethod
+    public void hapusSuara(PluginCall call) {
+        String id = call.getString("id"); if (id != null) berkasSuara(getContext(), id).delete();
+        call.resolve();
+    }
+
     @PluginMethod
     public void stop(PluginCall call) {
         Intent s = new Intent(getContext(), AdzanService.class); s.setAction(AdzanService.AKSI_STOP);

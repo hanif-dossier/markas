@@ -68,7 +68,10 @@ public class AdzanService extends Service {
             mp = new MediaPlayer();
             mp.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build());
             int res = sumber(suara);
-            if (res != 0) {
+            java.io.File khusus = suara != null && suara.startsWith("khusus:") ? AdzanPlugin.berkasSuara(this, suara.substring(7)) : null;
+            if (khusus != null && khusus.exists()) {
+                mp.setDataSource(khusus.getAbsolutePath());   // suara unggahan pengguna (disimpan lewat AdzanPlugin.simpanSuara)
+            } else if (res != 0) {
                 android.content.res.AssetFileDescriptor afd = getResources().openRawResourceFd(res);
                 mp.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength()); afd.close();
             } else {
@@ -84,6 +87,7 @@ public class AdzanService extends Service {
     }
 
     private int sumber(String suara) {
+        if (suara != null && suara.startsWith("khusus:")) return R.raw.adzan_1;   // cadangan kalau berkasnya hilang
         if ("adzan-1".equals(suara)) return R.raw.adzan_1;
         if ("adzan-2".equals(suara)) return R.raw.adzan_2;
         if ("adzan-3".equals(suara)) return R.raw.adzan_3;

@@ -184,6 +184,13 @@ body[data-fase="siang"]::before{background-image:url(langit/siang-kecil.jpg)}
 body[data-fase="sore"]::before{background-image:url(langit/sore-kecil.jpg)}
 body[data-fase="senja"]::before{background-image:url(langit/senja-kecil.jpg)}
 body[data-fase="malam"]::before{background-image:url(langit/malam-kecil.jpg)}
+body.latar-khusus::before{background-image:var(--latar-khusus)}   /* gambar pilihan pengguna (IndexedDB) menimpa bawaan */
+.latar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.latar-grid .lt{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel-2)}
+.latar-grid .lt img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.latar-grid .lt .n{padding:6px 8px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+label.btn{cursor:pointer}label.btn input[type=file]{display:none}
+@media (max-width:560px){.latar-grid{grid-template-columns:repeat(2,1fr)}}
 /* panel tembus sedikit lebih banyak + kaca, supaya warna latar hidup terasa tapi teks tetap terbaca */
 .panel,.tile,.rail{background-color:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2)}
 .tile{background-color:color-mix(in srgb,var(--panel-2) 80%,transparent)}
@@ -1152,7 +1159,9 @@ function putarAdzan(suara, volume){
   const vol = Math.max(0, Math.min(1, (+volume||0)/100));
   if (audioAdzan) { try { audioAdzan.pause(); } catch {} audioAdzan = null; }
   if (suara === 'bip') { bip(vol); return; }
-  audioAdzan = new Audio('suara/' + suara + '.mp3'); audioAdzan.volume = vol;
+  const khusus = String(suara).startsWith('khusus:') ? SUARA_KHUSUS.find(x => 'khusus:' + x.id === suara) : null;
+  if (String(suara).startsWith('khusus:') && !khusus) { toast('Suara pilihanmu tidak ditemukan di perangkat ini; memakai Adzan 1.', true); suara = 'adzan-1'; }
+  audioAdzan = new Audio(khusus ? khusus.url : 'suara/' + suara + '.mp3'); audioAdzan.volume = vol;
   audioAdzan.play().catch(() => toast('Browser belum mengizinkan suara. Ketuk layar sekali, lalu coba lagi.', true));
 }
 function hentikanAdzan(){ if (audioAdzan) { try { audioAdzan.pause(); } catch {} audioAdzan = null; } }
@@ -1166,6 +1175,69 @@ async function sinkronAdzanNatif(){
   const a = aturAdzan(), p = (S && S.pengaturan) || DEF.pengaturan;
   try { return await P.atur({ aktif: !!a.aktif, suara: a.suara, volume: +a.volume || 0, waktu: a.waktu, lat: +p.lat, lng: +p.lng, kota: p.kota || '' }); }
   catch (e) { console.warn('adzan natif', e); return null; }
+}
+// ---- Media pengguna: suara adzan & latar Beranda sendiri. Disimpan di IndexedDB perangkat ini (tidak diunggah). ----
+const idb = {
+  db: null,
+  buka(){ if (this.db) return Promise.resolve(this.db); return new Promise((res, rej) => { const r = indexedDB.open('markasku-media', 1);
+    r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('suara')) d.createObjectStore('suara', { keyPath:'id' }); if (!d.objectStoreNames.contains('latar')) d.createObjectStore('latar', { keyPath:'fase' }); };
+    r.onsuccess = () => res(this.db = r.result); r.onerror = () => rej(r.error); }); },
+  async tx(st, mode, fn){ const d = await this.buka(); return new Promise((res, rej) => { const t = d.transaction(st, mode); const q = fn(t.objectStore(st)); t.oncomplete = () => res(q.result); t.onerror = () => rej(t.error); }); },
+  semua(st){ return this.tx(st, 'readonly', o => o.getAll()); },
+  simpan(st, obj){ return this.tx(st, 'readwrite', o => o.put(obj)); },
+  hapus(st, key){ return this.tx(st, 'readwrite', o => o.delete(key)); },
+};
+let SUARA_KHUSUS = [];   // [{id, nama, ext, blob, url}]
+let LATAR_KHUSUS = {};   // fase -> {url, urlKecil}
+const FASE_LANGIT = [['fajar','Fajar'],['pagi','Pagi'],['siang','Siang'],['sore','Sore'],['senja','Senja'],['malam','Malam']];
+async function muatMedia(){
+  if (!('indexedDB' in window)) return;
+  try {
+    SUARA_KHUSUS = (await idb.semua('suara')).map(x => ({ ...x, url: URL.createObjectURL(x.blob) }));
+    LATAR_KHUSUS = {}; for (const l of await idb.semua('latar')) LATAR_KHUSUS[l.fase] = { url: URL.createObjectURL(l.besar), urlKecil: URL.createObjectURL(l.kecil) };
+  } catch (e) { console.warn('media', e); }
+  pasangLatar();
+}
+const daftarSuara = () => SUARA_ADZAN.concat(SUARA_KHUSUS.map(x => ['khusus:' + x.id, x.nama]));
+function pasangLatar(){
+  const l = LATAR_KHUSUS[document.body.dataset.fase];
+  const foto = document.querySelector('.langit .foto'); if (foto) foto.style.backgroundImage = l ? `url("${l.url}")` : '';
+  if (l) { document.body.classList.add('latar-khusus'); document.body.style.setProperty('--latar-khusus', `url("${l.urlKecil}")`); }
+  else { document.body.classList.remove('latar-khusus'); document.body.style.removeProperty('--latar-khusus'); }
+}
+const bacaBerkas = (f, cara) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r[cara](f); });
+async function kecilkanGambar(file, lebar, mutu){
+  const url = URL.createObjectURL(file); const img = new Image(); await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+  const k = Math.min(1, lebar / img.width); const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+  return new Promise(res => c.toBlob(res, 'image/jpeg', mutu));
+}
+async function tambahSuara(file){
+  if (!file) return null; if (file.size > 12 * 1024 * 1024) { toast('Berkas suara terlalu besar (maks 12 MB).', true); return null; }
+  const id = String(Date.now()); const nama = file.name.replace(/\.[^.]+$/, '').slice(0, 40) || 'Suara ' + (SUARA_KHUSUS.length + 1);
+  const ext = (file.name.match(/\.([a-z0-9]+)$/i) || [0, 'mp3'])[1].toLowerCase();
+  await idb.simpan('suara', { id, nama, ext, blob: file });
+  if (NATIF() && pluginAdzan()) { try { const b64 = String(await bacaBerkas(file, 'readAsDataURL')).split(',')[1]; await pluginAdzan().simpanSuara({ id, ext, data: b64 }); } catch (e) { console.warn('simpanSuara', e); } }
+  await muatMedia(); toast('Suara "' + nama + '" ditambahkan'); return 'khusus:' + id;
+}
+async function hapusSuara(id){
+  await idb.hapus('suara', id); if (NATIF() && pluginAdzan()) { try { await pluginAdzan().hapusSuara({ id }); } catch {} }
+  const a = aturAdzan(); if (a.suara === 'khusus:' + id) { a.suara = 'adzan-1'; S.pengaturan.adzan = a; await store.set('pengaturan/utama', S.pengaturan); sinkronAdzanNatif(); }
+  await muatMedia(); toast('Suara dihapus');
+}
+async function gantiLatar(fase, file){
+  if (!file || !file.type.startsWith('image/')) { toast('Pilih berkas gambar (JPG/PNG).', true); return; }
+  const besar = await kecilkanGambar(file, 1920, .86), kecil = await kecilkanGambar(file, 640, .8);
+  for (const f of (fase === 'semua' ? FASE_LANGIT.map(x => x[0]) : [fase])) await idb.simpan('latar', { fase: f, besar, kecil });
+  await muatMedia(); toast(fase === 'semua' ? 'Latar diganti untuk semua waktu' : 'Latar ' + fase + ' diganti');
+}
+async function hapusLatar(fase){ for (const f of (fase === 'semua' ? FASE_LANGIT.map(x => x[0]) : [fase])) await idb.hapus('latar', f); await muatMedia(); toast('Latar kembali ke bawaan'); }
+function isiSelectSuara(sel, pilih){ if (!sel) return; sel.innerHTML = daftarSuara().map(([v,l]) => `<option value="${v}" ${pilih===v?'selected':''}>${esc(l)}</option>`).join(''); }
+const htmlSuaraKhusus = () => `<label class="btn sm ghost">Tambah suara sendiri<input type="file" accept="audio/*" data-file="suara"></label>${SUARA_KHUSUS.map(x => `<span class="pill">${esc(x.nama)} <button type="button" class="btn sm ghost" style="padding:0 6px" data-act="suara-hapus" data-id="${x.id}" title="Hapus suara ini">✕</button></span>`).join('')}`;
+function htmlLatarGrid(){
+  return `<div class="latar-grid">${FASE_LANGIT.map(([id,nm]) => { const l = LATAR_KHUSUS[id]; return `<div class="lt"><img src="${l ? l.urlKecil : 'langit/' + id + '-kecil.jpg'}" alt=""><div class="n"><span>${nm}${l?' · sendiri':''}</span><span class="row" style="gap:4px"><label class="btn sm ghost" title="Ganti gambar">Ganti<input type="file" accept="image/*" data-file="latar" data-fase="${id}"></label>${l?`<button type="button" class="btn sm ghost" data-act="latar-hapus" data-fase="${id}" title="Kembali ke bawaan">✕</button>`:''}</span></div></div>`; }).join('')}</div>
+  <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap"><label class="btn sm">Satu gambar untuk semua waktu<input type="file" accept="image/*" data-file="latar" data-fase="semua"></label>${Object.keys(LATAR_KHUSUS).length?`<button type="button" class="btn sm ghost" data-act="latar-hapus" data-fase="semua">Semua kembali ke bawaan</button>`:''}</div>
+  <div class="small dim">Gambar disimpan di perangkat ini saja (tidak diunggah), dipakai untuk kepala Beranda dan latar halaman sesuai waktunya.</div>`;
 }
 function cekAdzan(){
   const a = aturAdzan(); if (!a.aktif || tamu || NATIF()) return;
@@ -1891,11 +1963,14 @@ function modalPengaturan(){
   <div class="small dim">Koordinat otomatis mengikuti kota yang dipilih; isi manual hanya bila kotamu tidak ada di daftar.</div>
   <hr class="sep"><h3 style="margin:0">Tampilan</h3>
   ${F('Tema halaman', `<select name="tema"><option value="waktu" ${(p.tema||'waktu')==='waktu'?'selected':''}>Ikut waktu: terang dari terbit sampai Maghrib, gelap setelahnya</option><option value="gelap" ${p.tema==='gelap'?'selected':''}>Selalu gelap</option><option value="terang" ${p.tema==='terang'?'selected':''}>Selalu terang</option></select>`)}
+  <div class="f"><div class="small" style="font-weight:700;margin-bottom:6px">Latar Beranda</div><div id="latarGrid">${htmlLatarGrid()}</div></div>
   <hr class="sep"><h3 style="margin:0">Alarm adzan</h3>
   ${(() => { const a = aturAdzan(); return `
   <label class="row" style="gap:10px;cursor:pointer"><input type="checkbox" name="adzanAktif" ${a.aktif?'checked':''}> <span>Bunyikan adzan saat waktu sholat masuk</span></label>
-  <div class="form cols2">${F('Suara', `<select name="adzanSuara">${SUARA_ADZAN.map(([v,l]) => `<option value="${v}" ${a.suara===v?'selected':''}>${l}</option>`).join('')}</select>`)}
+  <div class="form cols2">${F('Suara', `<select name="adzanSuara">${daftarSuara().map(([v,l]) => `<option value="${v}" ${a.suara===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`)}
   ${F('Volume', `<div class="row" style="gap:8px"><input type="range" name="adzanVolume" min="0" max="100" value="${a.volume}" style="flex:1"><button type="button" class="btn sm" data-act="adzan-coba">Coba</button><button type="button" class="btn sm ghost" data-act="adzan-stop">Stop</button></div>`)}</div>
+  <div class="row" id="suaraKhusus" style="gap:8px;flex-wrap:wrap;align-items:center">${htmlSuaraKhusus()}</div>
+  <div class="small dim">Suara sendiri (MP3/OGG/WAV, maks 12 MB) disimpan di perangkat ini dan ikut dipakai alarm.</div>
   <div class="f">Waktu yang dibunyikan<div class="daypick">${SHOLAT.map(([id,nm]) => `<label><input type="checkbox" name="adzanWaktu" value="${id}" ${a.waktu[id]?'checked':''}><span>${nm}</span></label>`).join('')}</div></div>
   ${NATIF() ? `<div class="small dim">Di aplikasi Android, adzan berbunyi walau Markasku tertutup dan layar mati. Kalau tidak berbunyi, ketuk <b>Izin alarm</b> lalu <b>Abaikan hemat baterai</b> (sekali saja).</div>
   <div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" data-act="adzan-izin">Izin alarm</button><button type="button" class="btn sm ghost" data-act="adzan-baterai">Abaikan hemat baterai</button><span class="small dim" id="adzanStatus"></span></div>`
@@ -1923,6 +1998,7 @@ function render(){
   const navHtml = VIEWS.map(([id,l,ic]) => `<a href="#${id}" class="${v===id?'on':''}"><span class="ic">${I[ic]}</span><span>${l}</span></a>`).join('');
   $('#nav').innerHTML = navHtml; $('#mnav').innerHTML = navHtml;
   const n = new Date(); $('#footDate').textContent = `${n.getDate()} ${BULAN[n.getMonth()]} ${n.getFullYear()} · ${hijri(n)}`;
+  pasangLatar();
 }
 function route(){ const h = (location.hash||'#hari-ini').slice(1); try { if (S.view && S.view!=='akun' && h==='akun') sessionStorage.setItem(LS+'halaman-sebelum', S.view); } catch {} S.view = VIEWS.some(v=>v[0]===h) ? h : 'hari-ini'; render(); window.scrollTo(0,0); }
 window.addEventListener('hashchange', route);
@@ -1958,6 +2034,8 @@ document.addEventListener('click', async e => {
     case 'adzan-coba': { const m = $('#modal'); const suara = m.querySelector('[name=adzanSuara]').value, volume = m.querySelector('[name=adzanVolume]').value;
       if (NATIF() && pluginAdzan()) pluginAdzan().coba({ suara, volume: +volume }).catch(() => putarAdzan(suara, volume)); else putarAdzan(suara, volume); break; }
     case 'adzan-stop': hentikanAdzan(); if (NATIF() && pluginAdzan()) pluginAdzan().stop().catch(() => {}); break;
+    case 'suara-hapus': { await hapusSuara(id); const m = $('#modal'); if (m) { isiSelectSuara(m.querySelector('[name=adzanSuara]'), aturAdzan().suara); const w = m.querySelector('#suaraKhusus'); if (w) w.innerHTML = htmlSuaraKhusus(); } break; }
+    case 'latar-hapus': { await hapusLatar(el.dataset.fase); const g = document.getElementById('latarGrid'); if (g) g.innerHTML = htmlLatarGrid(); break; }
     case 'adzan-izin': if (pluginAdzan()) pluginAdzan().mintaIzinAlarm().catch(() => {}); break;
     case 'adzan-baterai': if (pluginAdzan()) pluginAdzan().abaikanBaterai().catch(() => {}); break;
     case 'masukan-muat': await muatMasukan(); break;
@@ -2025,6 +2103,8 @@ document.addEventListener('click', async e => {
 
 document.addEventListener('change', async e => {
   const el = e.target; const act = el.dataset.act, id = el.dataset.id, field = el.dataset.field;
+  if (el.dataset.file === 'suara') { const f = el.files && el.files[0]; el.value = ''; const v = await tambahSuara(f); const m = $('#modal'); if (m) { isiSelectSuara(m.querySelector('[name=adzanSuara]'), v || (m.querySelector('[name=adzanSuara]')||{}).value); const w = m.querySelector('#suaraKhusus'); if (w) w.innerHTML = htmlSuaraKhusus(); } return; }
+  if (el.dataset.file === 'latar') { const f = el.files && el.files[0]; const fase = el.dataset.fase; el.value = ''; await gantiLatar(fase, f); const g = document.getElementById('latarGrid'); if (g) g.innerHTML = htmlLatarGrid(); return; }
   if (act==='rencana-progres') { const x = S.rencana.items.find(y=>y.id===id); x.progres = +el.value; await store.set('rencana/3tahun', S.rencana); render(); }
   else if (act==='rencana-selesai') { const x = S.rencana.items.find(y=>y.id===id); x.selesai = el.checked; if (el.checked) x.progres = 100; await store.set('rencana/3tahun', S.rencana); render(); }
   else if (act==='aset-nilai') { const a = S.aset.aset.find(y=>y.id===id); a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Nilai aset diperbarui'); render(); }
@@ -2077,7 +2157,7 @@ document.addEventListener('submit', async e => {
   $('#main').innerHTML = '<div class="empty" style="margin-top:40px">Memuat…</div>';
   await store.init();
   await loadAll(); terapkanTema(); if (!tamu) await jalankanRutin(); route();
-  setInterval(cekAdzan, 20000); setInterval(terapkanTema, 60000); sinkronAdzanNatif();
+  setInterval(cekAdzan, 20000); setInterval(() => { terapkanTema(); pasangLatar(); }, 60000); sinkronAdzanNatif(); muatMedia();
   if (tamu) { /* lihat-lihat dulu; Masuk/Daftar ada di bar atas & pojok kiri bawah */ }
   else if (!S.pengaturan.nama) { const n = localStorage.getItem(LS+'nama-daftar') || ''; if (n) { S.pengaturan.nama = n; await store.set('pengaturan/utama', S.pengaturan); render(); } else { toast('Isi nama dan kotamu dulu'); modalPengaturan(); } }
   if ('serviceWorker' in navigator && (location.hostname.endsWith('github.io') || location.hostname.endsWith('markasku.my.id'))) navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -8,7 +8,7 @@ Salin-tempel ke Play Console. Semua sudah dalam batas panjang yang diminta Googl
 - **Nama paket**: `my.id.markasku`
 - **Kategori**: Gaya Hidup (Lifestyle). Alternatif: Produktivitas.
 - **Kebijakan privasi**: https://markasku.my.id/privasi.html
-- **Email kontak**: abdullahhanif033@gmail.com
+- **Email kontak**: officialmarkasku@gmail.com
 - **Situs**: https://markasku.my.id
 
 ## Deskripsi singkat (maks 80)
