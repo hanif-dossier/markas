@@ -1,0 +1,1416 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121826">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="ikon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="ikon-180.png">
+<title>Markas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+</head>
+<body>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0B0E14; --bg-2:#0F131C;
+  --panel:#131824; --panel-2:#1A2132; --panel-3:#222B3F;
+  --line:#263047; --line-2:#334060;
+  --text:#EEF1F6; --muted:#8C96AA; --dim:#5C667C;
+  --gold:#E3B25A; --gold-2:#F5D28A; --gold-dim:rgba(227,178,90,.14);
+  --teal:#63C7BF; --teal-dim:rgba(99,199,191,.14);
+  --good:#48D18A; --good-dim:rgba(72,209,138,.16);
+  --warn:#F0A33C; --warn-dim:rgba(240,163,60,.16);
+  --bad:#EF5D6F; --bad-dim:rgba(239,93,111,.16);
+  --violet:#9B8CFF;
+  --serif:"Instrument Serif", Georgia, "Times New Roman", serif;
+  --sans:"Manrope", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --r:14px; --r-sm:9px;
+  --shadow:0 18px 40px -20px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%, rgba(227,178,90,.07), transparent 60%),radial-gradient(900px 500px at -10% 100%, rgba(99,199,191,.06), transparent 60%),var(--bg);color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.5;min-height:100vh}
+a{color:var(--gold-2)}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
+.serif{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.muted{color:var(--muted)}
+.dim{color:var(--dim)}
+.small{font-size:12.5px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.rail{position:sticky;top:0;height:100vh;padding:22px 14px;border-right:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));display:flex;flex-direction:column;gap:6px}
+.brand{padding:4px 10px 18px;display:flex;flex-direction:column;gap:2px}
+.brand .name{font-family:var(--serif);font-size:26px;line-height:1;color:var(--gold-2)}
+.brand .tag{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-sm);color:var(--muted);text-decoration:none;font-weight:600;font-size:13.5px;border:1px solid transparent}
+.nav a:hover{color:var(--text);background:var(--panel)}
+.nav a.on{color:var(--text);background:var(--panel-2);border-color:var(--line)}
+.nav a .ic{width:18px;height:18px;flex:none;color:var(--gold);opacity:.9}
+.nav a.on .ic{color:var(--gold-2)}
+.rail .foot{margin-top:auto;padding:10px;font-size:11.5px;color:var(--dim);display:flex;flex-direction:column;gap:6px}
+.store{display:inline-flex;align-items:center;gap:6px}
+.store i{width:7px;height:7px;border-radius:50%;background:var(--dim);display:inline-block}
+.store.cloud i{background:var(--good);box-shadow:0 0 8px var(--good)}
+.store.local i{background:var(--warn)}
+main{padding:26px 30px 90px;max-width:1240px;width:100%}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.topbar h1{font-family:var(--serif);font-size:34px;line-height:1.05;font-weight:400}
+.topbar h1 em{color:var(--gold-2);font-style:italic}
+.topbar .sub{color:var(--muted);margin-top:6px}
+
+/* ---------- surfaces ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c6{grid-column:span 6}.c4{grid-column:span 4}.c3{grid-column:span 3}
+.panel{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 40%),var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
+.panel.tight{padding:14px 16px}
+.panel h2{font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.panel h2 .eyebrow{font-weight:700}
+.panel h2 .act{font-size:12px;font-weight:600;color:var(--gold-2);cursor:pointer;background:none;border:0;padding:0}
+.tile{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.tile .big{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.tile .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.tile .sub{font-size:12px;color:var(--dim)}
+.tile.good .big{color:var(--good)}.tile.bad .big{color:var(--bad)}.tile.gold .big{color:var(--gold-2)}.tile.teal .big{color:var(--teal)}
+.tile::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.05),transparent 70%)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:10px}
+hr.sep{border:0;border-top:1px solid var(--line);margin:14px 0}
+
+/* ---------- controls ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--panel-2);color:var(--text);font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--panel-3)}
+.btn.primary{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.btn.primary:hover{background:var(--gold-2)}
+.btn.danger{background:var(--bad-dim);border-color:rgba(239,93,111,.4);color:#ffb3bb}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--text);background:var(--panel-2)}
+.btn.sm{padding:5px 9px;font-size:12px}
+.btn.icon{padding:6px;width:30px;height:30px;justify-content:center}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=month],select,textarea{width:100%;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;color:var(--text);font-size:13.5px}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
+textarea{min-height:84px;resize:vertical;line-height:1.55}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);font-weight:600}
+.form{display:grid;gap:10px}
+.form.cols2{grid-template-columns:1fr 1fr}.form.cols3{grid-template-columns:1fr 1fr 1fr}.form.cols4{grid-template-columns:repeat(4,1fr)}
+.form .full{grid-column:1/-1}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:700;border:1px solid var(--line-2);color:var(--muted);background:var(--panel-2)}
+.pill.good{color:var(--good);background:var(--good-dim);border-color:transparent}
+.pill.bad{color:var(--bad);background:var(--bad-dim);border-color:transparent}
+.pill.warn{color:var(--warn);background:var(--warn-dim);border-color:transparent}
+.pill.gold{color:var(--gold-2);background:var(--gold-dim);border-color:transparent}
+.pill.teal{color:var(--teal);background:var(--teal-dim);border-color:transparent}
+.pill.violet{color:var(--violet);background:rgba(155,140,255,.15);border-color:transparent}
+.tabs{display:inline-flex;gap:2px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:3px}
+.tabs button{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:8px;font-weight:700;font-size:12.5px;cursor:pointer}
+.tabs button.on{background:var(--panel-3);color:var(--text)}
+
+/* checks */
+.check{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg-2);cursor:pointer;user-select:none}
+.check:hover{border-color:var(--line-2)}
+.check .box{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line-2);display:grid;place-items:center;flex:none;transition:all .15s}
+.check .box svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:all .15s}
+.check.on{border-color:rgba(72,209,138,.35);background:var(--good-dim)}
+.check.on .box{background:var(--good);border-color:var(--good);color:#06301b}
+.check.on .box svg{opacity:1;transform:scale(1)}
+.check .t{flex:1;font-weight:600}
+.check .t small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+.check .mono{color:var(--muted);font-size:12.5px}
+
+/* prayer strip */
+.sholat{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.sholat .p{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px;display:flex;flex-direction:column;gap:4px;cursor:pointer;position:relative;transition:all .15s}
+.sholat .p .n{font-weight:700;font-size:13px}
+.sholat .p .w{font-family:var(--mono);font-size:19px;letter-spacing:-.02em;color:var(--text)}
+.sholat .p .s{font-size:11px;color:var(--dim)}
+.sholat .p.next{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+.sholat .p.next .s{color:var(--gold-2)}
+.sholat .p.on{background:var(--good-dim);border-color:rgba(72,209,138,.4)}
+.sholat .p.on .w{color:var(--good)}
+.sholat .p .tick{position:absolute;right:10px;top:10px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line-2);display:grid;place-items:center}
+.sholat .p.on .tick{background:var(--good);border-color:var(--good);color:#06301b}
+.sholat .p .tick svg{width:11px;height:11px}
+
+.sholat .p.past{opacity:.55}
+.sholat .p{cursor:default}
+/* pertanyaan sholat */
+.ask{margin-top:12px;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(135deg,var(--gold-dim),transparent 60%),var(--bg-2);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.ask.lengkap{background:linear-gradient(135deg,var(--good-dim),transparent 60%),var(--bg-2);border-color:rgba(72,209,138,.35)}
+.ask.bolos{background:linear-gradient(135deg,var(--bad-dim),transparent 60%),var(--bg-2);border-color:rgba(239,93,111,.35)}
+.ask .q{display:flex;flex-direction:column;gap:2px;flex:1;min-width:200px}
+.ask .q b{font-family:var(--serif);font-size:20px;font-weight:400}
+.ask .opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--panel-2);color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;transition:all .15s}
+.opt svg{width:15px;height:15px}
+.opt.good.on{background:var(--good);border-color:var(--good);color:#06301b;box-shadow:0 0 0 4px var(--good-dim)}
+.opt.bad.on{background:var(--bad);border-color:var(--bad);color:#fff;box-shadow:0 0 0 4px var(--bad-dim)}
+.opt:hover:not(.on){color:var(--text);border-color:var(--gold)}
+/* agenda (daftar kegiatan satu hari) */
+.agenda{display:flex;flex-direction:column;gap:2px}
+.ag{display:grid;grid-template-columns:44px 3px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 8px;border-radius:9px}
+.ag .t{font-size:12px;color:var(--muted)}
+.ag .bar{align-self:stretch;min-height:22px;background:var(--c);border-radius:3px}
+.ag .x b{display:block;font-size:13px;font-weight:600}
+.ag .x small{display:block;color:var(--muted);font-size:11.5px}
+.ag .st{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.ag.lewat{opacity:.5}
+.ag.kini{background:var(--gold-dim);box-shadow:inset 0 0 0 1px rgba(227,178,90,.35)}
+.ag[data-act]{cursor:pointer}.ag[data-act]:hover{background:var(--panel-2)}
+/* jadwal seminggu */
+.wgrid{display:grid;grid-template-columns:repeat(7,minmax(138px,1fr));gap:8px;min-width:1000px}
+.wday{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px}
+.wday.today{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-dim)}
+.wday .dn{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:2px 2px 6px}
+.wday.today .dn{color:var(--gold-2)}
+.wb{position:relative;border-left:3px solid var(--c);background:var(--panel-2);border-radius:7px;padding:5px 20px 5px 7px;font-size:11.5px;display:flex;flex-direction:column;gap:1px}
+.wb .mono{font-size:10.5px;color:var(--muted)}
+.wb b{font-weight:600;line-height:1.3}
+.wb.sholat{background:transparent;padding-top:3px;padding-bottom:3px}
+.wb.sholat b{font-weight:500;color:var(--muted)}
+.wb.ok::after{content:"✓";position:absolute;right:7px;top:5px;color:var(--good);font-weight:800}
+.wb.miss{box-shadow:inset 0 0 0 1px rgba(239,93,111,.55)}
+.wb.clash{background:var(--bad-dim)}
+.wb .flag{font-size:10px;color:var(--teal)}.wb .flag.bad{color:var(--bad)}
+.wb[data-act]{cursor:pointer}.wb[data-act]:hover{background:var(--panel-3)}
+.chips{display:flex;gap:3px}
+.chips span{font-size:10.5px;font-weight:700;width:24px;text-align:center;padding:2px 0;border-radius:5px;background:var(--panel-3);color:var(--dim)}
+.chips span.on{background:var(--good-dim);color:var(--good)}
+.daypick{display:flex;gap:6px;flex-wrap:wrap}
+.daypick label{cursor:pointer}
+.daypick input{position:absolute;opacity:0;pointer-events:none}
+.daypick span{display:inline-block;padding:7px 11px;border-radius:8px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--muted);font-weight:700;font-size:12.5px}
+.daypick input:checked + span{background:var(--gold-dim);border-color:var(--gold);color:var(--gold-2)}
+.daypick input:focus-visible + span{outline:2px solid var(--gold);outline-offset:2px}
+/* input cepat transaksi */
+.quick{display:grid;grid-template-columns:150px minmax(0,1fr) 150px 140px auto;gap:8px;align-items:center}
+.quick.compact{grid-template-columns:minmax(0,1fr) 130px;margin-top:12px}
+.quick input[name=jumlah]{font-family:var(--mono);text-align:right}
+/* hutang per minggu */
+.weeks{display:flex;flex-direction:column;gap:10px}
+.wk{display:grid;grid-template-columns:140px minmax(0,1fr) 80px 120px;gap:12px;align-items:center;font-size:12.5px}
+.wk.now .lbl{color:var(--gold-2);font-weight:700}
+.wk .tr{height:12px;background:var(--panel-3);border-radius:99px;position:relative}
+.wk .tr b{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal),var(--good))}
+.wk .tr i{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:var(--gold);border-radius:2px}
+.wk .v{text-align:right;color:var(--muted)}
+.wk .pill{justify-self:start}
+/* kartu fokus */
+.fk{display:flex;flex-direction:column;gap:6px}
+.fk h3{font-size:26px;font-weight:400;margin:2px 0 4px}
+.fk .big{font-size:34px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.fk .lbl{font-size:12px;color:var(--muted)}
+.fk .kv{margin-top:6px}
+.fk .kv input{background:var(--bg-2)}
+/* kalender sholat */
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center;font-weight:700}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-cell{aspect-ratio:1;border-radius:10px;background:var(--panel-3);border:1px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:transform .1s}
+.cal-cell:hover:not(.blank):not(.future){transform:scale(1.05);border-color:var(--gold)}
+.cal-cell .d{font-family:var(--mono);font-weight:600;font-size:14px}
+.cal-cell .m{font-size:10px;color:var(--dim);font-weight:700}
+.cal-cell.blank{background:transparent;cursor:default}
+.cal-cell.future{opacity:.3;cursor:default}
+.cal-cell.lengkap{background:var(--good);color:#06301b}.cal-cell.lengkap .m{color:#06301b}
+.cal-cell.bolos{background:var(--bad);color:#fff}.cal-cell.bolos .m{color:#fff}
+.cal-cell.today{box-shadow:0 0 0 2px var(--gold)}
+/* heatmap */
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,12px);gap:3px;overflow-x:auto;padding-bottom:4px}
+.heat i{width:12px;height:12px;border-radius:3px;background:var(--panel-3);display:block}
+.heat i.l1{background:rgba(72,209,138,.35)}.heat i.l2{background:rgba(72,209,138,.65)}.heat i.l3{background:var(--good)}
+.heat i.v{background:var(--bad)}
+.heat i.today{outline:1.5px solid var(--gold);outline-offset:1px}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.num,.tbl th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;display:flex;flex-direction:column;gap:8px}
+.item .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.item .hd b{font-size:14.5px}
+.item p{margin:0;color:var(--muted);font-size:13px;white-space:pre-wrap}
+.item .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--dim)}
+.prog{height:6px;background:var(--panel-3);border-radius:99px;overflow:hidden}
+.prog b{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--good));border-radius:99px}
+.prog.gold b{background:linear-gradient(90deg,var(--gold),var(--gold-2))}
+.empty{padding:22px;text-align:center;color:var(--dim);border:1px dashed var(--line-2);border-radius:12px;font-size:13px}
+
+/* week grid */
+.week{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.day{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:140px;display:flex;flex-direction:column;gap:8px}
+.day.today{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-dim)}
+.day .dn{font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.day.today .dn{color:var(--teal)}
+.cls{background:var(--panel-2);border-left:3px solid var(--teal);border-radius:8px;padding:8px 10px;font-size:12.5px;display:flex;flex-direction:column;gap:2px;position:relative}
+.cls b{font-size:13px}
+.cls .mono{color:var(--muted);font-size:11.5px}
+.cls .x{position:absolute;right:6px;top:6px;opacity:0;background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;line-height:1}
+.cls:hover .x{opacity:1}
+
+/* timeline */
+.tl{display:grid;grid-template-columns:150px 1fr;gap:0}
+.tl .ph{padding:14px 14px 14px 0;border-right:2px solid var(--line);position:relative}
+.tl .ph::after{content:"";position:absolute;right:-6px;top:20px;width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px var(--gold-dim)}
+.tl .ph.past::after{background:var(--good)}
+.tl .ph.future::after{background:var(--panel-3);box-shadow:none;border:2px solid var(--line-2)}
+.tl .ph b{display:block;font-family:var(--serif);font-size:20px;font-weight:400;color:var(--gold-2)}
+.tl .ph span{font-size:12px;color:var(--muted)}
+.tl .cards{padding:12px 0 12px 20px;display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));border-bottom:1px solid var(--line)}
+.tl .ph{border-bottom:1px solid var(--line)}
+.goal{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.goal.done{opacity:.65}
+.goal .t{font-weight:700;font-size:13.5px}
+.goal input[type=range]{width:100%;accent-color:var(--gold)}
+
+/* charts */
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.chart .grid line{stroke:var(--line);stroke-width:1}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:120px 1fr 110px;gap:10px;align-items:center;font-size:12.5px}
+.bar .tr{height:10px;background:var(--panel-3);border-radius:99px;overflow:hidden}
+.bar .tr b{display:block;height:100%;border-radius:99px}
+.bar .v{text-align:right;font-family:var(--mono);color:var(--muted)}
+
+/* misc */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--panel-3);border:1px solid var(--line-2);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .2s;z-index:50;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.bad{border-color:var(--bad);color:#ffb3bb}
+.modal-bg{position:fixed;inset:0;background:rgba(3,5,10,.7);backdrop-filter:blur(4px);display:none;place-items:center;z-index:40;padding:20px}
+.modal-bg.show{display:grid}
+.modal{background:var(--panel);border:1px solid var(--line-2);border-radius:16px;padding:22px;width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:var(--shadow)}
+.modal h3{font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:4px}
+.modal .desc{color:var(--muted);font-size:13px;margin-bottom:14px}
+.modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.quote{font-family:var(--serif);font-size:19px;line-height:1.35;color:var(--gold-2)}
+.quote small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--dim);margin-top:6px}
+.mood{display:flex;gap:6px;flex-wrap:wrap}
+.mood button{flex:1;border:1px solid var(--line);background:var(--bg-2);padding:8px 6px;border-radius:9px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.mood button.on{background:var(--gold-dim);border-color:var(--gold);color:var(--gold-2)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:13px}
+.kv .k{color:var(--muted)}.kv .v{font-family:var(--mono);text-align:right}
+.mobile-nav{display:none}
+
+@media (max-width:980px){
+  .c8,.c6,.c4,.c3{grid-column:span 12}
+  .week{grid-template-columns:repeat(2,1fr)}
+  .tl{grid-template-columns:1fr}.tl .ph{border-right:0;padding-left:16px}.tl .ph::after{left:0;right:auto;top:20px}.tl .cards{padding-left:16px}
+  .form.cols3,.form.cols4{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .rail{display:none}
+  main{padding:18px 16px 96px}
+  .topbar h1{font-size:28px}
+  .sholat{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .sholat .p{padding:9px 6px}.sholat .p .w{font-size:14px}.sholat .p .n{font-size:11px}.sholat .p .s{font-size:10px}
+  .ask .opts{width:100%}.ask .opt{flex:1;justify-content:center}
+  .cal{gap:4px}.cal-cell{border-radius:7px}.cal-cell .d{font-size:12px}.cal-cell .m{display:none}
+  .form.cols2,.form.cols3,.form.cols4{grid-template-columns:1fr}
+  .bar{grid-template-columns:90px 1fr 90px}
+  .quick{grid-template-columns:1fr 1fr}.quick input[name=ket]{grid-column:1/-1;order:-1}
+  .quick.compact{grid-template-columns:minmax(0,1fr) 120px}.quick.compact input[name=ket]{order:0}
+  .wk{grid-template-columns:92px minmax(0,1fr) 64px;gap:8px}.wk .pill{display:none}
+  .ag{grid-template-columns:40px 3px minmax(0,1fr);gap:8px}.ag .st{grid-column:3;justify-content:flex-start}
+  .mobile-nav{display:flex;position:fixed;left:0;right:0;bottom:0;background:rgba(15,19,28,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:30;overflow-x:auto;gap:2px}
+  .mobile-nav a{flex:1;min-width:58px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--muted);text-decoration:none;padding:4px 2px;border-radius:8px}
+  .mobile-nav a.on{color:var(--gold-2)}
+  .mobile-nav .ic{width:18px;height:18px}
+}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><div class="name">Markas</div><div class="tag">Pusat kendali diri</div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="foot">
+      <span class="store" id="storeBadge"><i></i>Menyambung…</span>
+      <span id="footDate"></span>
+    </div>
+  </aside>
+  <main id="main"></main>
+</div>
+<nav class="mobile-nav" id="mnav"></nav>
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* =====================================================================
+   Markas — dasbor pribadi untuk siapa saja (produk umum, 15 Sep 2026)
+   Bagian: ikon → util → penyimpanan → waktu sholat → data bawaan →
+           logika (streak) → tampilan per halaman → router & event
+   ===================================================================== */
+
+/* ---------- ikon (garis, 18px) ---------- */
+const I = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>',
+  sholat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1 3-4 4-4 8a4 4 0 0 0 8 0c0-4-3-5-4-8Z"/><path d="M4 21h16"/><path d="M8 15c0 3 1 6 4 6s4-3 4-6"/></svg>',
+  disiplin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  jurnal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4Z"/><path d="M5 4v14a2 2 0 0 0 2 2"/><path d="M9 8h6M9 12h6"/></svg>',
+  kuliah:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/></svg>',
+  rencana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="M12 3v2M21 12h-2"/></svg>',
+  keputusan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 7h14"/><path d="m5 7-3 6a3 3 0 0 0 6 0L5 7Z"/><path d="m19 7-3 6a3 3 0 0 0 6 0l-3-6Z"/><path d="M8 21h8"/></svg>',
+  jadwal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M12 14v3l2 1"/></svg>',
+  fokus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+  uang:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 12h.01M17 12h.01"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
+  setting:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>'
+};
+
+/* ---------- util ---------- */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
+const pad = n => String(n).padStart(2, '0');
+const key = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayKey = () => key(new Date());
+const parseKey = k => { const [y,m,d] = k.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate()+n); return key(d); };
+const monthKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const BLN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const fmtTgl = (k, long=true) => { const d = parseKey(k); return long ? `${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}` : `${d.getDate()} ${BLN[d.getMonth()]}`; };
+const fmtBulan = mk => { const [y,m] = mk.split('-'); return `${BULAN[+m-1]} ${y}`; };
+const rp = n => 'Rp' + Math.round(Number(n)||0).toLocaleString('id-ID');
+const rpS = n => { n = Number(n)||0; const a = Math.abs(n); const s = n<0?'−':''; if (a>=1e9) return s+'Rp'+(a/1e9).toFixed(2).replace('.',',')+' M'; if (a>=1e6) return s+'Rp'+(a/1e6).toFixed(a>=1e7?1:2).replace('.',',')+' jt'; if (a>=1e3) return s+'Rp'+Math.round(a/1e3)+' rb'; return s+'Rp'+a; };
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+const clone = o => JSON.parse(JSON.stringify(o));
+const hijri = d => { try { return new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {day:'numeric', month:'long', year:'numeric'}).format(d); } catch { return ''; } };
+function toast(msg, bad=false){ const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (bad?' bad':''); clearTimeout(t._t); t._t = setTimeout(()=> t.classList.remove('show'), 2200); }
+
+/* ---------- penyimpanan: Supabase (satu baris per dokumen per pengguna) ---------- */
+// Tabel public.markas_dokumen(user_id, path, data jsonb, diperbarui). RLS: tiap orang hanya barisnya sendiri.
+// Kunci di bawah kunci PUBLIK; yang menjaga data adalah kebijakan RLS (lihat supabase/skema.sql).
+const SUPABASE_URL = 'https://fqpktykrkpqaztnpqgxz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UcFfp0XqHZWMZ2jpSRlDvg_vySECBzo';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+let pengguna = null;           // auth.user Supabase; null = belum masuk (mode coba: localStorage)
+const LS = 'markas:';
+const store = {
+  async init(){
+    try { pengguna = sb ? ((await sb.auth.getSession()).data.session || {}).user || null : null; } catch { pengguna = null; }
+    const b = $('#storeBadge');
+    if (pengguna) { b.className = 'store cloud'; b.innerHTML = `<i></i>${esc(pengguna.email)} · <a href="#" data-act="keluar" style="color:inherit">keluar</a>`; }
+    else { b.className = 'store local'; b.innerHTML = '<i></i>Mode coba: tersimpan di browser ini saja · <a href="#" data-act="keluar" style="color:inherit">masuk</a>'; }
+  },
+  async get(path, fallback){
+    try {
+      if (pengguna) { const { data, error } = await sb.from('markas_dokumen').select('data').eq('user_id', pengguna.id).eq('path', path).maybeSingle(); if (error) throw error; return data ? clone(data.data) : clone(fallback); }
+      const raw = localStorage.getItem(LS+path); return raw ? JSON.parse(raw) : clone(fallback);
+    } catch (e) { console.warn('get', path, e); return clone(fallback); }
+  },
+  async set(path, data){
+    data.diperbarui = new Date().toISOString();
+    try {
+      if (pengguna) { const { error } = await sb.from('markas_dokumen').upsert({ user_id: pengguna.id, path, data, diperbarui: data.diperbarui }, { onConflict: 'user_id,path' }); if (error) throw error; }
+      else localStorage.setItem(LS+path, JSON.stringify(data));
+      return true;
+    } catch (e) { console.warn('set', path, e); toast('Gagal menyimpan: ' + (e.message||e.code||e), true); return false; }
+  },
+  async listHarian(){
+    const out = {};
+    try {
+      if (pengguna) { const { data, error } = await sb.from('markas_dokumen').select('path,data').eq('user_id', pengguna.id).like('path', 'harian/%').limit(2000); if (error) throw error; (data||[]).forEach(r => { out[r.path.slice(7)] = clone(r.data); }); }
+      else { for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith(LS+'harian/')) out[k.slice((LS+'harian/').length)] = JSON.parse(localStorage.getItem(k)); } }
+    } catch (e) { console.warn('listHarian', e); }
+    return out;
+  }
+};
+
+/* ---------- layar masuk / daftar ---------- */
+function vMasuk(pesan=''){
+  const alur = location.href.replace(/[#?].*$/, '');
+  $('#main').innerHTML = `
+  <div class="topbar"><div><div class="eyebrow">Markas</div><h1 class="serif">Pusat kendali <em>diri</em></h1>
+    <div class="sub">Sholat, disiplin, jurnal pagi, keuangan, hutang, dan target 3 tahun dalam satu tempat. Gratis.</div></div></div>
+  <div class="grid">
+    <div class="c6 panel"><h2>Masuk</h2>${pesan ? `<div class="small" style="color:var(--gold-2);margin-bottom:8px">${pesan}</div>` : ''}
+      <form class="form" data-form="masuk"><label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
+      <label class="f">Kata sandi<input type="password" name="sandi" required minlength="6" autocomplete="current-password"></label>
+      <div class="actions"><button class="btn primary" type="submit">Masuk</button><button class="btn ghost" type="button" data-act="lupa-sandi">Lupa sandi</button></div></form>
+      <div class="small dim" style="margin-top:10px">Belum punya akun? Daftar di sebelah. Mau coba dulu tanpa akun? <a href="#" data-act="mode-coba">Coba di browser ini</a> (data tidak ikut ke HP lain).</div></div>
+    <div class="c6 panel"><h2>Daftar (gratis)</h2>
+      <form class="form" data-form="daftar"><label class="f">Nama panggilan<input type="text" name="nama" required maxlength="40"></label>
+      <label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
+      <label class="f">Kata sandi (min. 6 huruf)<input type="password" name="sandi" required minlength="6" autocomplete="new-password"></label>
+      <div class="actions"><button class="btn primary" type="submit">Buat akun</button></div></form>
+      <div class="small dim" style="margin-top:10px">Setelah mendaftar, cek email untuk tautan konfirmasi, lalu masuk. Datamu hanya bisa dibaca oleh akunmu sendiri.</div></div>
+    <div class="c12 panel"><h2>Apa yang ada di dalam</h2><div class="kv">
+      <span class="k">Hari ini</span><span class="v">Jadwal sholat kotamu, checklist kebiasaan, jurnal pagi, arus kas bulan ini</span>
+      <span class="k">Disiplin</span><span class="v">Hari bersih, streak, dan reset otomatis kalau melanggar aturanmu sendiri</span>
+      <span class="k">Keuangan</span><span class="v">Catat pengeluaran 10 detik, bayar hutang per minggu, target financial freedom</span>
+      <span class="k">Rencana</span><span class="v">Target 3 tahun per semester dan catatan keputusan yang ditinjau ulang</span></div></div>
+  </div>`;
+  $('#nav').innerHTML = ''; $('#mnav').innerHTML = '';
+  const root = $('#main');
+  root.querySelector('form[data-form="masuk"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+    const { error } = await sb.auth.signInWithPassword({ email: d.email.trim(), password: d.sandi }); if (error) return toast(error.message.includes('Invalid') ? 'Email atau sandi salah' : error.message, true); location.reload(); };
+  root.querySelector('form[data-form="daftar"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+    const { error } = await sb.auth.signUp({ email: d.email.trim(), password: d.sandi, options: { data: { nama: d.nama.trim(), aplikasi: 'markas' }, emailRedirectTo: alur } });
+    if (error) return toast(error.message, true); try { localStorage.setItem(LS+'nama-daftar', d.nama.trim()); } catch {} vMasuk('Akun dibuat. Buka email <b>' + esc(d.email) + '</b>, klik tautan konfirmasinya, lalu masuk di sini.'); };
+  root.querySelector('[data-act="lupa-sandi"]').onclick = async () => { const email = root.querySelector('form[data-form="masuk"] [name=email]').value.trim(); if (!email) return toast('Isi email dulu', true);
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: alur }); toast(error ? error.message : 'Tautan ganti sandi dikirim ke ' + email, !!error); };
+  root.querySelector('[data-act="mode-coba"]').onclick = e => { e.preventDefault(); try { localStorage.setItem(LS+'mode-coba', '1'); } catch {} location.reload(); };
+}
+
+/* ---------- data bawaan (dipakai kalau dokumen belum ada) ---------- */
+const DEF = {
+  pengaturan: {
+    nama: '', kota: 'Jakarta', lat: -6.2088, lng: 106.8456,
+    mulai3Tahun: new Date().toISOString().slice(0,7) + '-01',
+    aturan: [
+      { id:'olahraga', nama:'Olahraga', jenis:'harian', ket:'Minimal 20 menit: lari, push-up, atau gym' },
+      { id:'belajar', nama:'Belajar / kerja fokus', jenis:'harian', ket:'Minimal 1 jam fokus penuh, tanpa distraksi apa pun' },
+      { id:'ilmu', nama:'Ilmu baru atau review pelajaran', jenis:'harian', ket:'Pelajari satu hal baru, atau ulang materi sebelumnya sampai paham' },
+      { id:'fokus', nama:'Fokus pada diri sendiri', jenis:'harian', ket:'Tidak membanding-bandingkan diri, tidak scrolling tanpa tujuan' },
+      { id:'quran', nama:'Baca Al-Qur’an', jenis:'harian', ket:'Minimal satu halaman' },
+      { id:'maksiat', nama:'Maksiat', jenis:'larangan', ket:'Apa pun yang kamu tahu itu dosa. Jujur pada diri sendiri.' },
+      { id:'disiplin', nama:'Tidak disiplin', jenis:'larangan', ket:'Menunda, bangun kesiangan, melewatkan jadwal tanpa alasan' },
+      { id:'aturan', nama:'Melanggar aturan sendiri', jenis:'larangan', ket:'Aturan lain yang kamu tetapkan untuk dirimu' }
+    ]
+  },
+  kuliah: { items: [] },   // jadwal tetap mingguan (kuliah/kerja) diisi pengguna
+  rencana: { items: [
+    { id:'r1', judul:'Sholat 5 waktu tanpa bolong 90 hari berturut-turut', kategori:'Ibadah', target:'', progres:0, catatan:'Dihitung otomatis dari halaman Sholat.' },
+    { id:'r2', judul:'Hari bersih 100 hari', kategori:'Disiplin', target:'', progres:0, catatan:'Streak di halaman Disiplin.' },
+    { id:'r3', judul:'Olahraga 3× seminggu jadi kebiasaan', kategori:'Olahraga', target:'', progres:0, catatan:'' },
+    { id:'r4', judul:'Hutang lunas 100%', kategori:'Finansial', target:'', progres:0, catatan:'Isi sisa hutang dan cicilan mingguan di halaman Keuangan.' },
+    { id:'r5', judul:'Dana darurat 6 bulan pengeluaran', kategori:'Finansial', target:'', progres:0, catatan:'' },
+    { id:'r6', judul:'Kekayaan bersih positif (aset > utang)', kategori:'Finansial', target:'', progres:0, catatan:'Contoh target: ubah, hapus, atau tambah sesuai hidupmu.' }
+  ]},
+  keputusan: { items: [] },
+  /* rutinitas harian/mingguan. Sholat, kuliah, dan DCA ditambahkan otomatis oleh blokHari().
+     `link` menghubungkan kegiatan ke sesuatu yang bisa dicek selesai/belum. */
+  jadwal: { items: [
+    // `setelah` = mulai setelah sholat itu (+15 menit sholat, + `jeda`), lama `durasi` menit.
+    // Kalau jatuh di jam kuliah, otomatis digeser ke setelah kuliah selesai.
+    { id:'j-bangun', judul:'Bangun & wudhu', jenis:'ibadah', hari:[0,1,2,3,4,5,6], mulai:'04:00', selesai:'04:15', link:'', ket:'Tidur jam 22.00 supaya kuat bangun' },
+    { id:'j-dzikir-pagi', judul:'Dzikir pagi', jenis:'ibadah', hari:[0,1,2,3,4,5,6], setelah:'subuh', jeda:0, durasi:15, link:'', ket:'Langsung setelah Subuh' },
+    { id:'j-quran', judul:'Baca Al-Qur’an', jenis:'kebiasaan', hari:[0,1,2,3,4,5,6], setelah:'subuh', jeda:15, durasi:20, link:'quran', ket:'Setelah dzikir pagi, minimal satu halaman' },
+    { id:'j-olahraga', judul:'Olahraga', jenis:'kebiasaan', hari:[0,1,2,3,4,5,6], setelah:'subuh', jeda:35, durasi:30, link:'olahraga', ket:'Setelah baca Qur’an: lari, push-up, atau gym' },
+    { id:'j-jurnal', judul:'Jurnal pagi', jenis:'kebiasaan', hari:[0,1,2,3,4,5,6], mulai:'06:00', selesai:'06:15', link:'jurnal', ket:'Niat & target hari ini, refleksi kemarin, jawab sholat kemarin' },
+    { id:'j-belajar', judul:'Belajar / kerja fokus tanpa distraksi', jenis:'kebiasaan', hari:[0,1,2,3,4,5,6], mulai:'08:00', selesai:'10:00', link:'belajar', ket:'Fokus penuh: ilmu baru atau pekerjaan terpenting hari ini' },
+    { id:'j-hutang', judul:'Bayar cicilan hutang', jenis:'keuangan', hari:[6], mulai:'10:00', selesai:'10:15', link:'hutang', ket:'Target minggu ini, lebih boleh' },
+    { id:'j-dzikir-sore', judul:'Dzikir sore', jenis:'ibadah', hari:[0,1,2,3,4,5,6], setelah:'ashar', jeda:0, durasi:15, link:'', ket:'Setelah Ashar' },
+    { id:'j-catat', judul:'Catat pengeluaran hari ini', jenis:'keuangan', hari:[0,1,2,3,4,5,6], mulai:'21:15', selesai:'21:30', link:'catat', ket:'Semua pengeluaran hari ini, sekecil apa pun' },
+    { id:'j-tidur', judul:'Tidur · HP di luar kamar', jenis:'kebiasaan', hari:[0,1,2,3,4,5,6], mulai:'22:00', selesai:'22:15', link:'fokus', ket:'Menjaga diri dari scrolling dan godaan malam' },
+    { id:'j-review', judul:'Review mingguan', jenis:'agenda', hari:[0], mulai:'20:00', selesai:'20:45', link:'', ket:'Cek sholat, streak, arus kas, hutang, target; atur minggu depan' }
+  ]},
+  fokus: { pengeluaranBulanan: 0, puncakUtang: 0, cicilanMingguan: 0, items: [
+    { id:'perempuan', utama:true, jenis:'Masalah', judul:'Godaan terbesar', catatan:'Tulis di sini satu hal yang paling sering menjatuhkanmu. Penghitung di atas menghitung hari sejak terakhir kali kamu goyah.', terakhir:'' },
+    { id:'hutang', utama:true, jenis:'Masalah', judul:'Hutang', catatan:'Tetapkan cicilan mingguan dan bayar tanpa bolong. Tidak menambah pinjaman baru.' },
+    { id:'ff', utama:true, jenis:'Target', judul:'Financial freedom', catatan:'Target = (pengeluaran bulanan + biaya tetap per bulan) × 12 × 25: angka yang, kalau ditabung dan diputar 4% per tahun, menutup biaya hidupmu.' }
+  ]},
+  aruskas: { bulan: {}, transaksi: [], rutin: [] }, // biaya kuliah diinput manual (kategori Kuliah), tidak lagi otomatis
+  aset: { aset: [], utang: [], riwayat: {} }
+};
+const KATEGORI_RENCANA = ['Ibadah','Disiplin','Olahraga','Belajar','Finansial','Bisnis','Kesehatan','Lainnya'];
+const KAT_TX = ['Pemasukan','Kebutuhan','Keinginan','Kuliah','Tabungan','Kewajiban'];
+const KAT_ASET = ['Bitcoin','Altcoin','Stablecoin','Kas & Tabungan','Reksa dana','Emas','Lainnya'];
+const QUOTES = [
+  ['Sesungguhnya Allah tidak mengubah keadaan suatu kaum sebelum mereka mengubah keadaan diri mereka sendiri.','QS Ar-Ra’d: 11'],
+  ['Maka sesungguhnya bersama kesulitan ada kemudahan.','QS Al-Insyirah: 5'],
+  ['Orang yang kuat bukanlah yang menang bergulat, tetapi yang mampu menahan dirinya ketika marah.','HR Bukhari & Muslim'],
+  ['Amal yang paling dicintai Allah adalah yang paling terus-menerus walaupun sedikit.','HR Bukhari & Muslim'],
+  ['Barangsiapa menempuh jalan untuk mencari ilmu, Allah mudahkan baginya jalan ke surga.','HR Muslim'],
+  ['Manfaatkan lima perkara sebelum datang lima perkara: mudamu sebelum tuamu, sehatmu sebelum sakitmu…','HR Al-Hakim'],
+  ['Disiplin adalah memilih antara apa yang kamu mau sekarang dan apa yang paling kamu mau.','Abraham Lincoln (dinisbatkan)']
+];
+
+/* ---------- state ---------- */
+const S = { pengaturan:null, harian:{}, kuliah:null, rencana:null, keputusan:null, fokus:null, jadwal:null, aruskas:null, aset:null, view:'hari-ini', tab:{}, bulanTx:monthKey(new Date()), jurnalTgl: todayKey(), jadwalOff:0 };
+
+async function loadAll(){
+  [S.pengaturan, S.harian, S.kuliah, S.rencana, S.keputusan, S.fokus, S.jadwal, S.aruskas, S.aset] = await Promise.all([
+    store.get('pengaturan/utama', DEF.pengaturan), store.listHarian(), store.get('kuliah/semester5', DEF.kuliah),
+    store.get('rencana/3tahun', DEF.rencana), store.get('keputusan/daftar', DEF.keputusan), store.get('fokus/daftar', DEF.fokus),
+    store.get('jadwal/rutinitas', DEF.jadwal), store.get('keuangan/aruskas', DEF.aruskas), store.get('keuangan/aset', DEF.aset)
+  ]);
+  if (!S.aset.setoran) S.aset.setoran = [];
+  if (!S.pengaturan.aturan) S.pengaturan.aturan = clone(DEF.pengaturan.aturan);
+  if (!S.aruskas.rutin) S.aruskas.rutin = clone(DEF.aruskas.rutin);
+  if (!S.aruskas.transaksi) S.aruskas.transaksi = [];
+}
+/* pengeluaran rutin mingguan: buat baris transaksi untuk tiap minggu yang sudah lewat/berjalan.
+   Id-nya pasti (rutin-<aturan>-<tanggal>) supaya tidak dobel; minggu yang dihapus disimpan di `lewati`. */
+async function jalankanRutin(){
+  const tx = S.aruskas.transaksi, ids = new Set(tx.map(t=>t.id)), tk = todayKey(); let tambah = 0;
+  (S.aruskas.rutin||[]).filter(r => r.aktif && +r.jumlah>0 && r.mulai).forEach(r => {
+    const d = parseKey(r.mulai); while (d.getDay() !== +r.hari) d.setDate(d.getDate()+1);
+    let k = key(d), jaga = 0;
+    while (k <= tk && jaga++ < 400) { const id = `rutin-${r.id}-${k}`;
+      if (!ids.has(id) && !(r.lewati||[]).includes(k)) { tx.push({ id, tanggal:k, ket:`${r.nama} (rutin mingguan)`, kategori:r.kategori||'Kewajiban', masuk:0, keluar:+r.jumlah, rutin:r.id }); ids.add(id); tambah++; }
+      k = addDays(k, 7); }
+  });
+  if (tambah) await store.set('keuangan/aruskas', S.aruskas);
+  return tambah;
+}
+async function bayarHutang(d){
+  const U = S.aset.utang||[]; const u = U.find(x=>x.id===d.utang) || U[0];
+  if (!u) { toast('Belum ada hutang di daftar. Tambahkan dulu di tab Aset & utang.', true); return false; }
+  const j = Math.round(+d.jumlah||0); if (!(j>0)) { toast('Isi jumlah yang dibayar', true); return false; }
+  u.nilai = Math.max(0, (+u.nilai||0) - j);
+  S.aruskas.transaksi.push({ id:uid(), tanggal:d.tanggal||todayKey(), ket:'Bayar hutang' + (d.catatan ? ' · '+d.catatan : ''), kategori:'Kewajiban', masuk:0, keluar:j, hutang:u.id });
+  await Promise.all([store.set('keuangan/aset', S.aset), store.set('keuangan/aruskas', S.aruskas)]);
+  toast(u.nilai ? `Hutang berkurang ${rp(j)}. Sisa ${rp(u.nilai)}` : 'Alhamdulillah, hutang ini lunas!');
+  return true;
+}
+const hari = k => S.harian[k] || { sholat:{}, kebiasaan:{}, pelanggaran:[], jurnal:{} };
+async function simpanHari(k, doc){ S.harian[k] = doc; return store.set('harian/'+k, doc); }
+
+/* ---------- logika disiplin & streak ---------- */
+const aturanHarian = () => S.pengaturan.aturan.filter(a => a.jenis==='harian');
+const aturanLarangan = () => S.pengaturan.aturan.filter(a => a.jenis==='larangan');
+function statusSholat(k){ const s = hari(k).sholat; if (!s) return ''; if (s.status) return s.status; return SHOLAT.every(([id]) => s[id]) ? 'lengkap' : ''; } // data lama (centang per waktu) tetap terbaca
+function skorHari(k){
+  const h = hari(k);
+  const sholat = statusSholat(k); const shOk = sholat==='lengkap';
+  const hb = aturanHarian().filter(a => h.kebiasaan && h.kebiasaan[a.id]).length;
+  const total = 1 + aturanHarian().length, done = (shOk?1:0) + hb;
+  const langgar = (h.pelanggaran||[]).length > 0;
+  return { sholat, shOk, hb, done, total, langgar, lengkap: done===total && !langgar };
+}
+function hitungStreak(){
+  const today = todayKey();
+  // streak disiplin: hari lengkap berturut-turut, berakhir hari ini (bila lengkap) atau kemarin
+  let k = skorHari(today).lengkap ? today : addDays(today,-1), streak = 0;
+  while (S.harian[k] && skorHari(k).lengkap) { streak++; k = addDays(k,-1); if (streak>2000) break; }
+  // hari bersih: sejak pelanggaran terakhir
+  const keys = Object.keys(S.harian).sort();
+  let lastV = null; keys.forEach(kk => { if ((S.harian[kk].pelanggaran||[]).length) lastV = kk; });
+  const first = keys[0] || today;
+  const bersih = lastV ? Math.max(0, Math.round((parseKey(today)-parseKey(lastV))/864e5)) : Math.round((parseKey(today)-parseKey(first))/864e5) + 1;
+  // rekor
+  let rekor = 0, run = 0; if (keys.length) { let c = keys[0]; const end = today; while (c <= end) { if (S.harian[c] && skorHari(c).lengkap) { run++; rekor = Math.max(rekor, run); } else run = 0; c = addDays(c,1); } }
+  // sholat: hari lengkap dalam 30 hari terakhir + streak sholat lengkap berturut-turut
+  let sTot = 0; for (let i=0;i<30;i++) if (statusSholat(addDays(today,-i))==='lengkap') sTot++;
+  let ks = statusSholat(today)==='lengkap' ? today : addDays(today,-1), streakSholat = 0;
+  while (statusSholat(ks)==='lengkap') { streakSholat++; ks = addDays(ks,-1); if (streakSholat>2000) break; }
+  const totalLanggar = keys.reduce((n,kk) => n + (S.harian[kk].pelanggaran||[]).length, 0);
+  return { streak, bersih, rekor, lastV, sholat30: pct(sTot, 30), streakSholat, totalLanggar };
+}
+
+/* ---------- keuangan ---------- */
+function ringkasBulan(mk){
+  const tx = (S.aruskas.transaksi||[]).filter(t => t.tanggal && t.tanggal.startsWith(mk));
+  if (tx.length) {
+    const r = { pemasukan:0, pengeluaran:0, tabungan:0, kewajiban:0, kebutuhan:0, keinginan:0, hutang:0, rutin:0, nonFF:0, kuliah:0 };
+    const luarFF = new Set((S.aruskas.rutin||[]).filter(x => x.ff===false).map(x => x.id)); // rutin sementara (mis. kuliah) yang tidak ikut target FF
+    tx.forEach(t => { if (t.kategori==='Pemasukan') r.pemasukan += +t.masuk||0; else { const v = +t.keluar||0; if (t.kategori==='Tabungan') r.tabungan += v; else { r.pengeluaran += v; if (t.hutang) r.hutang += v; if (t.rutin) r.rutin += v; if (t.rutin && luarFF.has(t.rutin)) r.nonFF += v; if (t.kategori==='Kuliah' || t.rutin==='kuliah') r.kuliah += v; if (t.kategori==='Kebutuhan') r.kebutuhan+=v; else if (t.kategori==='Keinginan') r.keinginan+=v; else r.kewajiban+=v; } } });
+    return { ...r, sumber:'transaksi', n: tx.length };
+  }
+  const m = (S.aruskas.bulan||{})[mk]; if (m) return { pemasukan:+m.pemasukan||0, pengeluaran:+m.pengeluaran||0, tabungan:+m.tabungan||0, hutang:0, rutin:0, sumber:'ringkasan', n:0 };
+  return { pemasukan:0, pengeluaran:0, tabungan:0, hutang:0, rutin:0, sumber:'kosong', n:0 };
+}
+const totalAset = () => (S.aset.aset||[]).reduce((n,a) => n + (+a.nilai||0), 0);
+const totalUtang = () => (S.aset.utang||[]).reduce((n,a) => n + (+a.nilai||0), 0);
+/* fokus: angka turunan untuk kartu utama */
+function pengeluaranRata(){ // rata-rata 3 bulan penuh terakhir yang punya data
+  if (+S.fokus.pengeluaranBulanan > 0) return { nilai:+S.fokus.pengeluaranBulanan, sumber:'manual' };
+  const vals = []; const d = new Date(); d.setDate(1);
+  for (let i=1;i<=6 && vals.length<3;i++){ const m = new Date(d.getFullYear(), d.getMonth()-i, 1); const r = ringkasBulan(monthKey(m)); if (r.sumber!=='kosong' && r.pengeluaran>0) vals.push(r.pengeluaran - (r.hutang||0) - (r.nonFF||0) - (r.kuliah||0)); } // cicilan hutang & kuliah dipisah; kuliah ditambahkan lagi di infoFF sebagai angka patokan
+  return { nilai: vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0, sumber: vals.length ? `rata-rata ${vals.length} bulan penuh terakhir, tanpa kuliah & cicilan hutang` : 'belum ada data' };
+}
+function infoHutang(){
+  const sisa = totalUtang(), puncak = +S.fokus.puncakUtang||sisa, cicilan = +S.fokus.cicilanMingguan||0;
+  const minggu = cicilan ? Math.ceil(sisa/cicilan) : 0; const lunas = new Date(); lunas.setDate(lunas.getDate() + minggu*7);
+  // rata-rata bayar per minggu: maksimal 4 minggu terakhir, dihitung sejak pembayaran pertama yang tercatat
+  const bayar = txHutang(); let rata4 = 0, lunasRata = '';
+  if (bayar.length) { const ws = awalMinggu(todayKey()); const first = awalMinggu(bayar.map(t=>t.tanggal).sort()[0]);
+    const akhir = (bayarMinggu(ws) > 0 || first >= ws) ? ws : addDays(ws, -7); // minggu berjalan yang belum dibayar tidak ikut dirata-rata
+    const n = Math.max(1, Math.min(4, Math.round((parseKey(akhir)-parseKey(first))/(7*864e5)) + 1)); const dari = addDays(akhir, -7*(n-1));
+    rata4 = Math.round(bayar.filter(t=>t.tanggal>=dari && t.tanggal<=addDays(akhir,6)).reduce((s,t)=>s+(+t.keluar||0),0) / n);
+    if (rata4>0) { const d = new Date(); d.setDate(d.getDate() + Math.ceil(sisa/rata4)*7); lunasRata = key(d); } }
+  return { sisa, puncak, cicilan, minggu, lunas: key(lunas), terbayar: pct(puncak-sisa, puncak), rata4, lunasRata };
+}
+/* FF = (pengeluaran bulanan tanpa kuliah + biaya kuliah per bulan) × 12 × 25.
+   Biaya kuliah memakai angka patokan per minggu (bawaan Rp300 rb) dikonversi ke bulanan: × 52 ÷ 12. */
+function infoFF(){
+  const p = pengeluaranRata(); const kuliahMinggu = S.fokus.kuliahMingguan ?? 300000; const kuliahBulan = Math.round((+kuliahMinggu||0) * 52 / 12);
+  const bulanan = p.nilai + kuliahBulan; const target = bulanan*12*25; const kb = totalAset()-totalUtang();
+  return { pengeluaran:p.nilai, kuliahMinggu:+kuliahMinggu||0, kuliahBulan, bulanan, sumber:p.sumber, target, kb, aset: totalAset(), progres: target ? Math.max(0, Math.min(100, Math.round(kb/target*100))) : 0, kurang: Math.max(0, target-kb) };
+}
+
+/* ---------- komponen kecil ---------- */
+const tile = (lbl, big, sub='', cls='') => `<div class="tile ${cls}"><div class="lbl">${lbl}</div><div class="big">${big}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
+function heatmap(weeks=16){
+  const today = todayKey(); const start = parseKey(addDays(today, -(weeks*7-1))); start.setDate(start.getDate() - start.getDay());
+  let html = '<div class="heat">'; let d = key(start);
+  while (d <= today) { const s = skorHari(d); let c = ''; if (s.langgar) c='v'; else if (s.done>0) { const r = s.done/s.total; c = r>=1?'l3':r>=.6?'l2':'l1'; } html += `<i class="${c}${d===today?' today':''}" title="${fmtTgl(d)}: ${s.done}/${s.total}${s.langgar?' · ada pelanggaran':''}"></i>`; d = addDays(d,1); }
+  return html + '</div>';
+}
+function barChart(series, opts={}){ // series: [{label, values:{a,b,c}}], opts.keys [[key,color]]
+  const W = 600, H = 190, padL = 44, padB = 26, padT = 10; const keys = opts.keys;
+  const max = Math.max(1, ...series.flatMap(s => keys.map(([k]) => +s.values[k]||0)));
+  const step = Math.pow(10, Math.floor(Math.log10(max))); const nice = Math.ceil(max/step)*step;
+  const gw = (W-padL)/series.length, bw = Math.min(22, (gw-10)/keys.length);
+  let g = '<g class="grid">'; for (let i=0;i<=4;i++){ const y = padT + (H-padT-padB)*(1-i/4); g += `<line x1="${padL}" x2="${W}" y1="${y}" y2="${y}"/><text x="${padL-6}" y="${y+3}" text-anchor="end">${rpS(nice*i/4).replace('Rp','')}</text>`; } g += '</g>';
+  let bars = ''; series.forEach((s,i) => { const x0 = padL + gw*i + (gw - bw*keys.length - 3*(keys.length-1))/2; keys.forEach(([k,color],j) => { const v = +s.values[k]||0; const h = (H-padT-padB)*v/nice; bars += `<rect x="${x0+j*(bw+3)}" y="${H-padB-h}" width="${bw}" height="${h}" rx="3" fill="${color}" opacity="${v?1:.25}"><title>${s.label} · ${k}: ${rp(v)}</title></rect>`; }); bars += `<text x="${padL+gw*i+gw/2}" y="${H-8}" text-anchor="middle">${s.label}</text>`; });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${g}${bars}</svg>`;
+}
+function lineChart(points){ // [{label, v}]
+  const W = 600, H = 170, padL = 48, padB = 24, padT = 12, padR = 12; if (points.length<2) return '<div class="empty">Isi nilai aset minimal dua bulan untuk melihat grafik.</div>';
+  const vals = points.map(p=>p.v); const lo = Math.min(0, ...vals), hi = Math.max(...vals)||1; const span = hi-lo || 1;
+  const X = i => padL + (W-padL-padR)*i/(points.length-1), Y = v => padT + (H-padT-padB)*(1-(v-lo)/span);
+  let g = '<g class="grid">'; for (let i=0;i<=3;i++){ const v = lo + span*i/3; g += `<line x1="${padL}" x2="${W-padR}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${padL-6}" y="${Y(v)+3}" text-anchor="end">${rpS(v).replace('Rp','')}</text>`; } g += '</g>';
+  const path = points.map((p,i) => `${i?'L':'M'}${X(i)},${Y(p.v)}`).join(' ');
+  const area = path + ` L${X(points.length-1)},${Y(lo)} L${X(0)},${Y(lo)} Z`;
+  const dots = points.map((p,i) => `<circle cx="${X(i)}" cy="${Y(p.v)}" r="${i===points.length-1?4.5:3}" fill="${i===points.length-1?'var(--gold-2)':'var(--panel)'}" stroke="var(--gold)" stroke-width="2"><title>${p.label}: ${rp(p.v)}</title></circle><text x="${X(i)}" y="${H-6}" text-anchor="middle">${p.label}</text>`).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--gold)" stop-opacity=".35"/><stop offset="1" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs>${g}<path d="${area}" fill="url(#ga)"/><path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linejoin="round"/>${dots}</svg>`;
+}
+
+/* ================= HALAMAN ================= */
+const VIEWS = [
+  ['hari-ini','Hari ini','home'],['jadwal','Jadwal','jadwal'],['sholat','Sholat','sholat'],['disiplin','Disiplin','disiplin'],['fokus','Fokus','fokus'],['jurnal','Jurnal','jurnal'],
+  ['kuliah','Kuliah','kuliah'],['rencana','Rencana 3 tahun','rencana'],['keputusan','Keputusan','keputusan'],['keuangan','Keuangan','uang']
+];
+
+/* ----- Hari ini ----- */
+function vHariIni(){
+  const now = new Date(), tk = todayKey(), h = hari(tk), st = hitungStreak();
+  const wt = waktuSholat(now, S.pengaturan.lat, S.pengaturan.lng); const nowMin = now.getHours()*60+now.getMinutes();
+  const next = SHOLAT.find(([id]) => wt[id] > nowMin);
+  const jamSapa = now.getHours() < 11 ? 'Selamat pagi' : now.getHours() < 15 ? 'Selamat siang' : now.getHours() < 18 ? 'Selamat sore' : 'Selamat malam';
+  const q = QUOTES[Math.floor((now - new Date(now.getFullYear(),0,0))/864e5) % QUOTES.length];
+  const kelas = (S.kuliah.items||[]).filter(c => c.hari===now.getDay()).sort((a,b)=>a.mulai.localeCompare(b.mulai));
+  const mk = monthKey(now), r = ringkasBulan(mk); const kb = totalAset()-totalUtang();
+  const rencanaDekat = (S.rencana.items||[]).filter(x => !x.selesai).sort((a,b)=>a.target.localeCompare(b.target)).slice(0,3);
+  const s = skorHari(tk);
+  return `
+  <div class="topbar"><div><div class="eyebrow">${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()} · ${hijri(now)}</div>
+    <h1 class="serif">${jamSapa}, <em>${esc(S.pengaturan.nama)}</em>.</h1>
+    <div class="sub">${s.lengkap ? 'Hari ini sudah lengkap. Jaga sampai malam.' : `${s.done} dari ${s.total} tugas harian sudah dicentang${next ? ` · ${next[1]} pukul ${jam(wt[next[0]])}` : ' · semua waktu sholat hari ini sudah lewat'}.`}</div></div>
+    <div class="row"><button class="btn danger" data-act="langgar">Catat pelanggaran</button><button class="btn" data-act="pengaturan">${I.setting}Pengaturan</button></div></div>
+  <div class="grid">
+    <div class="c12 panel tight"><div class="row between" style="margin-bottom:10px"><span class="eyebrow">Sholat hari ini · ${esc(S.pengaturan.kota)}</span><span class="small muted">${next ? `${next[1]} ${sisaWaktu(wt[next[0]]-nowMin)}` : `Terbit ${jam(wt.terbit)}`}</span></div>
+      <div class="sholat">${SHOLAT.map(([id,n]) => `<div class="p ${next&&next[0]===id?'next':wt[id]<=nowMin?'past':''}"><span class="n">${n}</span><span class="w">${jam(wt[id])}</span><span class="s">${next&&next[0]===id?'berikutnya':wt[id]<=nowMin?'sudah masuk':'nanti'}</span></div>`).join('')}</div>
+      ${(() => { const kmrn = addDays(tk,-1); return !statusSholat(kmrn) && kmrn >= awalPakai() ? tanyaSholat(kmrn) : ''; })()}${tanyaSholat(tk)}</div>
+    <div class="c3">${tile('Hari bersih', st.bersih, st.lastV ? 'sejak pelanggaran '+fmtTgl(st.lastV,false) : 'belum pernah melanggar', st.bersih>=7?'good':'')}</div>
+    <div class="c3">${tile('Streak disiplin', st.streak, 'hari lengkap berturut-turut', 'gold')}</div>
+    <div class="c3">${tile('Rekor streak', st.rekor, `sholat 30 hari: ${st.sholat30}%`, 'teal')}</div>
+    <div class="c3">${tile('Kekayaan bersih', rpS(kb), `aset ${rpS(totalAset())} · utang ${rpS(totalUtang())}`, kb>=0?'good':'bad')}</div>
+
+    <div class="c6 panel"><h2>Kebiasaan hari ini <a class="act" href="#disiplin">Atur aturan</a></h2>
+      <div class="stack">${aturanHarian().map(a => `<div class="check ${h.kebiasaan[a.id]?'on':''}" data-act="kebiasaan" data-id="${a.id}"><span class="box">${I.check}</span><span class="t">${esc(a.nama)}<small>${esc(a.ket||'')}</small></span></div>`).join('')}</div>
+      ${(h.pelanggaran||[]).length ? `<hr class="sep"><div class="pill bad">Hari ini ada ${(h.pelanggaran).length} pelanggaran · streak direset</div>` : ''}
+    </div>
+    <div class="c6 stack">
+      <div class="panel"><h2>Jadwal hari ini <a class="act" href="#jadwal">Seminggu</a></h2>${agendaHari(todayKey())}
+        ${kelas.length ? '' : `<div class="small dim" style="margin-top:8px">Tidak ada kuliah hari ${HARI[now.getDay()]}.</div>`}</div>
+      <div class="panel"><h2>Target terdekat <a class="act" href="#rencana">Rencana 3 tahun</a></h2>
+        <div class="stack">${rencanaDekat.map(x => `<div><div class="row between"><b class="small">${esc(x.judul)}</b><span class="pill">${fmtTgl(x.target,false)} ${x.target.slice(0,4)}</span></div><div class="prog" style="margin-top:6px"><b style="width:${x.progres||0}%"></b></div></div>`).join('') || '<div class="empty">Belum ada target.</div>'}</div>
+      </div>
+    </div>
+
+    <div class="c6 panel"><h2>Jurnal pagi <a class="act" href="#jurnal" data-act="jurnal-hari-ini">Jurnal lengkap</a></h2>
+      <div class="form"><label class="f">Bagaimana perasaan pagi ini?<div class="mood" data-field="mood">${['Berat','Kurang','Biasa','Baik','Hebat'].map(m => `<button data-act="mood" data-v="${m}" class="${h.jurnal.mood===m?'on':''}">${m}</button>`).join('')}</div></label>
+        <label class="f">Niat & target utama hari ini<input type="text" data-field="jurnal.besok" value="${esc(h.jurnal.besok||'')}" placeholder="Satu hal spesifik yang harus selesai hari ini"></label>
+        <label class="f">Refleksi kemarin<textarea data-field="jurnal.refleksi" placeholder="Apa yang berjalan baik kemarin, apa yang tidak, apa yang diperbaiki hari ini…">${esc(h.jurnal.refleksi||'')}</textarea></label>
+        <div class="row between"><span class="small dim">Tersimpan otomatis saat kamu berhenti mengetik.</span></div></div>
+    </div>
+    <div class="c6 stack">
+      <div class="panel"><h2>Arus kas ${fmtBulan(mk)} <a class="act" href="#keuangan">Keuangan</a></h2>
+        <div class="kv"><span class="k">Pemasukan</span><span class="v" style="color:var(--good)">${rp(r.pemasukan)}</span><span class="k">Pengeluaran</span><span class="v" style="color:var(--bad)">${rp(r.pengeluaran)}</span><span class="k">Tabungan & investasi</span><span class="v" style="color:var(--teal)">${rp(r.tabungan)}</span><span class="k">Sisa tunai</span><span class="v">${rp(r.pemasukan-r.pengeluaran-r.tabungan)}</span></div>
+        ${formCepat(true)}
+      </div>
+      ${(() => { const hu = infoHutang(), ff = infoFF(); const items = S.fokus.items||[]; const buka = items.filter(x=>!x.utama&&!x.selesai); const pr = items.find(x=>x.id==='perempuan'); const n = pr ? hariSejak(pr.terakhir) : null;
+        return `<div class="panel"><h2>Fokus utama <a class="act" href="#fokus">Buka</a></h2><div class="kv">
+          ${pr?`<span class="k">${esc(pr.judul)} · hari fokus</span><span class="v" style="color:${n===null?'var(--dim)':'var(--good)'}">${n===null?'belum diisi':n+' hari'}</span>`:''}
+          ${items.some(x=>x.id==='hutang')?`<span class="k">Hutang · sisa</span><span class="v" style="color:var(--bad)">${rpS(hu.sisa)} <span class="dim">· lunas ${hu.minggu?BLN[parseKey(hu.lunas).getMonth()]+' '+hu.lunas.slice(0,4):'—'}</span></span>`:''}
+          ${items.some(x=>x.id==='ff')?`<span class="k">Financial freedom</span><span class="v">${ff.progres}% <span class="dim">dari ${rpS(ff.target)}</span></span>`:''}
+          <span class="k">Tugas & target terbuka</span><span class="v">${buka.length}${buka.length?` <span class="dim">· terdekat: ${esc(buka.sort((a,b)=>(a.tenggat||'9').localeCompare(b.tenggat||'9'))[0].judul)}</span>`:''}</span></div></div>`; })()}
+      <div class="panel"><div class="quote">“${q[0]}”<small>${q[1]}</small></div></div>
+    </div>
+    <div class="c12 panel"><h2>16 minggu terakhir</h2>${heatmap(16)}<div class="legend" style="margin-top:8px"><span><i style="background:var(--panel-3)"></i>kosong</span><span><i style="background:rgba(72,209,138,.35)"></i>sebagian</span><span><i style="background:var(--good)"></i>lengkap</span><span><i style="background:var(--bad)"></i>pelanggaran</span></div></div>
+  </div>`;
+}
+
+/* ----- Sholat ----- */
+const sisaWaktu = m => m<60 ? `${m} menit lagi` : `${Math.floor(m/60)} j ${m%60} m lagi`;
+function tanyaSholat(k){
+  const s = statusSholat(k); const hariIni = k===todayKey();
+  return `<div class="ask ${s}"><div class="q"><b>${hariIni ? 'Sholat hari ini' : 'Sholat ' + fmtTgl(k,false)}, ada yang bolos?</b><span class="small muted">${s==='lengkap' ? 'Alhamdulillah, lima waktu tertunaikan.' : s==='bolos' ? 'Tercatat bolos. Qadha kalau bisa, dan besok jangan diulang.' : (hariIni ? 'Jawab sekali saja: malam setelah Isya, atau besok pagi saat jurnal.' : 'Belum dijawab. Jawab sekarang sambil menulis jurnal pagi.')}</span></div>
+    <div class="opts"><button class="opt good ${s==='lengkap'?'on':''}" data-act="sholat-status" data-tgl="${k}" data-v="lengkap">${I.check}Tidak, lengkap 5 waktu</button><button class="opt bad ${s==='bolos'?'on':''}" data-act="sholat-status" data-tgl="${k}" data-v="bolos">Ya, ada yang bolos</button></div></div>`;
+}
+function vSholat(){
+  const now = new Date(); const mk = S.tab.sholatBulan || monthKey(now); const [y,m] = mk.split('-').map(Number);
+  const nDays = new Date(y, m, 0).getDate(); const tk = todayKey(); const st = hitungStreak();
+  let lengkap = 0, bolos = 0, kosong = 0;
+  for (let d=1; d<=nDays; d++){ const k = `${y}-${pad(m)}-${pad(d)}`; if (k>tk) break; const s = statusSholat(k); if (s==='lengkap') lengkap++; else if (s==='bolos') bolos++; else kosong++; }
+  const wt = waktuSholat(now, S.pengaturan.lat, S.pengaturan.lng); const nowMin = now.getHours()*60+now.getMinutes(); const next = SHOLAT.find(([id]) => wt[id] > nowMin);
+  const first = new Date(y, m-1, 1).getDay();
+  let cells = ''; for (let i=0;i<first;i++) cells += '<div class="cal-cell blank"></div>';
+  for (let d=1; d<=nDays; d++){ const k = `${y}-${pad(m)}-${pad(d)}`; const s = statusSholat(k); const future = k>tk;
+    cells += `<div class="cal-cell ${s} ${future?'future':''} ${k===tk?'today':''}" ${future?'':`data-act="sholat-status" data-tgl="${k}" data-v="cycle"`} title="${fmtTgl(k)}${s?' · '+s:''}"><span class="d">${d}</span><span class="m">${s==='lengkap'?'5/5':s==='bolos'?'bolos':future?'':'–'}</span></div>`; }
+  const isi = lengkap + bolos;
+  return `
+  <div class="topbar"><div><div class="eyebrow">Ibadah · ${esc(S.pengaturan.kota)}</div><h1 class="serif">Sholat <em>lima waktu</em></h1><div class="sub">Satu jawaban per hari. Ketuk tanggal di kalender untuk mengubah: kosong → lengkap → bolos.</div></div>
+    <div class="row"><input type="month" value="${mk}" data-field="sholatBulan" style="width:auto"></div></div>
+  <div class="grid">
+    <div class="c3">${tile('Streak sholat lengkap', st.streakSholat, 'hari berturut-turut', 'gold')}</div>
+    <div class="c3">${tile('Lengkap bulan ini', lengkap, `dari ${isi} hari yang dijawab`, lengkap&&lengkap===isi?'good':'')}</div>
+    <div class="c3">${tile('Bolos bulan ini', bolos, kosong?`${kosong} hari belum dijawab`:'semua hari terjawab', bolos?'bad':'good')}</div>
+    <div class="c3">${tile('30 hari terakhir', st.sholat30+'%', 'hari dengan 5 waktu lengkap', st.sholat30>=90?'good':st.sholat30>=60?'gold':'')}</div>
+    <div class="c8 panel"><h2>${fmtBulan(mk)}</h2>
+      <div class="cal-head">${['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(d=>`<span>${d}</span>`).join('')}</div><div class="cal">${cells}</div>
+      <div class="legend" style="margin-top:12px"><span><i style="background:var(--good)"></i>lengkap 5 waktu</span><span><i style="background:var(--bad)"></i>ada yang bolos</span><span><i style="background:var(--panel-3)"></i>belum dijawab</span></div></div>
+    <div class="c4 stack">
+      <div class="panel tight">${tanyaSholat(tk)}</div>
+      <div class="panel"><h2>Jadwal hari ini <span class="small muted" style="font-weight:500">${next ? sisaWaktu(wt[next[0]]-nowMin) : ''}</span></h2>
+        <div class="kv">${SHOLAT.map(([id,n]) => `<span class="k" style="${next&&next[0]===id?'color:var(--gold-2);font-weight:700':''}">${n}${next&&next[0]===id?' · berikutnya':''}</span><span class="v" style="${wt[id]<=nowMin?'color:var(--dim)':''}">${jam(wt[id])}</span>`).join('')}<span class="k dim">Terbit</span><span class="v dim">${jam(wt.terbit)}</span></div>
+        <div class="small dim" style="margin-top:10px">Metode Kemenag (Subuh 20°, Isya 18°, +2 menit ihtiyat). Bisa selisih 1–2 menit dari jadwal masjid.</div></div>
+    </div>
+  </div>`;
+}
+
+/* ----- Disiplin ----- */
+function vDisiplin(){
+  const st = hitungStreak(); const keys = Object.keys(S.harian).sort().reverse();
+  const log = []; keys.forEach(k => (S.harian[k].pelanggaran||[]).forEach(p => log.push({...p, tgl:k})));
+  const ruleRow = a => `<div class="item"><div class="hd"><b>${esc(a.nama)} <span class="pill ${a.jenis==='harian'?'teal':'bad'}">${a.jenis==='harian'?'wajib tiap hari':'larangan'}</span></b><span class="row"><button class="btn sm ghost" data-act="aturan-edit" data-id="${a.id}">Ubah</button><button class="btn sm ghost" data-act="aturan-hapus" data-id="${a.id}">Hapus</button></span></div>${a.ket?`<p>${esc(a.ket)}</p>`:''}</div>`;
+  return `
+  <div class="topbar"><div><div class="eyebrow">Kendali diri</div><h1 class="serif">Disiplin & <em>hari bersih</em></h1><div class="sub">Setiap pelanggaran yang kamu catat otomatis mereset hari bersih dan streak. Tidak ada yang mengawasi selain kamu dan Allah, jadi jujurlah.</div></div>
+    <div class="row"><button class="btn danger" data-act="langgar">Catat pelanggaran</button><button class="btn primary" data-act="aturan-tambah">Tambah aturan</button></div></div>
+  <div class="grid">
+    <div class="c3">${tile('Hari bersih', st.bersih, st.lastV?'reset terakhir '+fmtTgl(st.lastV,false):'belum pernah reset', st.bersih>=7?'good':'')}</div>
+    <div class="c3">${tile('Streak lengkap', st.streak, 'semua tugas + tanpa pelanggaran', 'gold')}</div>
+    <div class="c3">${tile('Rekor', st.rekor, 'hari berturut-turut terbaik', 'teal')}</div>
+    <div class="c3">${tile('Total pelanggaran', st.totalLanggar, 'sepanjang catatan', st.totalLanggar?'bad':'')}</div>
+    <div class="c12 panel"><h2>Peta 24 minggu</h2>${heatmap(24)}</div>
+    <div class="c6 panel"><h2>Aturan harian (wajib)</h2><div class="list">${aturanHarian().map(ruleRow).join('')||'<div class="empty">Belum ada aturan harian.</div>'}</div></div>
+    <div class="c6 panel"><h2>Larangan (memicu reset)</h2><div class="list">${aturanLarangan().map(ruleRow).join('')||'<div class="empty">Belum ada larangan.</div>'}</div></div>
+    <div class="c12 panel"><h2>Riwayat pelanggaran</h2>${log.length ? `<div class="scroll"><table class="tbl"><thead><tr><th>Tanggal</th><th>Jenis</th><th>Catatan</th><th></th></tr></thead><tbody>${log.map(p => `<tr><td class="mono">${fmtTgl(p.tgl)}${p.jam?' · '+p.jam:''}</td><td><span class="pill bad">${esc((S.pengaturan.aturan.find(a=>a.id===p.aturan)||{}).nama||p.aturan)}</span></td><td>${esc(p.catatan||'')}</td><td class="num"><button class="btn sm ghost" data-act="langgar-hapus" data-tgl="${p.tgl}" data-id="${p.id}">Hapus</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada pelanggaran tercatat. Pertahankan.</div>'}</div>
+  </div>`;
+}
+
+/* ----- Fokus: masalah utama + tugas/target ----- */
+const hariSejak = k => k ? Math.max(0, Math.round((parseKey(todayKey())-parseKey(k))/864e5)) : null;
+function vFokus(){
+  const items = S.fokus.items||[]; const utama = items.filter(x=>x.utama); const lain = items.filter(x=>!x.utama).sort((a,b)=>(a.selesai?1:0)-(b.selesai?1:0) || (a.tenggat||'9').localeCompare(b.tenggat||'9'));
+  const tk = todayKey(); const hu = infoHutang(), ff = infoFF();
+  const hilang = DEF.fokus.items.filter(d => !items.some(x=>x.id===d.id));
+  const kartu = x => {
+    const hapus = `<button class="btn sm ghost" data-act="fokus-hapus" data-id="${x.id}" title="Hapus bila sudah selesai">Selesai, hapus</button>`;
+    if (x.id==='perempuan') { const n = hariSejak(x.terakhir); return `<div class="panel fk"><div class="row between"><span class="pill bad">Masalah utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
+      <div class="big mono ${n===null?'dim':n>=30?'good':''}">${n===null?'—':n}</div><div class="lbl">${n===null?'isi tanggal terakhir goyah di bawah':'hari fokus, tidak goyah'}</div>
+      <label class="f" style="margin-top:10px">Terakhir goyah (tanggal terakhir kamu jatuh ke godaan ini)<input type="date" value="${x.terakhir||''}" max="${tk}" data-act="fokus-field" data-id="${x.id}" data-k="terakhir"></label>
+      <label class="f">Pegangan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan" style="min-height:70px">${esc(x.catatan||'')}</textarea></label>
+      <div class="row"><button class="btn sm danger" data-act="fokus-goyah" data-id="${x.id}">Hari ini goyah, reset</button></div></div>`; }
+    if (x.id==='hutang') return `<div class="panel fk"><div class="row between"><span class="pill bad">Masalah utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
+      <div class="big mono" style="color:var(--bad)">${rpS(hu.sisa)}</div><div class="lbl">sisa · terbayar ${hu.terbayar}% dari puncak ${rpS(hu.puncak)}</div>
+      <div class="prog" style="margin:8px 0"><b style="width:${hu.terbayar}%;background:linear-gradient(90deg,var(--bad),var(--gold))"></b></div>
+      <div class="kv"><span class="k">Cicilan per minggu</span><span class="v"><input type="number" value="${hu.cicilan}" step="50000" data-act="fokus-angka" data-k="cicilanMingguan" style="width:120px;padding:4px 8px;text-align:right"></span><span class="k">Puncak utang</span><span class="v"><input type="number" value="${hu.puncak}" step="100000" data-act="fokus-angka" data-k="puncakUtang" style="width:120px;padding:4px 8px;text-align:right"></span><span class="k">Perkiraan lunas</span><span class="v" style="color:var(--gold-2)">${hu.minggu?fmtTgl(hu.lunas,false)+' '+hu.lunas.slice(0,4)+` (${hu.minggu} mgg)`:'—'}</span></div>
+      <div class="row between small" style="margin-top:10px"><span class="muted">Minggu ini dibayar <b class="mono" style="color:${bayarMinggu(awalMinggu(tk))>=hu.cicilan&&hu.cicilan?'var(--good)':'var(--text)'}">${rp(bayarMinggu(awalMinggu(tk)))}</b></span><a class="act" href="#keuangan" data-act="tab" data-k="keuangan" data-v="hutang">Riwayat</a></div>
+      <form class="quick compact" data-form="bayar" style="margin-top:6px"><input type="hidden" name="utang" value="${(S.aset.utang||[])[0]?.id||''}"><input type="number" name="jumlah" min="1" step="1" value="${hu.cicilan||''}" required inputmode="numeric" aria-label="Jumlah bayar"><button class="btn primary" type="submit">Bayar hutang</button></form>
+      <label class="f" style="margin-top:10px">Pegangan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan" style="min-height:56px">${esc(x.catatan||'')}</textarea></label></div>`;
+    if (x.id==='ff') return `<div class="panel fk"><div class="row between"><span class="pill gold">Target utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
+      <div class="big mono" style="color:var(--gold-2)">${rpS(ff.target)}</div><div class="lbl">${ff.bulanan?`${rpS(ff.bulanan)} per bulan × 12 × 25`:'isi pengeluaran bulanan dulu'}</div>
+      <div class="prog gold" style="margin:8px 0"><b style="width:${ff.progres}%"></b></div>
+      <div class="kv"><span class="k">Pengeluaran bulanan tanpa kuliah</span><span class="v"><input type="number" value="${+S.fokus.pengeluaranBulanan||''}" placeholder="${ff.pengeluaran}" step="100000" data-act="fokus-angka" data-k="pengeluaranBulanan" style="width:120px;padding:4px 8px;text-align:right"></span><span class="k dim small" style="grid-column:1/-1">${+S.fokus.pengeluaranBulanan>0?'angka manual · kosongkan untuk otomatis':ff.sumber}</span>
+        <span class="k">Biaya kuliah per minggu</span><span class="v"><input type="number" value="${ff.kuliahMinggu}" step="50000" min="0" data-act="fokus-angka" data-k="kuliahMingguan" style="width:120px;padding:4px 8px;text-align:right"></span>
+        <span class="k">+ Kuliah per bulan <span class="dim">(× 52 ÷ 12)</span></span><span class="v">${rpS(ff.kuliahBulan)}</span>
+        <span class="k"><b>Total pengeluaran per bulan</b></span><span class="v"><b>${rpS(ff.bulanan)}</b></span>
+        <span class="k">Kekayaan bersih</span><span class="v" style="color:${ff.kb<0?'var(--bad)':'var(--good)'}">${rpS(ff.kb)}</span><span class="k">Progres</span><span class="v">${ff.progres}%</span><span class="k">Masih kurang</span><span class="v">${rpS(ff.kurang)}</span></div>
+      <label class="f" style="margin-top:10px">Pegangan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan" style="min-height:56px">${esc(x.catatan||'')}</textarea></label></div>`;
+    return `<div class="panel fk"><div class="row between"><span class="pill">${esc(x.jenis)}</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3><label class="f">Catatan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan">${esc(x.catatan||'')}</textarea></label></div>`;
+  };
+  return `
+  <div class="topbar"><div><div class="eyebrow">Fokus</div><h1 class="serif">Masalah & <em>target</em></h1><div class="sub">Tiga hal yang paling menentukan arah hidupmu di atas, tugas dan target lain di bawah. Yang sudah selesai, hapus saja: layar ini harus makin kosong, bukan makin penuh.</div></div>
+    <div class="row">${hilang.length?`<button class="btn" data-act="fokus-pulihkan">Pulihkan kartu bawaan</button>`:''}</div></div>
+  <div class="grid">
+    ${utama.length ? `<div class="c12" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">${utama.map(kartu).join('')}</div>` : ''}
+    <div class="c4 panel"><h2>Tambah tugas / masalah / target</h2><form class="form" data-form="fokus">
+      <label class="f">Judul<input type="text" name="judul" required placeholder="Tugas PBOS bab 3, bayar UKT, lari 5 km…"></label>
+      <div class="form cols2"><label class="f">Jenis<select name="jenis"><option>Tugas</option><option>Masalah</option><option>Target</option></select></label><label class="f">Tenggat<input type="date" name="tenggat"></label></div>
+      <label class="f">Catatan<textarea name="catatan" placeholder="opsional"></textarea></label>
+      <button class="btn primary" type="submit">Tambah</button></form></div>
+    <div class="c8 panel"><h2>Daftar <span class="pill">${lain.filter(x=>!x.selesai).length} terbuka</span></h2>
+      <div class="list">${lain.map(x => `<div class="item" style="${x.selesai?'opacity:.55':''}"><div class="hd"><label class="row" style="cursor:pointer;gap:10px;flex:1"><input type="checkbox" data-act="fokus-selesai" data-id="${x.id}" ${x.selesai?'checked':''}><b style="${x.selesai?'text-decoration:line-through':''}">${esc(x.judul)}</b></label><span class="row"><span class="pill ${({Tugas:'teal',Masalah:'bad',Target:'gold'})[x.jenis]||''}">${esc(x.jenis)}</span>${x.tenggat?`<span class="pill ${!x.selesai&&x.tenggat<tk?'bad':!x.selesai&&x.tenggat<=addDays(tk,3)?'warn':''}">${fmtTgl(x.tenggat,false)}</span>`:''}<button class="btn sm ghost" data-act="fokus-hapus" data-id="${x.id}">Hapus</button></span></div>${x.catatan?`<p>${esc(x.catatan)}</p>`:''}</div>`).join('')||'<div class="empty">Kosong. Bagus, atau belum jujur? Tugas kuliah minggu ini, misalnya.</div>'}</div></div>
+  </div>`;
+}
+
+/* ----- Jurnal ----- */
+function vJurnal(){
+  const tk = S.jurnalTgl; const h = hari(tk); const j = h.jurnal||{};
+  const keys = Object.keys(S.harian).filter(k => { const jj = S.harian[k].jurnal||{}; return jj.refleksi||jj.syukur||jj.pelajaran||jj.mood||jj.besok; }).sort().reverse();
+  const s = skorHari(tk);
+  return `
+  <div class="topbar"><div><div class="eyebrow">Setiap pagi</div><h1 class="serif">Jurnal <em>pagi</em></h1><div class="sub">Ditulis pagi hari setelah Subuh: niat untuk hari ini dan refleksi atas kemarin. Tersimpan otomatis.</div></div>
+    <div class="row"><input type="date" value="${tk}" max="${todayKey()}" data-field="jurnalTgl" style="width:auto"><button class="btn" data-act="jurnal-hari-ini">Hari ini</button></div></div>
+  <div class="grid">
+    <div class="c8 panel"><h2>${fmtTgl(tk)} <span class="row"><span class="pill ${s.langgar?'bad':s.lengkap?'good':''}">${s.done}/${s.total} tugas${s.langgar?' · pelanggaran':''}</span></span></h2>
+      <div class="form">
+        <label class="f">Bagaimana perasaan pagi ini?<div class="mood">${['Berat','Kurang','Biasa','Baik','Hebat'].map(m => `<button data-act="mood" data-v="${m}" class="${j.mood===m?'on':''}">${m}</button>`).join('')}</div></label>
+        <label class="f">Niat & target utama hari ini<input type="text" data-field="jurnal.besok" value="${esc(j.besok||'')}" placeholder="Satu hal spesifik yang harus selesai hari ini"></label>
+        ${(() => { const kmrn = (S.harian[addDays(tk,-1)]||{}).jurnal||{}; return kmrn.besok ? `<div class="small muted">Niat kemarin: <b style="color:var(--text)">${esc(kmrn.besok)}</b>. Tercapai? Tulis di refleksi.</div>` : ''; })()}
+        <label class="f">Tiga hal yang disyukuri<textarea data-field="jurnal.syukur" placeholder="1. …&#10;2. …&#10;3. …">${esc(j.syukur||'')}</textarea></label>
+        <label class="f">Refleksi kemarin<textarea data-field="jurnal.refleksi" style="min-height:140px" placeholder="Jujur. Apa yang berjalan baik kemarin, apa yang tidak, kenapa, dan apa yang diperbaiki hari ini.">${esc(j.refleksi||'')}</textarea></label>
+        <label class="f">Ilmu yang kudapat kemarin<textarea data-field="jurnal.pelajaran" placeholder="Dari kuliah, buku, pasar, atau pengalaman">${esc(j.pelajaran||'')}</textarea></label>
+      </div></div>
+    <div class="c4 panel"><h2>Riwayat</h2><div class="list">${keys.slice(0,40).map(k => { const jj = S.harian[k].jurnal; return `<div class="item" style="cursor:pointer;${k===tk?'border-color:var(--gold)':''}" data-act="jurnal-buka" data-tgl="${k}"><div class="hd"><b class="small">${fmtTgl(k)}</b>${jj.mood?`<span class="pill gold">${esc(jj.mood)}</span>`:''}</div><p class="small" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(jj.refleksi||jj.syukur||jj.pelajaran||'')}</p></div>`; }).join('')||'<div class="empty">Belum ada catatan. Mulai dari hari ini.</div>'}</div></div>
+  </div>`;
+}
+
+/* ----- Kuliah ----- */
+function vKuliah(){
+  const items = (S.kuliah.items||[]).slice().sort((a,b)=>a.hari-b.hari||a.mulai.localeCompare(b.mulai)); const today = new Date().getDay();
+  const sks = items.filter(i=>!i.contoh).length;
+  return `
+  <div class="topbar"><div><div class="eyebrow">Jadwal tetap mingguan</div><h1 class="serif">Jadwal <em>kuliah / kerja</em></h1><div class="sub">${sks ? `${sks} sesi per minggu.` : 'Isi jadwalmu lewat formulir di bawah; baris bertanda contoh boleh dihapus.'}</div></div></div>
+  <div class="grid">
+    <div class="c12 week">${[1,2,3,4,5,6].map(d => `<div class="day ${d===today?'today':''}"><div class="dn"><span>${HARI[d]}</span>${d===today?'<span>hari ini</span>':''}</div>${items.filter(i=>i.hari===d).map(c => `<div class="cls" style="${c.contoh?'opacity:.6;border-left-style:dashed':''}"><button class="x" data-act="kuliah-hapus" data-id="${c.id}" title="Hapus">×</button><b>${esc(c.mk)}</b><span class="mono">${c.mulai}–${c.selesai}</span>${c.ruang||c.dosen?`<span class="mono">${esc(c.ruang||'')}${c.ruang&&c.dosen?' · ':''}${esc(c.dosen||'')}</span>`:''}</div>`).join('')||'<div class="dim small" style="margin:auto;text-align:center">—</div>'}</div>`).join('')}</div>
+    <div class="c12 panel"><h2>Tambah sesi kuliah</h2><form class="form cols4" data-form="kuliah">
+      <label class="f full" style="grid-column:span 2">Mata kuliah<input type="text" name="mk" required placeholder="Nama mata kuliah"></label>
+      <label class="f">Hari<select name="hari">${[1,2,3,4,5,6].map(d=>`<option value="${d}">${HARI[d]}</option>`).join('')}</select></label>
+      <label class="f">Ruang<input type="text" name="ruang" placeholder="R.301"></label>
+      <label class="f">Mulai<input type="time" name="mulai" required value="08:00"></label>
+      <label class="f">Selesai<input type="time" name="selesai" required value="09:40"></label>
+      <label class="f">Dosen<input type="text" name="dosen" placeholder="opsional"></label>
+      <div class="f" style="justify-content:flex-end"><button class="btn primary" type="submit">Tambah</button></div></form></div>
+  </div>`;
+}
+
+/* ----- Rencana 3 tahun ----- */
+function fase3Tahun(){
+  const m = parseKey(S.pengaturan.mulai3Tahun||'2026-09-01'); const out = [];
+  for (let i=0;i<6;i++){ const a = new Date(m.getFullYear(), m.getMonth()+i*6, 1); const b = new Date(m.getFullYear(), m.getMonth()+i*6+6, 0);
+    out.push({ i, mulai:key(a), akhir:key(b), nama: i<4 ? `Semester ${5+i}` : i===4 ? 'Lulus · tahun 1' : 'Tahun 3', sub:`${BLN[a.getMonth()]} ${a.getFullYear()} – ${BLN[b.getMonth()]} ${b.getFullYear()}` }); }
+  return out;
+}
+function vRencana(){
+  const items = S.rencana.items||[]; const tk = todayKey(); const fase = fase3Tahun(); const filter = S.tab.rencanaKat||'Semua';
+  const shown = items.filter(x => filter==='Semua' || x.kategori===filter);
+  const done = items.filter(x=>x.selesai).length; const avg = items.length ? Math.round(items.reduce((n,x)=>n+(x.selesai?100:+x.progres||0),0)/items.length) : 0;
+  const mulai = parseKey(S.pengaturan.mulai3Tahun||'2026-09-01'); const lewat = Math.max(0, Math.min(100, Math.round((new Date()-mulai)/(3*365.25*864e5)*100)));
+  const card = x => `<div class="goal ${x.selesai?'done':''}"><div class="row between"><span class="pill ${({Ibadah:'gold',Disiplin:'bad',Olahraga:'teal',Belajar:'violet',Finansial:'good',Bisnis:'warn'})[x.kategori]||''}">${esc(x.kategori)}</span><span class="row"><button class="btn sm ghost" data-act="rencana-edit" data-id="${x.id}">Ubah</button><button class="btn sm ghost" data-act="rencana-hapus" data-id="${x.id}">Hapus</button></span></div>
+    <div class="t">${esc(x.judul)}</div>${x.catatan?`<div class="small muted">${esc(x.catatan)}</div>`:''}
+    <div class="row between small"><span class="dim">Tenggat ${fmtTgl(x.target,false)} ${x.target.slice(0,4)}${x.target<tk&&!x.selesai?' <span class="pill bad">lewat</span>':''}</span><span class="mono">${x.selesai?'selesai':(x.progres||0)+'%'}</span></div>
+    <input type="range" min="0" max="100" step="5" value="${x.selesai?100:x.progres||0}" data-act="rencana-progres" data-id="${x.id}" ${x.selesai?'disabled':''}>
+    <div class="row between"><label class="row small muted" style="cursor:pointer"><input type="checkbox" data-act="rencana-selesai" data-id="${x.id}" ${x.selesai?'checked':''}> Tandai selesai</label></div></div>`;
+  return `
+  <div class="topbar"><div><div class="eyebrow">${fmtTgl(S.pengaturan.mulai3Tahun||'2026-09-01',false)} ${(S.pengaturan.mulai3Tahun||'2026').slice(0,4)} → 2029</div><h1 class="serif">Rencana <em>tiga tahun</em></h1><div class="sub">Target dipisah per semester supaya tiap enam bulan ada yang bisa dicek. Angka bawaan hanya usulan; ubah sesukamu.</div></div>
+    <div class="row"><select data-field="rencanaKat" style="width:auto"><option>Semua</option>${KATEGORI_RENCANA.map(k=>`<option ${filter===k?'selected':''}>${k}</option>`).join('')}</select><button class="btn primary" data-act="rencana-tambah">Tambah target</button></div></div>
+  <div class="grid">
+    <div class="c4">${tile('Waktu berjalan', lewat+'%', 'dari 3 tahun', 'gold')}</div>
+    <div class="c4">${tile('Rata-rata progres', avg+'%', `${items.length} target`, 'teal')}</div>
+    <div class="c4">${tile('Selesai', done, 'target tercapai', done?'good':'')}</div>
+    <div class="c12 panel" style="padding:8px 20px"><div class="tl">${fase.map(f => { const list = shown.filter(x => x.target>=f.mulai && x.target<=f.akhir); const cls = f.akhir<tk?'past':f.mulai>tk?'future':''; return `<div class="ph ${cls}"><b>${f.nama}</b><span>${f.sub}</span></div><div class="cards">${list.map(card).join('')||'<div class="dim small" style="padding:8px 0">Belum ada target di fase ini.</div>'}</div>`; }).join('')}
+      ${(() => { const luar = shown.filter(x => x.target < fase[0].mulai || x.target > fase[5].akhir); return luar.length ? `<div class="ph future"><b>Di luar rentang</b><span>sebelum/sesudah 3 tahun</span></div><div class="cards">${luar.map(card).join('')}</div>` : ''; })()}</div></div>
+  </div>`;
+}
+
+/* ----- Keputusan ----- */
+function vKeputusan(){
+  const items = (S.keputusan.items||[]).slice().sort((a,b)=>b.tanggal.localeCompare(a.tanggal)); const tk = todayKey();
+  const stat = x => x.hasil ? (x.status==='Berhasil'?'good':x.status==='Gagal'?'bad':'') : (x.tinjau && x.tinjau<=tk ? 'warn' : 'gold');
+  return `
+  <div class="topbar"><div><div class="eyebrow">Buku keputusan</div><h1 class="serif">Keputusan yang <em>kuambil</em></h1><div class="sub">Tulis dulu sebelum bertindak: apa keputusannya, kenapa, apa alternatifnya, dan kapan ditinjau. Nanti isi hasilnya supaya kamu belajar dari pola sendiri.</div></div></div>
+  <div class="grid">
+    <div class="c4 panel"><h2>Keputusan baru</h2><form class="form" data-form="keputusan">
+      <label class="f">Tanggal<input type="date" name="tanggal" value="${tk}" required></label>
+      <label class="f">Keputusan<textarea name="keputusan" required placeholder="Aku memutuskan untuk…"></textarea></label>
+      <label class="f">Alasan<textarea name="alasan" placeholder="Karena… (data, prinsip, atau perasaan yang jujur)"></textarea></label>
+      <label class="f">Alternatif yang kutolak<input type="text" name="alternatif" placeholder="Pilihan lain yang tidak diambil"></label>
+      <label class="f">Tinjau kembali pada<input type="date" name="tinjau" value="${addDays(tk,30)}"></label>
+      <button class="btn primary" type="submit">Simpan keputusan</button></form></div>
+    <div class="c8 panel"><h2>Riwayat <span class="pill">${items.length}</span></h2>
+      <div class="list">${items.map(x => `<div class="item"><div class="hd"><b>${esc(x.keputusan)}</b><span class="row"><span class="pill ${stat(x)}">${x.hasil ? esc(x.status||'Ditinjau') : (x.tinjau&&x.tinjau<=tk ? 'Saatnya ditinjau' : 'Berjalan')}</span><button class="btn sm ghost" data-act="keputusan-hapus" data-id="${x.id}">Hapus</button></span></div>
+        ${x.alasan?`<p><span class="dim">Alasan:</span> ${esc(x.alasan)}</p>`:''}${x.alternatif?`<p><span class="dim">Alternatif ditolak:</span> ${esc(x.alternatif)}</p>`:''}
+        <div class="meta"><span>Diputuskan ${fmtTgl(x.tanggal)}</span>${x.tinjau?`<span>· Tinjau ${fmtTgl(x.tinjau,false)} ${x.tinjau.slice(0,4)}</span>`:''}</div>
+        ${x.hasil ? `<p><span class="dim">Hasil:</span> ${esc(x.hasil)}</p>` : `<div class="row"><button class="btn sm" data-act="keputusan-hasil" data-id="${x.id}">Isi hasil / evaluasi</button></div>`}</div>`).join('')||'<div class="empty">Belum ada keputusan tercatat. Keputusan besar berikutnya, tulis di sini dulu.</div>'}</div></div>
+  </div>`;
+}
+
+/* ----- Jadwal rutinitas ----- */
+const JENIS = { sholat:'Sholat', kuliah:'Kuliah', ibadah:'Ibadah', kebiasaan:'Kebiasaan', keuangan:'Keuangan', agenda:'Agenda' };
+const WARNA = { sholat:'var(--gold)', ibadah:'var(--gold-2)', kuliah:'var(--teal)', kebiasaan:'var(--good)', keuangan:'var(--violet)', agenda:'var(--muted)' };
+const keMenit = t => { const [h,m] = String(t||'0:0').split(':').map(Number); return (h||0)*60 + (m||0); };
+const menitSekarang = () => { const n = new Date(); return n.getHours()*60 + n.getMinutes(); };
+const pilihanTautan = () => [['', 'Tidak ditautkan'], ...aturanHarian().map(a => [a.id, 'Kebiasaan: ' + a.nama]), ['jurnal','Isi jurnal'], ['catat','Catat pengeluaran'], ['hutang','Bayar hutang minggu ini']];
+function pergi(view){ if (S.view===view) render(); else location.hash = '#' + view; }
+const awalPakai = () => Object.keys(S.harian).sort()[0] || todayKey(); // hari sebelum dasbor dipakai tidak dihitung terlewat
+
+/* semua kegiatan satu tanggal: sholat (dihitung), kuliah, rutinitas, dan DCA; lalu tandai bentrok */
+function blokHari(k){
+  const d = parseKey(k), dow = d.getDay(), out = [];
+  const wt = waktuSholat(d, S.pengaturan.lat, S.pengaturan.lng);
+  SHOLAT.forEach(([id,n]) => out.push({ id:'sholat-'+id, judul:n, jenis:'sholat', mulai:jam(wt[id]), selesai:jam(wt[id]+15), link:'sholat' }));
+  (S.kuliah.items||[]).filter(c => c.hari===dow).forEach(c => out.push({ id:'kuliah-'+c.id, judul:c.mk, jenis:'kuliah', mulai:c.mulai, selesai:c.selesai, ket:c.ruang||'' }));
+  const kuliahHariIni = (S.kuliah.items||[]).filter(c => c.hari===dow).map(c => [keMenit(c.mulai), keMenit(c.selesai)]);
+  (S.jadwal.items||[]).filter(x => (x.hari||[]).includes(dow)).forEach(x => {
+    if (!x.setelah || wt[x.setelah]===undefined) { out.push({ ...x }); return; }
+    // relatif terhadap sholat: mulai setelah sholat (15 menit) + jeda; geser ke setelah kuliah kalau bertabrakan
+    const lama = +x.durasi || 15; let m0 = wt[x.setelah] + 15 + (+x.jeda||0), geser = false;
+    for (const [a, b] of kuliahHariIni) if (m0 < b && m0 + lama > a) { m0 = b; geser = true; }
+    out.push({ ...x, mulai:jam(m0), selesai:jam(m0 + lama), ket: geser ? `Digeser: selesai kuliah dulu${x.ket?' · '+x.ket:''}` : x.ket });
+  });
+  (S.aset.aset||[]).filter(a => a.dca && a.dca.aktif && +a.dca.jumlah>0).forEach(a => { const p = a.dca;
+    const cocok = p.frek==='bulanan' ? d.getDate() === Math.min(+p.tanggal||1, 28) : dow === +p.hari;
+    if (cocok) out.push({ id:'dca-'+a.id, judul:`DCA ${a.nama} ${rpS(p.jumlah)}`, jenis:'keuangan', mulai:p.jam||'10:15', selesai:jam(keMenit(p.jam||'10:15')+15), link:'dca:'+a.id, ket:p.frek==='bulanan'?'setoran bulanan':'setoran mingguan' }); });
+  out.forEach(b => { b.m0 = keMenit(b.mulai); b.m1 = keMenit(b.selesai||b.mulai); if (b.m1 <= b.m0) b.m1 = b.m0 + 15; });
+  out.sort((a,b) => a.m0 - b.m0 || (a.jenis==='sholat' ? -1 : 1));
+  out.forEach(b => {
+    if (b.jenis==='sholat') { b.sela = out.some(o => o.jenis==='kuliah' && b.m0 >= o.m0 && b.m0 < o.m1); return; }
+    b.bentrok = out.some(o => o!==b && o.jenis!=='sholat' && o.m0 < b.m1 && b.m0 < o.m1);
+  });
+  return out;
+}
+/* true = selesai, false = belum, null = tidak bisa dicek otomatis */
+function selesaiBlok(b, k){
+  const l = b.link; if (!l) return null; const h = hari(k);
+  if (l==='sholat') { const s = statusSholat(k); return s==='lengkap' ? true : s==='bolos' ? false : null; }
+  if (l==='jurnal') return !!(h.jurnal && (h.jurnal.refleksi || h.jurnal.syukur || h.jurnal.pelajaran || h.jurnal.besok));
+  if (l==='catat') return (S.aruskas.transaksi||[]).some(t => t.tanggal===k && !t.rutin);
+  if (l==='hutang') { const t = +S.fokus.cicilanMingguan||0, p = bayarMinggu(awalMinggu(k)); return t ? p >= t : p > 0; }
+  if (l.startsWith('dca:')) { const a = (S.aset.aset||[]).find(x => x.id===l.slice(4)); const s = a ? statusDCA(a, k) : null; return s ? s.ok : null; }
+  return !!(h.kebiasaan && h.kebiasaan[l]);
+}
+async function klikBlok(link, k){
+  if (!link) return;
+  if (link==='sholat') return pergi('sholat');
+  if (link==='jurnal') { S.jurnalTgl = k > todayKey() ? todayKey() : k; return pergi('jurnal'); }
+  if (link==='catat') { S.tab.keuangan = 'arus'; return pergi('keuangan'); }
+  if (link==='hutang') { S.tab.keuangan = 'hutang'; return pergi('keuangan'); }
+  if (link.startsWith('dca:')) return modalSetor(link.slice(4));
+  if (k > todayKey()) { toast('Belum harinya. Centang saat sudah dikerjakan.', true); return; }
+  const h = hari(k); h.kebiasaan = h.kebiasaan||{}; h.kebiasaan[link] = !h.kebiasaan[link]; await simpanHari(k, h);
+  toast(h.kebiasaan[link] ? 'Selesai, tercentang' : 'Centang dibatalkan'); render();
+}
+function tandaBlok(b, k, lewat){
+  const s = selesaiBlok(b, k); const f = [];
+  if (s===true) f.push('<span class="pill good">selesai</span>');
+  else if (s===false && b.jenis==='sholat') f.push('<span class="pill bad">bolos</span>');
+  else if (s===false && lewat) f.push('<span class="pill warn">belum</span>');
+  if (b.sela) f.push('<span class="pill teal" title="Waktu sholat jatuh di jam kuliah">di sela kuliah</span>');
+  if (b.bentrok) f.push('<span class="pill bad" title="Jamnya bertabrakan dengan kegiatan lain">bentrok</span>');
+  return f.join('');
+}
+function agendaHari(k){
+  const nm = menitSekarang(), tk = todayKey(); const bl = blokHari(k);
+  const iNext = k===tk ? bl.findIndex(b => b.m0 > nm) : -1;
+  return `<div class="agenda">${bl.map((b,i) => { const lewat = k<tk || (k===tk && b.m1 <= nm), kini = k===tk && b.m0 <= nm && nm < b.m1;
+    return `<div class="ag ${lewat&&!kini?'lewat':''} ${kini?'kini':''}" style="--c:${WARNA[b.jenis]||'var(--muted)'}" ${b.link?`data-act="blok" data-link="${esc(b.link)}" data-tgl="${k}" title="Ketuk untuk menandai / membuka"`:''}>
+      <span class="t mono">${b.mulai}</span><span class="bar"></span><span class="x"><b>${b.jenis==='sholat'?'Sholat ':''}${esc(b.judul)}</b>${b.ket?`<small>${esc(b.ket)}</small>`:''}</span>
+      <span class="st">${kini?'<span class="pill gold">sekarang</span>':''}${i===iNext?'<span class="pill">berikutnya</span>':''}${tandaBlok(b, k, lewat)}</span></div>`; }).join('')}</div>`;
+}
+function vJadwal(){
+  const tab = S.tab.jadwal||'minggu'; const tk = todayKey(), nm = menitSekarang();
+  const ws = addDays(awalMinggu(tk), (S.jadwalOff||0)*7); const days = [0,1,2,3,4,5,6].map(i => addDays(ws, i));
+  let wajib = 0, beres = 0, bentrok = 0; const mulaiPakai = awalPakai();
+  days.forEach(k => blokHari(k).forEach(b => { if (b.bentrok) bentrok++; if (b.jenis==='sholat' || k < mulaiPakai) return; const s = selesaiBlok(b, k); if (s===null) return;
+    if (k < tk || (k===tk && b.m1 <= nm)) { wajib++; if (s) beres++; } }));
+  const sks = (S.kuliah.items||[]).reduce((n,c) => n + (keMenit(c.selesai)-keMenit(c.mulai)), 0);
+  const kepatuhan = wajib ? pct(beres, wajib) : 0;
+  const tabs = `<div class="tabs"><button class="${tab==='minggu'?'on':''}" data-act="tab" data-k="jadwal" data-v="minggu">Seminggu</button><button class="${tab==='hari'?'on':''}" data-act="tab" data-k="jadwal" data-v="hari">Hari ini</button><button class="${tab==='atur'?'on':''}" data-act="tab" data-k="jadwal" data-v="atur">Atur rutinitas</button></div>`;
+  const legend = `<div class="legend" style="margin-top:10px">${Object.entries(JENIS).map(([j,l]) => `<span><i style="background:${WARNA[j]}"></i>${l}</span>`).join('')}</div>`;
+  let isi = '';
+  if (tab==='minggu') {
+    isi = `<div class="c12 panel"><h2><span>Minggu ${labelMinggu(ws)} ${ws===awalMinggu(tk)?'<span class="pill gold">minggu ini</span>':''}</span><span class="row"><button class="btn sm" data-act="jadwal-geser" data-v="-1" aria-label="Minggu sebelumnya">‹</button><button class="btn sm" data-act="jadwal-geser" data-v="0">Minggu ini</button><button class="btn sm" data-act="jadwal-geser" data-v="1" aria-label="Minggu berikutnya">›</button></span></h2>
+      <div class="scroll"><div class="wgrid">${days.map(k => { const d = parseKey(k); const lewatHari = k < tk;
+        return `<div class="wday ${k===tk?'today':''}"><div class="dn"><span>${HARI[d.getDay()]}</span><span>${d.getDate()} ${BLN[d.getMonth()]}</span></div>${blokHari(k).map(b => { const s = selesaiBlok(b, k); const lewat = lewatHari || (k===tk && b.m1 <= nm);
+          return `<div class="wb ${b.jenis} ${s===true?'ok':''} ${s===false&&lewat&&b.jenis!=='sholat'&&k>=mulaiPakai?'miss':''} ${b.bentrok?'clash':''}" style="--c:${WARNA[b.jenis]||'var(--muted)'}" ${b.link?`data-act="blok" data-link="${esc(b.link)}" data-tgl="${k}"`:''} title="${esc(b.judul)}${b.ket?' · '+esc(b.ket):''}"><span class="mono">${b.mulai}${b.jenis!=='sholat'&&b.selesai?'–'+b.selesai:''}</span><b>${b.jenis==='sholat'?'Sholat ':''}${esc(b.judul)}</b>${b.sela?'<span class="flag">di sela kuliah</span>':''}${b.bentrok?'<span class="flag bad">bentrok</span>':''}</div>`; }).join('')}</div>`; }).join('')}</div></div>
+      ${legend}<div class="small dim" style="margin-top:8px">Ketuk kegiatan bertanda kebiasaan untuk mencentang, atau kegiatan keuangan untuk membuka formulirnya. ✓ = sudah dikerjakan, garis merah = terlewat.</div></div>`;
+  } else if (tab==='hari') {
+    const k = tk; isi = `<div class="c8 panel"><h2>${fmtTgl(k)}</h2>${agendaHari(k)}${legend}</div>
+      <div class="c4 panel"><h2>Cara pakai</h2><div class="stack small muted"><span>Kegiatan yang sedang berjalan diberi warna emas, dan berikutnya ditandai.</span><span>Ketuk kebiasaan untuk mencentang. Ketuk kegiatan keuangan atau jurnal untuk langsung membuka formulirnya.</span><span>Sholat dan kuliah masuk otomatis dari halaman masing-masing.</span></div></div>`;
+  } else {
+    const wtHariIni = waktuSholat(new Date(), S.pengaturan.lat, S.pengaturan.lng);
+    const menitItem = x => x.setelah && wtHariIni[x.setelah]!==undefined ? wtHariIni[x.setelah] + 15 + (+x.jeda||0) : keMenit(x.mulai);
+    const jamItem = x => x.setelah ? `setelah ${(SHOLAT.find(s => s[0]===x.setelah)||[,x.setelah])[1]}${+x.jeda?` +${x.jeda}m`:''}<div class="small dim">± ${jam(menitItem(x))}, ${x.durasi||15} menit</div>` : `${x.mulai}–${x.selesai}`;
+    const items = (S.jadwal.items||[]).slice().sort((a,b) => menitItem(a) - menitItem(b)); const tautan = Object.fromEntries(pilihanTautan());
+    isi = `<div class="c12 panel"><h2>Rutinitas <button class="btn sm primary" data-act="jadwal-tambah">Tambah kegiatan</button></h2>
+      <div class="scroll"><table class="tbl"><thead><tr><th>Jam</th><th>Kegiatan</th><th>Jenis</th><th>Hari</th><th>Dicek dari</th><th></th></tr></thead><tbody>${items.map(x => `<tr><td class="mono" style="white-space:nowrap">${jamItem(x)}</td><td><b>${esc(x.judul)}</b>${x.ket?`<div class="small muted">${esc(x.ket)}</div>`:''}</td><td><span class="pill" style="color:${WARNA[x.jenis]}">${JENIS[x.jenis]||x.jenis}</span></td><td><div class="chips">${[1,2,3,4,5,6,0].map(d => `<span class="${(x.hari||[]).includes(d)?'on':''}">${HARI[d].slice(0,2)}</span>`).join('')}</div></td><td class="small muted">${esc(tautan[x.link||'']||'—')}</td><td class="num" style="white-space:nowrap"><button class="btn sm ghost" data-act="jadwal-edit" data-id="${x.id}">Ubah</button><button class="btn sm ghost" data-act="jadwal-hapus" data-id="${x.id}">Hapus</button></td></tr>`).join('') || '<tr><td colspan="6" class="dim">Belum ada rutinitas.</td></tr>'}</tbody></table></div>
+      <div class="small dim" style="margin-top:10px">Sholat (jam kotamu), kuliah, dan rencana DCA tidak perlu ditambahkan di sini karena masuk otomatis. Kegiatan yang ditautkan akan dicek selesai/belum secara otomatis.</div></div>`;
+  }
+  return `
+  <div class="topbar"><div><div class="eyebrow">Sistem harian</div><h1 class="serif">Jadwal <em>rutinitas</em></h1><div class="sub">Sholat, kuliah, kebiasaan, dan urusan uang dalam satu jadwal. Yang terjadwal lebih mudah dijaga daripada yang hanya diniatkan.</div></div>
+    <div class="row">${tabs}</div></div>
+  <div class="grid">
+    <div class="c3">${tile('Kepatuhan minggu ini', wajib ? kepatuhan+'%' : '–', wajib ? `${beres} dari ${wajib} kegiatan yang sudah lewat` : 'belum ada yang lewat', kepatuhan>=80?'good':kepatuhan>=50?'gold':wajib?'bad':'')}</div>
+    <div class="c3">${tile('Kuliah per minggu', (S.kuliah.items||[]).length + ' sesi', `${Math.floor(sks/60)} jam ${sks%60} menit di kelas`, 'teal')}</div>
+    <div class="c3">${tile('Rutinitas', (S.jadwal.items||[]).length, 'kegiatan yang kamu atur', '')}</div>
+    <div class="c3">${tile('Bentrok', bentrok, bentrok ? 'kegiatan dengan jam bertabrakan, cek yang bertanda merah' : 'tidak ada jam bertabrakan', bentrok?'bad':'good')}</div>
+    ${isi}
+  </div>`;
+}
+function modalJadwal(x){
+  const baru = !x; x = x || { id:uid(), judul:'', jenis:'kebiasaan', hari:[1,2,3,4,5,6,0], mulai:'08:00', selesai:'09:00', link:'', ket:'' };
+  modal(`<h3>${baru ? 'Kegiatan baru' : 'Ubah kegiatan'}</h3><div class="desc">Tautkan ke kebiasaan kalau ingin dicentang langsung dari jadwal.</div>
+  <form class="form">${F('Kegiatan', `<input type="text" name="judul" value="${esc(x.judul)}" required placeholder="Contoh: Murajaah hafalan, kerja konten">`)}
+  <div class="form cols2">${F('Jenis', `<select name="jenis">${['kebiasaan','ibadah','keuangan','agenda'].map(j => `<option value="${j}" ${x.jenis===j?'selected':''}>${JENIS[j]}</option>`).join('')}</select>`)}${F('Dicek dari', `<select name="link">${pilihanTautan().map(([v,l]) => `<option value="${v}" ${(x.link||'')===v?'selected':''}>${esc(l)}</option>`).join('')}</select>`)}</div>
+  <div class="f">Hari<div class="daypick">${[1,2,3,4,5,6,0].map(d => `<label><input type="checkbox" name="hari" value="${d}" ${(x.hari||[]).includes(d)?'checked':''}><span>${HARI[d].slice(0,3)}</span></label>`).join('')}</div></div>
+  ${F('Waktu', `<select name="setelah"><option value="">Jam tetap</option>${SHOLAT.map(([id,n]) => `<option value="${id}" ${x.setelah===id?'selected':''}>Setelah sholat ${n} (ikut jam sholat)</option>`).join('')}</select>`)}
+  <div class="form cols2">${F('Mulai (jam tetap)', `<input type="time" name="mulai" value="${x.mulai||'08:00'}">`)}${F('Selesai (jam tetap)', `<input type="time" name="selesai" value="${x.selesai||'09:00'}">`)}
+  ${F('Jeda setelah sholat (menit)', `<input type="number" name="jeda" min="0" max="180" value="${+x.jeda||0}">`)}${F('Lama (menit)', `<input type="number" name="durasi" min="5" max="300" value="${+x.durasi||15}">`)}</div>
+  <div class="small dim">Jam tetap memakai Mulai–Selesai. "Setelah sholat" memakai Jeda dan Lama, dan otomatis digeser kalau jatuh di jam kuliah.</div>
+  ${F('Catatan', `<input type="text" name="ket" value="${esc(x.ket||'')}" placeholder="opsional">`)}${ACTIONS()}</form>`,
+  async (d, fd) => { const hariDipilih = fd.getAll('hari').map(Number); if (!hariDipilih.length) { toast('Pilih minimal satu hari', true); return false; }
+    if (!d.setelah && (!d.mulai || !d.selesai)) { toast('Isi jam mulai dan selesai', true); return false; }
+    const obj = { ...x, judul:d.judul, jenis:d.jenis, link:d.link, mulai:d.mulai, selesai:d.selesai, setelah:d.setelah||'', jeda:+d.jeda||0, durasi:+d.durasi||15, ket:d.ket, hari:hariDipilih };
+    const list = S.jadwal.items = S.jadwal.items||[]; const i = list.findIndex(y => y.id===x.id); if (i>=0) list[i] = obj; else list.push(obj);
+    await store.set('jadwal/rutinitas', S.jadwal); toast('Jadwal disimpan'); render(); });
+}
+
+/* ----- Keuangan ----- */
+const awalMinggu =k => { const d = parseKey(k); d.setDate(d.getDate() - ((d.getDay()+6)%7)); return key(d); }; // Senin
+const labelMinggu = ws => { const a = parseKey(ws), b = parseKey(addDays(ws,6)); return a.getMonth()===b.getMonth() ? `${a.getDate()}–${b.getDate()} ${BLN[b.getMonth()]}` : `${a.getDate()} ${BLN[a.getMonth()]} – ${b.getDate()} ${BLN[b.getMonth()]}`; };
+const txHutang = () => (S.aruskas.transaksi||[]).filter(t => t.hutang);
+const bayarMinggu = ws => { const we = addDays(ws,6); return txHutang().filter(t => t.tanggal>=ws && t.tanggal<=we).reduce((n,t)=>n+(+t.keluar||0),0); };
+const jumlahKeluar = list => list.reduce((n,t)=>n+(+t.keluar||0),0);
+
+/* setoran ke aset yang sudah ada (seperti DCA): nilai aset bertambah, tercatat di riwayat setoran,
+   dan (opsional) di arus kas sebagai Tabungan & investasi. Membatalkan = semuanya dikembalikan. */
+function statusDCA(a, k){
+  const p = a.dca; if (!p || !p.aktif || !(+p.jumlah>0)) return null; k = k || todayKey();
+  const dari = p.frek==='bulanan' ? k.slice(0,7)+'-01' : awalMinggu(k), sampai = p.frek==='bulanan' ? k.slice(0,7)+'-31' : addDays(dari, 6);
+  const sudah = (S.aset.setoran||[]).filter(s => s.aset===a.id && s.tanggal>=dari && s.tanggal<=sampai).reduce((n,s) => n + (+s.jumlah||0), 0);
+  return { sudah, target:+p.jumlah, ok: sudah >= +p.jumlah, periode: p.frek==='bulanan' ? 'bulan ini' : 'minggu ini' };
+}
+const jadwalDCA = p => p.frek==='bulanan' ? `tiap tanggal ${Math.min(+p.tanggal||1,28)}` : `tiap ${HARI[+p.hari]}`;
+async function setorAset(d){
+  const a = (S.aset.aset||[]).find(x => x.id===d.aset); if (!a) { toast('Pilih asetnya dulu', true); return false; }
+  const j = Math.round(+d.jumlah||0); if (!(j>0)) { toast('Isi jumlah setoran', true); return false; }
+  const id = uid(), tgl = d.tanggal || todayKey(), keArus = d.arus==='on';
+  a.nilai = (+a.nilai||0) + j; a.disetor = (+a.disetor||0) + j;
+  S.aset.setoran.push({ id, tanggal:tgl, aset:a.id, jumlah:j, catatan:d.catatan||'', arus:keArus });
+  const tulis = [store.set('keuangan/aset', S.aset)];
+  if (keArus) { S.aruskas.transaksi.push({ id:'setor-'+id, tanggal:tgl, ket:`Setor ${a.nama}${d.catatan?' · '+d.catatan:''}`, kategori:'Tabungan', masuk:0, keluar:j, aset:a.id, setoran:id }); tulis.push(store.set('keuangan/aruskas', S.aruskas)); }
+  await Promise.all(tulis); toast(`${a.nama} bertambah ${rp(j)} → ${rp(a.nilai)}`); return true;
+}
+async function batalSetor(sid){
+  const s = (S.aset.setoran||[]).find(x => x.id===sid); if (!s) return;
+  const a = (S.aset.aset||[]).find(x => x.id===s.aset); if (a) { a.nilai = Math.max(0, (+a.nilai||0) - s.jumlah); a.disetor = Math.max(0, (+a.disetor||0) - s.jumlah); }
+  S.aset.setoran = S.aset.setoran.filter(x => x.id!==sid); S.aruskas.transaksi = S.aruskas.transaksi.filter(t => t.setoran!==sid);
+  await Promise.all([store.set('keuangan/aset', S.aset), store.set('keuangan/aruskas', S.aruskas)]); toast('Setoran dibatalkan, nilai aset dikembalikan');
+}
+function modalSetor(asetId){
+  const A = S.aset.aset||[]; if (!A.length) { toast('Belum ada aset. Tambahkan dulu di tab Aset & utang.', true); return; }
+  const a = A.find(x => x.id===asetId) || A[0]; const saran = a.dca && +a.dca.jumlah ? a.dca.jumlah : '';
+  modal(`<h3>Setor ke aset</h3><div class="desc">Menambah nilai aset yang sudah ada, seperti DCA. Tidak membuat aset baru.</div>
+  <form class="form">${F('Aset', `<select name="aset">${A.map(x => `<option value="${x.id}" ${x.id===a.id?'selected':''}>${esc(x.nama)} · ${rpS(x.nilai)}</option>`).join('')}</select>`)}
+  <div class="form cols2">${F('Jumlah (Rp)', `<input type="number" name="jumlah" min="1" step="1" value="${saran}" required inputmode="numeric" style="font-family:var(--mono)">`)}${F('Tanggal', `<input type="date" name="tanggal" value="${todayKey()}" max="${todayKey()}" required>`)}</div>
+  ${F('Catatan', `<input type="text" name="catatan" placeholder="opsional, misal: beli di harga turun">`)}
+  <label class="row small muted" style="cursor:pointer;gap:8px"><input type="checkbox" name="arus" checked> Catat juga di arus kas sebagai Tabungan & investasi (uangnya keluar dari kas)</label>${ACTIONS('Setor')}</form>`,
+  async d => { const ok = await setorAset(d); if (ok) render(); return ok; });
+}
+function modalDCA(asetId){
+  const a = (S.aset.aset||[]).find(x => x.id===asetId); if (!a) return;
+  const p = a.dca || { jumlah:'', frek:'mingguan', hari:1, tanggal:1, jam:'10:15', aktif:true };
+  modal(`<h3>Rencana DCA · ${esc(a.nama)}</h3><div class="desc">Setoran rutin supaya investasi berjalan disiplin. Masuk ke Jadwal dan statusnya terlihat tiap periode. Setorannya tetap kamu konfirmasi sendiri, tidak otomatis.</div>
+  <form class="form"><div class="form cols2">${F('Jumlah per setoran (Rp)', `<input type="number" name="jumlah" min="0" step="1000" value="${p.jumlah}" required inputmode="numeric">`)}${F('Frekuensi', `<select name="frek"><option value="mingguan" ${p.frek!=='bulanan'?'selected':''}>Mingguan</option><option value="bulanan" ${p.frek==='bulanan'?'selected':''}>Bulanan</option></select>`)}
+  ${F('Hari (kalau mingguan)', `<select name="hari">${[1,2,3,4,5,6,0].map(d => `<option value="${d}" ${+p.hari===d?'selected':''}>${HARI[d]}</option>`).join('')}</select>`)}${F('Tanggal (kalau bulanan)', `<input type="number" name="tanggal" min="1" max="28" value="${p.tanggal||1}">`)}
+  ${F('Jam pengingat', `<input type="time" name="jam" value="${p.jam||'10:15'}">`)}<label class="row small muted" style="cursor:pointer;gap:8px;align-self:end;padding-bottom:10px"><input type="checkbox" name="aktif" ${p.aktif!==false?'checked':''}> Rencana aktif</label></div>
+  <div class="actions" style="justify-content:space-between">${a.dca?`<button type="button" class="btn danger" id="dcaHapus">Hapus rencana</button>`:'<span></span>'}<span class="row"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">Simpan</button></span></div></form>`,
+  async d => { a.dca = { jumlah:+d.jumlah||0, frek:d.frek, hari:+d.hari, tanggal:Math.min(28, Math.max(1, +d.tanggal||1)), jam:d.jam||'09:30', aktif:d.aktif==='on' };
+    await store.set('keuangan/aset', S.aset); toast(`Rencana DCA ${a.nama} disimpan, masuk ke Jadwal`); render(); });
+  const h = document.getElementById('dcaHapus'); if (h) h.onclick = async () => { delete a.dca; await store.set('keuangan/aset', S.aset); $('#modalBg').classList.remove('show'); toast('Rencana DCA dihapus'); render(); };
+}
+
+/* kolom input cepat: dipakai di Keuangan (lengkap) dan Hari ini (ringkas, tanggal = hari ini) */
+function formCepat(ringkas){
+  return `<form class="quick ${ringkas?'compact':''}" data-form="tx" autocomplete="off">
+    ${ringkas ? '' : `<input type="date" name="tanggal" value="${todayKey()}" max="${todayKey()}" required aria-label="Tanggal">`}
+    <input type="text" name="ket" required placeholder="${ringkas?'Catat pengeluaran: makan, bensin…':'Keterangan: makan siang, bensin, gaji…'}" aria-label="Keterangan">
+    <input type="number" name="jumlah" min="1" step="1" required placeholder="Rp" aria-label="Jumlah" inputmode="numeric">
+    <select name="kategori" aria-label="Kategori">${KAT_TX.map(k=>`<option ${k==='Kebutuhan'?'selected':''}>${k}</option>`).join('')}</select>
+    <button class="btn primary" type="submit">Catat</button></form>`;
+}
+
+function vKeuangan(){
+  const tab = S.tab.keuangan||'arus'; const mk = S.bulanTx; const r = ringkasBulan(mk); const tk = todayKey(); const ws = awalMinggu(tk);
+  const tabs = `<div class="tabs">${[['arus','Arus kas'],['hutang','Bayar hutang'],['aset','Aset & utang']].map(([v,l]) => `<button class="${tab===v?'on':''}" data-act="tab" data-k="keuangan" data-v="${v}">${l}</button>`).join('')}</div>`;
+  let isi = '';
+
+  if (tab==='arus') {
+    const months = []; for (let i=5;i>=0;i--){ const d = parseKey(mk+'-01'); d.setMonth(d.getMonth()-i); months.push(monthKey(d)); }
+    const tx = (S.aruskas.transaksi||[]).filter(t => (t.tanggal||'').startsWith(mk)).sort((a,b)=>b.tanggal.localeCompare(a.tanggal) || (b.masuk?1:0)-(a.masuk?1:0));
+    const sisa = r.pemasukan - r.pengeluaran - r.tabungan;
+    const mingguIni = (S.aruskas.transaksi||[]).filter(t => t.tanggal>=ws && t.tanggal<=addDays(ws,6) && t.kategori!=='Pemasukan' && t.kategori!=='Tabungan');
+    const kM = jumlahKeluar(mingguIni), rM = jumlahKeluar(mingguIni.filter(t=>t.rutin)), hM = jumlahKeluar(mingguIni.filter(t=>t.hutang));
+    const rutin = S.aruskas.rutin||[];
+    isi = `
+    <div class="c12 panel tight"><div class="row between" style="margin-bottom:10px"><span class="eyebrow">Catat pengeluaran / pemasukan</span>
+      <span class="small muted">Minggu ini (${labelMinggu(ws)}): keluar <b class="mono" style="color:var(--text)">${rp(kM)}</b>${rM?` · rutin ${rpS(rM)}`:''}${hM?` · hutang ${rpS(hM)}`:''}</span></div>${formCepat(false)}</div>
+    <div class="c3">${tile('Pemasukan', rpS(r.pemasukan), fmtBulan(mk), 'good')}</div>
+    <div class="c3">${tile('Pengeluaran', rpS(r.pengeluaran), [r.pemasukan?pct(r.pengeluaran,r.pemasukan)+'% dari pemasukan':'', r.hutang?'hutang '+rpS(r.hutang):'', r.kuliah?'kuliah '+rpS(r.kuliah):'', r.rutin?'rutin '+rpS(r.rutin):''].filter(Boolean).join(' · '), 'bad')}</div>
+    <div class="c3">${tile('Tabungan & investasi', rpS(r.tabungan), r.pemasukan?pct(r.tabungan,r.pemasukan)+'% ditabung':'', 'teal')}</div>
+    <div class="c3">${tile('Sisa tunai', rpS(sisa), sisa<0?'lebih banyak keluar daripada masuk':'aman', sisa<0?'bad':'gold')}</div>
+    <div class="c8 panel"><h2>Transaksi ${fmtBulan(mk)} <span class="row"><input type="month" value="${mk}" data-field="bulanTx" style="width:auto;padding:5px 8px"><span class="pill">${tx.length}</span></span></h2>
+      ${tx.length ? `<div class="scroll"><table class="tbl"><thead><tr><th>Tgl</th><th>Keterangan</th><th>Kategori</th><th class="num">Masuk</th><th class="num">Keluar</th><th></th></tr></thead><tbody>${tx.map(t => `<tr><td class="mono">${t.tanggal.slice(8)}</td><td>${esc(t.ket)}${t.rutin?' <span class="pill violet">rutin</span>':''}${t.hutang?' <span class="pill bad">hutang</span>':''}</td><td><span class="pill ${({Pemasukan:'good',Tabungan:'teal',Keinginan:'warn',Kewajiban:'violet',Kuliah:'gold'})[t.kategori]||''}">${esc(t.kategori)}</span></td><td class="num" style="color:var(--good)">${t.masuk?rp(t.masuk):''}</td><td class="num">${t.keluar?rp(t.keluar):''}</td><td class="num"><button class="btn sm ghost" data-act="tx-hapus" data-id="${t.id}" title="${t.hutang?'Batalkan pembayaran (sisa hutang dikembalikan)':t.rutin?'Lewati minggu ini':'Hapus'}">×</button></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">Belum ada transaksi di ${fmtBulan(mk)}.${r.sumber==='ringkasan'?' Angka di atas dari ringkasan spreadsheet.':''}</div>`}
+      <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-act="bulan-manual">Isi ringkasan bulan manual</button></div></div>
+    <div class="c4 panel"><h2>Pengeluaran rutin mingguan <button class="act" data-act="rutin-tambah">+ Tambah</button></h2>
+      <div class="list">${rutin.map(x => `<div class="item" style="${x.aktif?'':'opacity:.6'}"><div class="hd"><label class="row" style="gap:10px;cursor:pointer"><input type="checkbox" data-act="rutin-aktif" data-id="${x.id}" ${x.aktif?'checked':''}><b>${esc(x.nama)}</b></label><span class="pill ${x.aktif?'good':''}">${x.aktif?'aktif':'mati'}</span></div>
+        <div class="form cols2"><label class="f">Per minggu (Rp)<input type="number" value="${+x.jumlah||0}" step="10000" min="0" data-act="rutin-field" data-id="${x.id}" data-k="jumlah"></label><label class="f">Dicatat tiap<select data-act="rutin-field" data-id="${x.id}" data-k="hari">${[1,2,3,4,5,6,0].map(d=>`<option value="${d}" ${+x.hari===d?'selected':''}>${HARI[d]}</option>`).join('')}</select></label>
+        <label class="f full">Mulai dihitung<input type="date" value="${x.mulai||''}" data-act="rutin-field" data-id="${x.id}" data-k="mulai"></label>
+        <label class="row small muted full" style="cursor:pointer;gap:8px"><input type="checkbox" data-act="rutin-field" data-id="${x.id}" data-k="ff" ${x.ff!==false?'checked':''}> Ikut dihitung di target financial freedom</label></div>
+        <div class="row between small"><span class="dim">${esc(x.ket||'')}</span><button class="btn sm ghost" data-act="rutin-hapus" data-id="${x.id}">Hapus</button></div></div>`).join('') || '<div class="empty">Tidak ada pengeluaran rutin.</div>'}</div>
+      <div class="small dim" style="margin-top:10px">Yang aktif otomatis tercatat sebagai pengeluaran tiap minggu. Biaya kuliah tidak di sini: catat manual di kolom atas dengan kategori <b>Kuliah</b>.</div></div>
+    <div class="c12 panel"><h2>Enam bulan terakhir</h2>${barChart(months.map(m => ({label: BLN[+m.slice(5)-1], values: ringkasBulan(m)})), {keys:[['pemasukan','var(--good)'],['pengeluaran','var(--bad)'],['tabungan','var(--teal)']]})}
+      <div class="legend" style="margin-top:6px"><span><i style="background:var(--good)"></i>Pemasukan</span><span><i style="background:var(--bad)"></i>Pengeluaran</span><span><i style="background:var(--teal)"></i>Tabungan & investasi</span></div>
+      <div class="small dim" style="margin-top:8px">Tabungan & investasi tidak dihitung pengeluaran karena berubah jadi aset, sama seperti di spreadsheet Laporan Keuangan 2026.</div></div>`;
+  }
+
+  else if (tab==='hutang') {
+    const hu = infoHutang(); const U = S.aset.utang||[]; const target = +S.fokus.cicilanMingguan||0;
+    const bm = bayarMinggu(ws); const bulanIni = jumlahKeluar(txHutang().filter(t => t.tanggal.startsWith(monthKey(new Date()))));
+    const bayar = txHutang().slice().sort((a,b)=>b.tanggal.localeCompare(a.tanggal));
+    const pertama = bayar.length ? awalMinggu(bayar[bayar.length-1].tanggal) : ws;
+    const minggu = []; for (let w = ws, i = 0; w >= pertama && i < 12; w = addDays(w,-7), i++) minggu.push(w);
+    const skala = Math.max(target*1.5, ...minggu.map(bayarMinggu), 1);
+    const status = (w, p) => { if (!p) return w===ws ? ['belum','warn'] : ['bolong','bad']; if (!target) return ['dibayar','good']; if (p<target) return ['kurang '+rpS(target-p),'warn']; if (p===target) return ['pas','good']; return ['lebih '+rpS(p-target),'gold']; };
+    isi = `
+    <div class="c3">${tile('Sisa hutang', rpS(hu.sisa), `terbayar ${hu.terbayar}% dari puncak ${rpS(hu.puncak)}`, 'bad')}</div>
+    <div class="c3">${tile('Minggu ini', rpS(bm), target ? (bm>=target ? (bm>target?`lebih ${rpS(bm-target)} dari target`:'sesuai target') : `kurang ${rpS(target-bm)} dari target ${rpS(target)}`) : labelMinggu(ws), target&&bm>=target?'good':'gold')}</div>
+    <div class="c3">${tile('Dibayar bulan ini', rpS(bulanIni), fmtBulan(monthKey(new Date())), 'teal')}</div>
+    <div class="c3">${tile('Perkiraan lunas', hu.minggu ? `${BLN[parseKey(hu.lunas).getMonth()]} ${hu.lunas.slice(0,4)}` : '—', hu.minggu ? `${hu.minggu} minggu lagi dengan ${rpS(target)}/minggu` : 'isi target cicilan', 'gold')}</div>
+    <div class="c4 panel"><h2>Input pembayaran</h2><form class="form" data-form="bayar">
+      <label class="f">Tanggal bayar<input type="date" name="tanggal" value="${tk}" max="${tk}" required></label>
+      <label class="f">Jumlah dibayar (Rp)<input type="number" name="jumlah" min="1" step="1" value="${target||''}" required inputmode="numeric" style="font-family:var(--mono);font-size:18px"></label>
+      ${U.length>1 ? `<label class="f">Untuk hutang<select name="utang">${U.map(u=>`<option value="${u.id}">${esc(u.nama)} · ${rpS(u.nilai)}</option>`).join('')}</select></label>` : `<input type="hidden" name="utang" value="${U[0]?U[0].id:''}">`}
+      <label class="f">Catatan<input type="text" name="catatan" placeholder="opsional, misal: bayar lebih karena ada bonus"></label>
+      <button class="btn primary" type="submit">Bayar & kurangi hutang</button></form>
+      <hr class="sep"><div class="kv"><span class="k">Target cicilan per minggu</span><span class="v"><input type="number" value="${target}" step="50000" min="0" data-act="fokus-angka" data-k="cicilanMingguan" style="width:120px;padding:4px 8px;text-align:right"></span>
+        ${hu.rata4 ? `<span class="k">Rata-rata bayar per minggu</span><span class="v">${rpS(hu.rata4)}</span><span class="k">Lunas dengan pola itu</span><span class="v" style="color:var(--gold-2)">${BLN[parseKey(hu.lunasRata).getMonth()]} ${hu.lunasRata.slice(0,4)}</span>` : ''}</div>
+      <div class="small dim" style="margin-top:10px">Setiap pembayaran langsung mengurangi sisa hutang dan tercatat sebagai pengeluaran (Kewajiban) di arus kas.</div></div>
+    <div class="c8 panel"><h2>Per minggu <span class="small muted" style="font-weight:500">Senin–Minggu · garis emas = target</span></h2>
+      <div class="weeks">${minggu.map(w => { const p = bayarMinggu(w); const [s, c] = status(w, p); return `<div class="wk ${w===ws?'now':''}"><span class="lbl">${labelMinggu(w)}${w===ws?' <span class="dim">· ini</span>':''}</span><span class="tr"><b style="width:${Math.min(100, p/skala*100)}%"></b>${target?`<i style="left:${Math.min(100, target/skala*100)}%"></i>`:''}</span><span class="v mono">${p?rpS(p):'—'}</span><span class="pill ${c}">${s}</span></div>`; }).join('')}</div>
+      ${bayar.length ? '' : '<div class="empty" style="margin-top:10px">Belum ada pembayaran tercatat. Input pembayaran pertamamu di kiri.</div>'}</div>
+    <div class="c12 panel"><h2>Riwayat pembayaran <span class="pill">${bayar.length}</span></h2>
+      ${bayar.length ? `<div class="scroll"><table class="tbl"><thead><tr><th>Tanggal</th><th>Keterangan</th><th class="num">Jumlah</th><th></th></tr></thead><tbody>${bayar.map(t => `<tr><td class="mono">${fmtTgl(t.tanggal)}</td><td>${esc(t.ket)}</td><td class="num">${rp(t.keluar)}</td><td class="num"><button class="btn sm ghost" data-act="tx-hapus" data-id="${t.id}">Batalkan</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Kosong.</div>'}</div>`;
+  }
+
+  else {
+    const A = S.aset.aset||[], U = S.aset.utang||[]; const ta = totalAset(), tu = totalUtang(), kb = ta - tu;
+    const byKat = {}; A.forEach(a => byKat[a.kategori||'Lainnya'] = (byKat[a.kategori||'Lainnya']||0) + (+a.nilai||0));
+    const katColor = {Bitcoin:'var(--gold)',Altcoin:'var(--violet)',Stablecoin:'var(--teal)','Kas & Tabungan':'var(--good)','Reksa dana':'#6FA8FF',Emas:'var(--gold-2)',Lainnya:'var(--muted)'};
+    const riw = Object.entries(S.aset.riwayat||{}).sort((a,b)=>a[0].localeCompare(b[0])).map(([m,v]) => ({label: BLN[+m.slice(5)-1]+' '+m.slice(2,4), v:+v}));
+    isi = `
+    <div class="c4">${tile('Total aset', rpS(ta), `${A.length} pos`, 'gold')}</div>
+    <div class="c4">${tile('Total utang', rpS(tu), `${U.length} pos`, tu?'bad':'')}</div>
+    <div class="c4">${tile('Kekayaan bersih', rpS(kb), kb<0?'masih minus, terus kurangi utang':'positif', kb>=0?'good':'bad')}</div>
+    <div class="c8 panel"><h2>Aset <span class="row"><button class="btn sm primary" data-act="setor">+ Setor / DCA</button><button class="btn sm ghost" data-act="aset-tambah">+ Aset baru</button></span></h2><div class="scroll"><table class="tbl"><thead><tr><th>Nama</th><th>Kategori</th><th class="num">Nilai sekarang (Rp)</th><th>Rencana DCA</th><th></th></tr></thead><tbody>${A.slice().sort((a,b)=>(+b.nilai)-(+a.nilai)).map(a => `<tr><td><b>${esc(a.nama)}</b>${+a.disetor?`<div class="small muted">disetor tercatat ${rpS(a.disetor)}</div>`:''}</td><td><span class="pill">${esc(a.kategori||'Lainnya')}</span></td><td class="num"><input type="number" value="${+a.nilai||0}" data-act="aset-nilai" data-id="${a.id}" style="width:140px;text-align:right;padding:5px 8px" title="Sesuaikan dengan harga pasar"></td><td class="small">${a.dca&&a.dca.aktif&&+a.dca.jumlah?`<span class="muted">${rpS(a.dca.jumlah)} ${jadwalDCA(a.dca)}</span>`:'<span class="dim">—</span>'}</td><td class="num" style="white-space:nowrap"><button class="btn sm" data-act="setor" data-id="${a.id}">+ Setor</button> <button class="btn sm ghost" data-act="dca" data-id="${a.id}">DCA</button><button class="btn sm ghost" data-act="aset-hapus" data-id="${a.id}" title="Hapus aset">×</button></td></tr>`).join('')||'<tr><td colspan="5" class="dim">Belum ada aset. Klik + Aset baru.</td></tr>'}</tbody></table></div>
+      <div class="small dim" style="margin-top:10px">+ Setor menambah nilai aset yang sudah ada, seperti DCA. Kolom nilai dipakai untuk menyesuaikan harga pasar, misalnya saat crypto naik atau turun.</div></div>
+    <div class="c4 panel"><h2>Rencana DCA</h2>${(() => { const P = A.filter(a => a.dca && a.dca.aktif && +a.dca.jumlah>0); return P.length ? `<div class="list">${P.map(a => { const s = statusDCA(a); return `<div class="item"><div class="hd"><b>${esc(a.nama)}</b><span class="pill ${s.ok?'good':'warn'}">${s.ok?'sudah '+s.periode:'belum '+s.periode}</span></div><div class="row between small"><span class="muted">${rpS(a.dca.jumlah)} ${jadwalDCA(a.dca)} · ${a.dca.jam||'09:30'}</span><span class="mono">${rpS(s.sudah)} / ${rpS(s.target)}</span></div><div class="prog gold"><b style="width:${Math.min(100, pct(s.sudah, s.target))}%"></b></div>${s.ok?'':`<div><button class="btn sm primary" data-act="setor" data-id="${a.id}">Setor ${rpS(s.target - s.sudah)} sekarang</button></div>`}</div>`; }).join('')}</div>` : '<div class="empty">Belum ada rencana DCA. Klik tombol DCA di baris aset untuk membuat setoran rutin mingguan atau bulanan.</div>'; })()}
+      <div class="small dim" style="margin-top:10px">Rencana DCA otomatis muncul di halaman Jadwal pada hari dan jamnya.</div></div>
+    <div class="c6 panel"><h2>Komposisi aset</h2><div class="bars">${Object.entries(byKat).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<div class="bar"><span>${esc(k)}</span><span class="tr"><b style="width:${pct(v,ta)}%;background:${katColor[k]||'var(--muted)'}"></b></span><span class="v">${pct(v,ta)}% · ${rpS(v)}</span></div>`).join('')||'<div class="empty">Belum ada aset.</div>'}</div></div>
+    <div class="c6 panel"><h2>Perjalanan total aset <button class="act" data-act="riwayat-simpan">Simpan nilai ${fmtBulan(monthKey(new Date()))}</button></h2>${lineChart(riw)}</div>
+    <div class="c6 panel"><h2>Riwayat setoran <span class="pill">${(S.aset.setoran||[]).length}</span></h2>${(S.aset.setoran||[]).length ? `<div class="scroll"><table class="tbl"><thead><tr><th>Tanggal</th><th>Aset</th><th class="num">Jumlah</th><th></th></tr></thead><tbody>${S.aset.setoran.slice().sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).slice(0,30).map(s => `<tr><td class="mono">${fmtTgl(s.tanggal,false)}</td><td>${esc((A.find(a=>a.id===s.aset)||{}).nama||'?')}${s.catatan?`<div class="small muted">${esc(s.catatan)}</div>`:''}${s.arus?'':' <span class="pill">tanpa arus kas</span>'}</td><td class="num">${rp(s.jumlah)}</td><td class="num"><button class="btn sm ghost" data-act="setor-batal" data-id="${s.id}">Batalkan</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada setoran. Setoran pertamamu akan tercatat di sini.</div>'}</div>
+    <div class="c6 panel"><h2>Utang <button class="act" data-act="utang-tambah">+ Tambah</button></h2><div class="scroll"><table class="tbl"><thead><tr><th>Nama</th><th class="num">Sisa (Rp)</th><th></th></tr></thead><tbody>${U.map(a => `<tr><td><b>${esc(a.nama)}</b>${a.ket?`<div class="small muted">${esc(a.ket)}</div>`:''}</td><td class="num"><input type="number" value="${+a.nilai||0}" data-act="utang-nilai" data-id="${a.id}" style="width:150px;text-align:right;padding:5px 8px"></td><td class="num"><button class="btn sm ghost" data-act="utang-hapus" data-id="${a.id}">×</button></td></tr>`).join('')||'<tr><td colspan="3" class="dim">Tidak ada utang.</td></tr>'}</tbody></table></div>
+      <div class="small dim" style="margin-top:10px">Untuk mencicil, pakai tab Bayar hutang supaya tercatat. Kolom ini untuk koreksi sisa saja.</div></div>`;
+  }
+
+  return `
+  <div class="topbar"><div><div class="eyebrow">Uang</div><h1 class="serif">Arus kas & <em>aset</em></h1><div class="sub">Ketik pengeluaran di kolom atas, angkanya langsung terhitung. Cicilan hutang di tab Bayar hutang.</div></div>
+    <div class="row">${tabs}</div></div>
+  <div class="grid">${isi}</div>`;
+}
+
+/* ================= MODAL ================= */
+function modal(html, onSubmit){
+  const bg = $('#modalBg'), m = $('#modal'); m.innerHTML = html; bg.classList.add('show');
+  const f = m.querySelector('form'); const close = () => { bg.classList.remove('show'); m.innerHTML=''; };
+  m.querySelectorAll('[data-close]').forEach(b => b.onclick = close);
+  if (f) f.onsubmit = async e => { e.preventDefault(); const fd = new FormData(f); const data = Object.fromEntries(fd.entries()); const ok = await onSubmit(data, fd); if (ok!==false) close(); };
+  setTimeout(() => { const first = m.querySelector('input,textarea,select'); if (first) first.focus(); }, 30);
+}
+$('#modalBg').addEventListener('click', e => { if (e.target.id==='modalBg') { $('#modalBg').classList.remove('show'); } });
+const F = (label, inner) => `<label class="f">${label}${inner}</label>`;
+const ACTIONS = (ok='Simpan') => `<div class="actions"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">${ok}</button></div>`;
+
+function modalLanggar(){
+  modal(`<h3>Catat pelanggaran</h3><div class="desc">Ini akan mereset hari bersih dan streak secara otomatis. Mencatat bukan kekalahan; menyembunyikan baru kekalahan.</div>
+  <form class="form">${F('Tanggal', `<input type="date" name="tgl" value="${todayKey()}" max="${todayKey()}" required>`)}
+  ${F('Jenis', `<select name="aturan">${aturanLarangan().map(a=>`<option value="${a.id}">${esc(a.nama)}</option>`).join('')}</select>`)}
+  ${F('Apa yang terjadi & apa pemicunya', `<textarea name="catatan" placeholder="Singkat saja, yang penting jujur. Pemicu: lelah? sendirian? HP di tangan?"></textarea>`)}
+  ${F('Langkah agar tidak terulang', `<input type="text" name="langkah" placeholder="Contoh: HP di luar kamar setelah isya">`)}${ACTIONS('Catat & reset')}</form>`,
+  async d => { const h = hari(d.tgl); h.pelanggaran = h.pelanggaran||[]; h.pelanggaran.push({ id:uid(), aturan:d.aturan, catatan:[d.catatan, d.langkah?'Langkah: '+d.langkah:''].filter(Boolean).join(' — '), jam: d.tgl===todayKey() ? jam(new Date().getHours()*60+new Date().getMinutes()) : '' }); await simpanHari(d.tgl, h); toast('Tercatat. Hari bersih direset ke 0.'); render(); });
+}
+function modalAturan(a){
+  const isNew = !a; a = a || { id:uid(), nama:'', jenis:'harian', ket:'' };
+  modal(`<h3>${isNew?'Aturan baru':'Ubah aturan'}</h3><div class="desc">Aturan harian harus dicentang tiap hari agar hari dihitung lengkap. Larangan memicu reset saat dilanggar.</div>
+  <form class="form">${F('Nama', `<input type="text" name="nama" value="${esc(a.nama)}" required>`)}${F('Jenis', `<select name="jenis"><option value="harian" ${a.jenis==='harian'?'selected':''}>Wajib tiap hari</option><option value="larangan" ${a.jenis==='larangan'?'selected':''}>Larangan</option></select>`)}${F('Keterangan', `<input type="text" name="ket" value="${esc(a.ket||'')}">`)}${ACTIONS()}</form>`,
+  async d => { const list = S.pengaturan.aturan; const i = list.findIndex(x=>x.id===a.id); const obj = {...a, ...d}; if (i>=0) list[i]=obj; else list.push(obj); await store.set('pengaturan/utama', S.pengaturan); toast('Aturan disimpan'); render(); });
+}
+function modalRencana(x){
+  const isNew = !x; x = x || { id:uid(), judul:'', kategori:'Disiplin', target:addDays(todayKey(),180), progres:0, catatan:'' };
+  modal(`<h3>${isNew?'Target baru':'Ubah target'}</h3><form class="form">${F('Target', `<input type="text" name="judul" value="${esc(x.judul)}" required placeholder="Terukur: angka, tanggal, atau bukti">`)}
+  <div class="form cols2">${F('Kategori', `<select name="kategori">${KATEGORI_RENCANA.map(k=>`<option ${x.kategori===k?'selected':''}>${k}</option>`).join('')}</select>`)}${F('Tenggat', `<input type="date" name="target" value="${x.target}" required>`)}</div>
+  ${F('Catatan', `<textarea name="catatan">${esc(x.catatan||'')}</textarea>`)}${ACTIONS()}</form>`,
+  async d => { const list = S.rencana.items; const i = list.findIndex(y=>y.id===x.id); const obj = {...x, ...d}; if (i>=0) list[i]=obj; else list.push(obj); await store.set('rencana/3tahun', S.rencana); toast('Target disimpan'); render(); });
+}
+function modalHasil(x){
+  modal(`<h3>Evaluasi keputusan</h3><div class="desc">${esc(x.keputusan)}</div><form class="form">${F('Status', `<select name="status"><option>Berhasil</option><option>Sebagian</option><option>Gagal</option><option>Dibatalkan</option></select>`)}${F('Apa hasilnya dan apa pelajarannya', `<textarea name="hasil" required></textarea>`)}${ACTIONS()}</form>`,
+  async d => { Object.assign(x, d); await store.set('keputusan/daftar', S.keputusan); toast('Evaluasi disimpan'); render(); });
+}
+function modalAset(){
+  modal(`<h3>Tambah aset</h3><form class="form">${F('Nama', `<input type="text" name="nama" required placeholder="BTC, ZAMA, RD Syariah, tabungan BRI…">`)}<div class="form cols2">${F('Kategori', `<select name="kategori">${KAT_ASET.map(k=>`<option>${k}</option>`).join('')}</select>`)}${F('Nilai sekarang (Rp)', `<input type="number" name="nilai" min="0" step="1000" required>`)}</div>${ACTIONS('Tambah')}</form>`,
+  async d => { S.aset.aset = S.aset.aset||[]; S.aset.aset.push({ id:uid(), nama:d.nama, kategori:d.kategori, nilai:+d.nilai }); await store.set('keuangan/aset', S.aset); toast('Aset ditambahkan'); render(); });
+}
+function modalUtang(){
+  modal(`<h3>Tambah utang</h3><form class="form">${F('Nama', `<input type="text" name="nama" required placeholder="Utang pribadi, SPP…">`)}${F('Sisa (Rp)', `<input type="number" name="nilai" min="0" step="1000" required>`)}${F('Keterangan', `<input type="text" name="ket" placeholder="opsional">`)}${ACTIONS('Tambah')}</form>`,
+  async d => { S.aset.utang = S.aset.utang||[]; S.aset.utang.push({ id:uid(), nama:d.nama, nilai:+d.nilai, ket:d.ket }); await store.set('keuangan/aset', S.aset); toast('Utang ditambahkan'); render(); });
+}
+function modalBulanManual(){
+  const mk = S.bulanTx; const m = (S.aruskas.bulan||{})[mk]||{};
+  modal(`<h3>Ringkasan ${fmtBulan(mk)}</h3><div class="desc">Untuk bulan yang transaksinya tidak dicatat satu per satu. Diabaikan begitu bulan itu punya transaksi.</div><form class="form">${F('Pemasukan (Rp)', `<input type="number" name="pemasukan" value="${m.pemasukan||''}" min="0">`)}${F('Pengeluaran (Rp)', `<input type="number" name="pengeluaran" value="${m.pengeluaran||''}" min="0">`)}${F('Tabungan & investasi (Rp)', `<input type="number" name="tabungan" value="${m.tabungan||''}" min="0">`)}${ACTIONS()}</form>`,
+  async d => { S.aruskas.bulan = S.aruskas.bulan||{}; S.aruskas.bulan[mk] = { pemasukan:+d.pemasukan||0, pengeluaran:+d.pengeluaran||0, tabungan:+d.tabungan||0 }; await store.set('keuangan/aruskas', S.aruskas); toast('Ringkasan disimpan'); render(); });
+}
+function modalRutin(){
+  modal(`<h3>Pengeluaran rutin mingguan</h3><div class="desc">Contoh: biaya kuliah, bensin, kuota. Otomatis tercatat tiap minggu selama aktif.</div>
+  <form class="form">${F('Nama', `<input type="text" name="nama" required placeholder="Bensin mingguan">`)}
+  <div class="form cols2">${F('Per minggu (Rp)', `<input type="number" name="jumlah" min="0" step="1000" required>`)}${F('Kategori', `<select name="kategori">${KAT_TX.filter(k=>k!=='Pemasukan').map(k=>`<option ${k==='Kebutuhan'?'selected':''}>${k}</option>`).join('')}</select>`)}
+  ${F('Dicatat tiap', `<select name="hari">${[1,2,3,4,5,6,0].map(d=>`<option value="${d}">${HARI[d]}</option>`).join('')}</select>`)}${F('Mulai dihitung', `<input type="date" name="mulai" value="${todayKey()}" required>`)}</div>${ACTIONS('Tambah')}</form>`,
+  async d => { S.aruskas.rutin = S.aruskas.rutin||[]; S.aruskas.rutin.push({ id:uid(), nama:d.nama, jumlah:+d.jumlah||0, kategori:d.kategori, hari:+d.hari, mulai:d.mulai, aktif:true, lewati:[] });
+    await store.set('keuangan/aruskas', S.aruskas); const n = await jalankanRutin(); toast(`Ditambahkan${n?`, ${n} minggu tercatat`:''}`); render(); });
+}
+function modalPengaturan(){
+  const p = S.pengaturan;
+  modal(`<h3>Pengaturan</h3><form class="form">${F('Nama panggilan', `<input type="text" name="nama" value="${esc(p.nama)}" required>`)}
+  ${F('Kota (untuk jadwal sholat)', `<select name="kota">${Object.keys(KOTA).map(k=>`<option ${p.kota===k?'selected':''}>${k}</option>`).join('')}<option value="__manual" ${!KOTA[p.kota]?'selected':''}>Koordinat manual</option></select>`)}
+  <div class="form cols2">${F('Lintang', `<input type="number" name="lat" step="0.0001" value="${p.lat}">`)}${F('Bujur', `<input type="number" name="lng" step="0.0001" value="${p.lng}">`)}</div>
+  ${F('Awal rencana 3 tahun', `<input type="date" name="mulai3Tahun" value="${p.mulai3Tahun||'2026-09-01'}">`)}
+  <div class="small dim">Koordinat otomatis mengikuti kota yang dipilih; isi manual hanya bila kotamu tidak ada di daftar.</div>${ACTIONS()}</form>`,
+  async d => { p.nama = d.nama; p.mulai3Tahun = d.mulai3Tahun; if (d.kota!=='__manual' && KOTA[d.kota]) { p.kota = d.kota; [p.lat,p.lng] = KOTA[d.kota]; } else { p.kota = 'Lokasi manual'; p.lat = +d.lat; p.lng = +d.lng; } await store.set('pengaturan/utama', p); toast('Pengaturan disimpan'); render(); });
+}
+
+/* ================= ROUTER & EVENT ================= */
+function render(){
+  const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan }[v] || vHariIni;
+  $('#main').innerHTML = fn();
+  const navHtml = VIEWS.map(([id,l,ic]) => `<a href="#${id}" class="${v===id?'on':''}"><span class="ic">${I[ic]}</span><span>${l}</span></a>`).join('');
+  $('#nav').innerHTML = navHtml; $('#mnav').innerHTML = navHtml.replace('Rencana 3 tahun','Rencana');
+  const n = new Date(); $('#footDate').textContent = `${n.getDate()} ${BULAN[n.getMonth()]} ${n.getFullYear()} · ${hijri(n)}`;
+}
+function route(){ const h = (location.hash||'#hari-ini').slice(1); S.view = VIEWS.some(v=>v[0]===h) ? h : 'hari-ini'; render(); window.scrollTo(0,0); }
+window.addEventListener('hashchange', route);
+
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if (!el) return; const act = el.dataset.act, id = el.dataset.id;
+  if (el.tagName==='INPUT' && (el.type==='range'||el.type==='number'||el.type==='checkbox')) return; // ditangani change
+  switch (act) {
+    case 'sholat-status': { const k = el.dataset.tgl||todayKey(); const h = hari(k); const cur = statusSholat(k); let v = el.dataset.v;
+      if (v==='cycle') v = cur==='' ? 'lengkap' : cur==='lengkap' ? 'bolos' : ''; else if (v===cur) v = '';
+      h.sholat = v ? { status:v } : {}; await simpanHari(k,h); if (v==='lengkap') toast('Alhamdulillah, lengkap 5 waktu'); else if (v==='bolos') toast('Tercatat bolos. Besok lebih baik.', true); render(); break; }
+    case 'kebiasaan': { const k = todayKey(); const h = hari(k); h.kebiasaan = h.kebiasaan||{}; h.kebiasaan[id] = !h.kebiasaan[id]; await simpanHari(k,h); render(); break; }
+    case 'mood': { const k = S.view==='jurnal' ? S.jurnalTgl : todayKey(); const h = hari(k); h.jurnal = h.jurnal||{}; h.jurnal.mood = h.jurnal.mood===el.dataset.v ? '' : el.dataset.v; await simpanHari(k,h); render(); break; }
+    case 'langgar': modalLanggar(); break;
+    case 'langgar-hapus': { const h = hari(el.dataset.tgl); h.pelanggaran = (h.pelanggaran||[]).filter(p=>p.id!==id); await simpanHari(el.dataset.tgl,h); toast('Catatan pelanggaran dihapus'); render(); break; }
+    case 'aturan-tambah': modalAturan(); break;
+    case 'aturan-edit': modalAturan(S.pengaturan.aturan.find(a=>a.id===id)); break;
+    case 'aturan-hapus': if (confirm('Hapus aturan ini?')) { S.pengaturan.aturan = S.pengaturan.aturan.filter(a=>a.id!==id); await store.set('pengaturan/utama', S.pengaturan); render(); } break;
+    case 'pengaturan': modalPengaturan(); break;
+    case 'keluar': if (pengguna) await sb.auth.signOut(); localStorage.removeItem(LS+'mode-coba'); location.reload(); break;
+    case 'jurnal-hari-ini': S.jurnalTgl = todayKey(); render(); break;
+    case 'jurnal-buka': S.jurnalTgl = el.dataset.tgl; render(); window.scrollTo(0,0); break;
+    case 'kuliah-hapus': S.kuliah.items = S.kuliah.items.filter(c=>c.id!==id); await store.set('kuliah/semester5', S.kuliah); render(); break;
+    case 'rencana-tambah': modalRencana(); break;
+    case 'rencana-edit': modalRencana(S.rencana.items.find(x=>x.id===id)); break;
+    case 'rencana-hapus': if (confirm('Hapus target ini?')) { S.rencana.items = S.rencana.items.filter(x=>x.id!==id); await store.set('rencana/3tahun', S.rencana); render(); } break;
+    case 'keputusan-hapus': if (confirm('Hapus keputusan ini?')) { S.keputusan.items = S.keputusan.items.filter(x=>x.id!==id); await store.set('keputusan/daftar', S.keputusan); render(); } break;
+    case 'keputusan-hasil': modalHasil(S.keputusan.items.find(x=>x.id===id)); break;
+    case 'fokus-hapus': { const x = S.fokus.items.find(y=>y.id===id); if (confirm(`Hapus "${x.judul}"? Hapus hanya kalau memang sudah selesai atau tidak relevan lagi.`)) { S.fokus.items = S.fokus.items.filter(y=>y.id!==id); await store.set('fokus/daftar', S.fokus); toast('Dihapus. Satu beban berkurang.'); render(); } break; }
+    case 'fokus-pulihkan': { DEF.fokus.items.forEach(d => { if (!S.fokus.items.some(x=>x.id===d.id)) S.fokus.items.push(clone(d)); }); await store.set('fokus/daftar', S.fokus); render(); break; }
+    case 'fokus-goyah': { const x = S.fokus.items.find(y=>y.id===id); x.terakhir = todayKey(); await store.set('fokus/daftar', S.fokus); toast('Direset ke 0. Besok mulai lagi, tidak apa-apa.', true); render(); break; }
+    case 'tab': S.tab[el.dataset.k] = el.dataset.v; render(); break;
+    case 'tx-hapus': { const t = S.aruskas.transaksi.find(x=>x.id===id); if (!t) break;
+      if (t.setoran) { if (confirm(`Batalkan setoran ${rp(t.keluar)}? Nilai aset juga dikurangi kembali.`)) { await batalSetor(t.setoran); render(); } break; }
+      if (t.hutang && !confirm(`Batalkan pembayaran hutang ${rp(t.keluar)} tanggal ${fmtTgl(t.tanggal,false)}? Sisa hutang akan dikembalikan.`)) break;
+      S.aruskas.transaksi = S.aruskas.transaksi.filter(x=>x.id!==id);
+      if (t.rutin) { const r = (S.aruskas.rutin||[]).find(x=>x.id===t.rutin); if (r) { r.lewati = r.lewati||[]; if (!r.lewati.includes(t.tanggal)) r.lewati.push(t.tanggal); } }
+      const tulis = [store.set('keuangan/aruskas', S.aruskas)];
+      if (t.hutang) { const u = (S.aset.utang||[]).find(x=>x.id===t.hutang); if (u) { u.nilai = (+u.nilai||0) + (+t.keluar||0); tulis.push(store.set('keuangan/aset', S.aset)); } }
+      await Promise.all(tulis); toast(t.hutang ? 'Pembayaran dibatalkan, sisa hutang dikembalikan' : t.rutin ? 'Minggu ini dilewati' : 'Transaksi dihapus'); render(); break; }
+    case 'rutin-tambah': modalRutin(); break;
+    case 'blok': await klikBlok(el.dataset.link, el.dataset.tgl); break;
+    case 'jadwal-tambah': modalJadwal(); break;
+    case 'jadwal-edit': modalJadwal(clone(S.jadwal.items.find(x=>x.id===id))); break;
+    case 'jadwal-hapus': if (confirm('Hapus kegiatan ini dari jadwal?')) { S.jadwal.items = S.jadwal.items.filter(x=>x.id!==id); await store.set('jadwal/rutinitas', S.jadwal); toast('Dihapus dari jadwal'); render(); } break;
+    case 'jadwal-geser': S.jadwalOff = +el.dataset.v===0 ? 0 : (S.jadwalOff||0) + (+el.dataset.v); render(); break;
+    case 'setor': modalSetor(id); break;
+    case 'dca': modalDCA(id); break;
+    case 'setor-batal': if (confirm('Batalkan setoran ini? Nilai aset dikurangi kembali dan catatan arus kasnya dihapus.')) { await batalSetor(id); render(); } break;
+    case 'rutin-hapus': if (confirm('Hapus aturan rutin ini? Baris yang sudah tercatat tetap ada.')) { S.aruskas.rutin = S.aruskas.rutin.filter(x=>x.id!==id); await store.set('keuangan/aruskas', S.aruskas); render(); } break;
+    case 'bulan-manual': modalBulanManual(); break;
+    case 'aset-tambah': modalAset(); break;
+    case 'utang-tambah': modalUtang(); break;
+    case 'aset-hapus': S.aset.aset = S.aset.aset.filter(a=>a.id!==id); await store.set('keuangan/aset', S.aset); render(); break;
+    case 'utang-hapus': S.aset.utang = S.aset.utang.filter(a=>a.id!==id); await store.set('keuangan/aset', S.aset); render(); break;
+    case 'riwayat-simpan': { S.aset.riwayat = S.aset.riwayat||{}; S.aset.riwayat[monthKey(new Date())] = totalAset(); await store.set('keuangan/aset', S.aset); toast('Nilai bulan ini disimpan ke riwayat'); render(); break; }
+  }
+});
+
+document.addEventListener('change', async e => {
+  const el = e.target; const act = el.dataset.act, id = el.dataset.id, field = el.dataset.field;
+  if (act==='rencana-progres') { const x = S.rencana.items.find(y=>y.id===id); x.progres = +el.value; await store.set('rencana/3tahun', S.rencana); render(); }
+  else if (act==='rencana-selesai') { const x = S.rencana.items.find(y=>y.id===id); x.selesai = el.checked; if (el.checked) x.progres = 100; await store.set('rencana/3tahun', S.rencana); render(); }
+  else if (act==='aset-nilai') { const a = S.aset.aset.find(y=>y.id===id); a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Nilai aset diperbarui'); render(); }
+  else if (act==='utang-nilai') { const a = S.aset.utang.find(y=>y.id===id); a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Sisa utang diperbarui'); render(); }
+  else if (act==='fokus-field') { const x = S.fokus.items.find(y=>y.id===id); x[el.dataset.k] = el.value; await store.set('fokus/daftar', S.fokus); toast('Tersimpan'); if (el.tagName!=='TEXTAREA') render(); }
+  else if (act==='fokus-angka') { S.fokus[el.dataset.k] = +el.value||0; await store.set('fokus/daftar', S.fokus); render(); }
+  else if (act==='rutin-aktif' || act==='rutin-field') { const r = S.aruskas.rutin.find(y=>y.id===id); if (!r) return;
+    if (act==='rutin-aktif') r.aktif = el.checked; else { const k = el.dataset.k; r[k] = k==='ff' ? el.checked : (k==='jumlah'||k==='hari') ? +el.value||0 : el.value; }
+    await store.set('keuangan/aruskas', S.aruskas); const n = await jalankanRutin();
+    toast(act==='rutin-aktif' ? (r.aktif ? `${r.nama} aktif${n?`, ${n} minggu tercatat`:''}` : `${r.nama} dimatikan`) : `Disimpan${n?`, ${n} minggu tercatat`:''}`); render(); }
+  else if (act==='fokus-selesai') { const x = S.fokus.items.find(y=>y.id===id); x.selesai = el.checked; await store.set('fokus/daftar', S.fokus); render(); }
+  else if (field==='sholatBulan') { S.tab.sholatBulan = el.value; render(); }
+  else if (field==='bulanTx') { S.bulanTx = el.value; render(); }
+  else if (field==='jurnalTgl') { S.jurnalTgl = el.value; render(); }
+  else if (field==='rencanaKat') { S.tab.rencanaKat = el.value; render(); }
+});
+
+// jurnal: simpan otomatis saat berhenti mengetik
+let jurnalTimer;
+document.addEventListener('input', e => {
+  const el = e.target; const field = el.dataset.field; if (!field || !field.startsWith('jurnal.')) return;
+  clearTimeout(jurnalTimer);
+  jurnalTimer = setTimeout(async () => { const k = S.view==='jurnal' ? S.jurnalTgl : todayKey(); const h = hari(k); h.jurnal = h.jurnal||{}; h.jurnal[field.split('.')[1]] = el.value; if (await simpanHari(k,h)) toast('Jurnal tersimpan'); }, 900);
+});
+
+document.addEventListener('submit', async e => {
+  const f = e.target; const which = f.dataset.form; if (!which) return; e.preventDefault();
+  const d = Object.fromEntries(new FormData(f).entries());
+  if (which==='kuliah') { S.kuliah.items = (S.kuliah.items||[]).filter(c=>!c.contoh); S.kuliah.items.push({ id:uid(), hari:+d.hari, mulai:d.mulai, selesai:d.selesai, mk:d.mk, ruang:d.ruang, dosen:d.dosen }); await store.set('kuliah/semester5', S.kuliah); toast('Sesi kuliah ditambahkan'); }
+  else if (which==='fokus') { S.fokus.items = S.fokus.items||[]; S.fokus.items.push({ id:uid(), jenis:d.jenis, judul:d.judul, tenggat:d.tenggat||'', catatan:d.catatan||'', selesai:false }); await store.set('fokus/daftar', S.fokus); toast('Ditambahkan'); }
+  else if (which==='keputusan') { S.keputusan.items = S.keputusan.items||[]; S.keputusan.items.push({ id:uid(), tanggal:d.tanggal, keputusan:d.keputusan, alasan:d.alasan, alternatif:d.alternatif, tinjau:d.tinjau, hasil:'', status:'' }); await store.set('keputusan/daftar', S.keputusan); toast('Keputusan dicatat'); }
+  else if (which==='tx') { const tgl = d.tanggal || todayKey(); const j = Math.round(+d.jumlah||0); const masuk = d.kategori==='Pemasukan';
+    S.aruskas.transaksi.push({ id:uid(), tanggal:tgl, ket:d.ket, kategori:d.kategori, masuk: masuk?j:0, keluar: masuk?0:j });
+    S.bulanTx = tgl.slice(0,7); await store.set('keuangan/aruskas', S.aruskas);
+    const r = ringkasBulan(S.bulanTx); toast(`${masuk?'Masuk':'Keluar'} ${rp(j)} · pengeluaran ${fmtBulan(S.bulanTx)} jadi ${rp(r.pengeluaran)}`); S.fokusCepat = true; }
+  else if (which==='bayar') { if (!(await bayarHutang(d))) return; }
+  render();
+  if (S.fokusCepat) { S.fokusCepat = false; if (S.view==='keuangan') { const i = document.querySelector('form[data-form="tx"] [name="ket"]'); if (i) i.focus(); } }
+});
+
+/* ---------- mulai ---------- */
+(async () => {
+  $('#main').innerHTML = '<div class="empty" style="margin-top:40px">Memuat…</div>';
+  await store.init();
+  if (!pengguna && !localStorage.getItem(LS+'mode-coba')) { vMasuk(); return; }
+  await loadAll(); await jalankanRutin(); route();
+  if (!S.pengaturan.nama) { const n = localStorage.getItem(LS+'nama-daftar') || ''; if (n) { S.pengaturan.nama = n; await store.set('pengaturan/utama', S.pengaturan); render(); } else { toast('Isi nama dan kotamu dulu'); modalPengaturan(); } }
+  if ('serviceWorker' in navigator && location.hostname.endsWith('github.io')) navigator.serviceWorker.register('sw.js').catch(() => {});
+  setInterval(async () => { const baru = await jalankanRutin(); const sibuk = $('#modalBg').classList.contains('show') || ['TEXTAREA','INPUT','SELECT'].includes(document.activeElement.tagName); if (!sibuk && (S.view==='hari-ini' || baru)) render(); }, 60000);
+})();
+</script>
+</body>
+</html>

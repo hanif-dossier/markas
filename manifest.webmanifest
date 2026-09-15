@@ -1,0 +1,17 @@
+{
+  "name": "Markas",
+  "short_name": "Markas",
+  "description": "Pusat kendali diri: sholat, disiplin, jurnal pagi, keuangan, hutang, dan target 3 tahun.",
+  "start_url": "/markas/",
+  "scope": "/markas/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F131C",
+  "theme_color": "#121826",
+  "lang": "id",
+  "icons": [
+    { "src": "ikon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "ikon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "ikon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
