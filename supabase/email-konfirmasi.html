@@ -1,0 +1,31 @@
+<!-- Templat "Confirm signup" di Supabase (Authentication → Emails → Confirm sign up).
+     SATU templat untuk dua aplikasi yang berbagi proyek Supabase ini:
+     - pendaftar Markas (user_metadata.aplikasi = "markas")  → cabang pertama: tombol "Konfirmasi & masuk ke Markas"
+     - pendaftar situs Hanif Dossier (lainnya)               → cabang kedua: isi lama (menunggu konfirmasi admin)
+     Sumber cabang kedua: beranda/supabase/email-konfirmasi.html. Tempel SELURUH berkas ini ke kotak templat. -->
+{{ if eq .Data.aplikasi "markas" }}
+<div style="margin:0;padding:32px 16px;background:#0f131c;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#eef1f6">
+  <div style="max-width:520px;margin:0 auto;background:#131824;border:1px solid #263047;border-radius:20px;padding:32px 28px;text-align:center">
+    <p style="margin:0 0 14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8c96aa;font-weight:700">Markas</p>
+    <h1 style="margin:0 0 14px;font-size:26px;line-height:1.2;font-family:Georgia,'Times New Roman',serif;font-weight:400;color:#f5d28a">Satu klik lagi, Markas-mu siap</h1>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;text-align:left;color:#c9d0dc">Terima kasih sudah mendaftar di Markas, pusat kendali diri: sholat, disiplin, jurnal pagi, keuangan, hutang, dan planning 3 tahun.</p>
+    <p style="margin:0 0 22px;font-size:15px;line-height:1.6;text-align:left;color:#c9d0dc">Klik tombol di bawah untuk mengonfirmasi email. Kamu akan langsung masuk ke Markas, tidak perlu mengetik sandi lagi.</p>
+    <p style="margin:0 0 22px"><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#e3b25a;color:#1a1405;text-decoration:none;font-weight:700;font-size:15px;padding:13px 26px;border-radius:12px">Konfirmasi &amp; masuk ke Markas</a></p>
+    <p style="margin:0;font-size:12px;line-height:1.6;color:#8c96aa;text-align:left">Jika tombol tidak berfungsi, salin alamat ini ke browser:<br><a href="{{ .ConfirmationURL }}" style="color:#e3b25a;word-break:break-all">{{ .ConfirmationURL }}</a></p>
+  </div>
+  <p style="max-width:520px;margin:18px auto 0;font-size:12px;line-height:1.6;color:#5c667c;text-align:center">Jika kamu tidak merasa mendaftar, abaikan email ini. Datamu hanya bisa dibaca oleh akunmu sendiri. markasku.my.id</p>
+</div>
+{{ else }}
+<div style="margin:0;padding:32px 16px;background:#f6f5f0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#2b3330">
+  <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:20px;padding:32px 28px;box-shadow:0 10px 30px rgba(43,51,48,.06);text-align:center">
+    <p style="margin:0 0 14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7b8781">Hanif Dossier Crypto</p>
+    <img src="https://hanif-dossier.github.io/jam-pasir.gif" width="96" height="96" alt="Menunggu konfirmasi" style="display:block;margin:0 auto 14px;border-radius:50%">
+    <h1 style="margin:0 0 14px;font-size:24px;line-height:1.25;font-family:Georgia,'Times New Roman',serif;font-weight:400">Pendaftaran diterima, menunggu konfirmasi</h1>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;text-align:left">Terima kasih telah mendaftar. Pendaftaran Anda sedang kami konfirmasi. Anda tidak perlu melakukan apa pun selain menunggu.</p>
+    <p style="margin:0 0 22px;font-size:15px;line-height:1.6;text-align:left">Begitu akun dikonfirmasi, kami mengirim email berikutnya berisi tombol untuk masuk. Sementara itu, tombol di bawah membuka halaman status pendaftaran Anda.</p>
+    <p style="margin:0 0 22px"><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#4f7a68;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:13px 26px;border-radius:12px">Lihat status pendaftaran</a></p>
+    <p style="margin:0;font-size:12px;line-height:1.6;color:#7b8781;text-align:left">Jika tombol tidak berfungsi, salin alamat ini ke browser Anda:<br><a href="{{ .ConfirmationURL }}" style="color:#4f7a68;word-break:break-all">{{ .ConfirmationURL }}</a></p>
+  </div>
+  <p style="max-width:520px;margin:18px auto 0;font-size:12px;line-height:1.6;color:#a3aca7;text-align:center">Jika Anda tidak merasa mendaftar, abaikan email ini. Riset dan analisis, bukan nasihat investasi berizin.</p>
+</div>
+{{ end }}
