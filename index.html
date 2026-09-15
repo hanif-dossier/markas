@@ -66,6 +66,9 @@ h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
 .store.cloud i{background:var(--good);box-shadow:0 0 8px var(--good)}
 .store.local i{background:var(--warn)}
 main{padding:26px 30px 90px;max-width:1240px;width:100%}
+.tamu{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:-4px 0 18px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(90deg,rgba(227,178,90,.12),transparent)}
+.tamu .t{color:var(--muted);font-size:13.5px}.tamu .t b{color:var(--gold-2)}.tamu .a{display:flex;gap:8px;flex-wrap:wrap}
+.masuk-tab{display:flex;gap:6px;margin-bottom:14px}.masuk-tab button{flex:1;padding:9px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;cursor:pointer}.masuk-tab button.on{background:var(--gold);color:#1a1405;border-color:var(--gold);font-weight:700}
 .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
 .topbar h1{font-family:var(--serif);font-size:34px;line-height:1.05;font-weight:400}
 .topbar h1 em{color:var(--gold-2);font-style:italic}
@@ -405,21 +408,25 @@ const SUPABASE_URL = 'https://fqpktykrkpqaztnpqgxz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_UcFfp0XqHZWMZ2jpSRlDvg_vySECBzo';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 let pengguna = null;           // auth.user Supabase; null = belum masuk (mode coba: localStorage)
+let tamu = false;              // belum masuk & bukan mode coba: lihat-lihat dengan data contoh, tidak bisa menyimpan
 const LS = 'markas:';
 const store = {
   async init(){
     try { pengguna = sb ? ((await sb.auth.getSession()).data.session || {}).user || null : null; } catch { pengguna = null; }
     const b = $('#storeBadge');
     if (pengguna) { b.className = 'store cloud'; b.innerHTML = `<i></i>${esc(pengguna.email)} · <a href="#" data-act="keluar" style="color:inherit">keluar</a>`; }
-    else { b.className = 'store local'; b.innerHTML = '<i></i>Mode coba: tersimpan di browser ini saja · <a href="#" data-act="keluar" style="color:inherit">masuk</a>'; }
+    else if (localStorage.getItem(LS+'mode-coba')) { b.className = 'store local'; b.innerHTML = '<i></i>Mode coba: tersimpan di browser ini saja · <a href="#" data-act="keluar" style="color:inherit">masuk</a>'; }
+    else { tamu = true; b.className = 'store'; b.innerHTML = '<i></i>Lihat-lihat · <a href="#" data-act="masuk" style="color:inherit">masuk</a> · <a href="#" data-act="daftar" style="color:inherit">daftar</a>'; }
   },
   async get(path, fallback){
+    if (tamu) { const C = contohDok(); return C[path] ? clone(C[path]) : clone(fallback); }
     try {
       if (pengguna) { const { data, error } = await sb.from('markas_dokumen').select('data').eq('user_id', pengguna.id).eq('path', path).maybeSingle(); if (error) throw error; return data ? clone(data.data) : clone(fallback); }
       const raw = localStorage.getItem(LS+path); return raw ? JSON.parse(raw) : clone(fallback);
     } catch (e) { console.warn('get', path, e); return clone(fallback); }
   },
   async set(path, data){
+    if (tamu) { vMasuk('Masuk atau daftar dulu supaya isianmu tersimpan.'); return false; }
     data.diperbarui = new Date().toISOString();
     try {
       if (pengguna) { const { error } = await sb.from('markas_dokumen').upsert({ user_id: pengguna.id, path, data, diperbarui: data.diperbarui }, { onConflict: 'user_id,path' }); if (error) throw error; }
@@ -429,6 +436,7 @@ const store = {
   },
   async listHarian(){
     const out = {};
+    if (tamu) return contohHarian();
     try {
       if (pengguna) { const { data, error } = await sb.from('markas_dokumen').select('path,data').eq('user_id', pengguna.id).like('path', 'harian/%').limit(2000); if (error) throw error; (data||[]).forEach(r => { out[r.path.slice(7)] = clone(r.data); }); }
       else { for (let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if (k.startsWith(LS+'harian/')) out[k.slice((LS+'harian/').length)] = JSON.parse(localStorage.getItem(k)); } }
@@ -438,40 +446,74 @@ const store = {
 };
 
 /* ---------- layar masuk / daftar ---------- */
-function vMasuk(pesan=''){
+function vMasuk(pesan='', mode='masuk'){
   const alur = location.href.replace(/[#?].*$/, '');
-  $('#main').innerHTML = `
-  <div class="topbar"><div><div class="eyebrow">Markas</div><h1 class="serif">Pusat kendali <em>diri</em></h1>
-    <div class="sub">Sholat, disiplin, jurnal pagi, keuangan, hutang, dan target 3 tahun dalam satu tempat. Gratis.</div></div></div>
-  <div class="grid">
-    <div class="c6 panel"><h2>Masuk</h2>${pesan ? `<div class="small" style="color:var(--gold-2);margin-bottom:8px">${pesan}</div>` : ''}
-      <form class="form" data-form="masuk"><label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
-      <label class="f">Kata sandi<input type="password" name="sandi" required minlength="6" autocomplete="current-password"></label>
-      <div class="actions"><button class="btn primary" type="submit">Masuk</button><button class="btn ghost" type="button" data-act="lupa-sandi">Lupa sandi</button></div></form>
-      <div class="small dim" style="margin-top:10px">Belum punya akun? Daftar di sebelah. Mau coba dulu tanpa akun? <a href="#" data-act="mode-coba">Coba di browser ini</a> (data tidak ikut ke HP lain).</div></div>
-    <div class="c6 panel"><h2>Daftar (gratis)</h2>
-      <form class="form" data-form="daftar"><label class="f">Nama panggilan<input type="text" name="nama" required maxlength="40"></label>
-      <label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
-      <label class="f">Kata sandi (min. 6 huruf)<input type="password" name="sandi" required minlength="6" autocomplete="new-password"></label>
-      <div class="actions"><button class="btn primary" type="submit">Buat akun</button></div></form>
-      <div class="small dim" style="margin-top:10px">Setelah mendaftar, cek email untuk tautan konfirmasi, lalu masuk. Datamu hanya bisa dibaca oleh akunmu sendiri.</div></div>
-    <div class="c12 panel"><h2>Apa yang ada di dalam</h2><div class="kv">
-      <span class="k">Hari ini</span><span class="v">Jadwal sholat kotamu, checklist kebiasaan, jurnal pagi, arus kas bulan ini</span>
-      <span class="k">Disiplin</span><span class="v">Hari bersih, streak, dan reset otomatis kalau melanggar aturanmu sendiri</span>
-      <span class="k">Keuangan</span><span class="v">Catat pengeluaran 10 detik, bayar hutang per minggu, target financial freedom</span>
-      <span class="k">Planning</span><span class="v">Target 3 tahun per semester dan catatan keputusan yang ditinjau ulang</span></div></div>
-  </div>`;
-  $('#nav').innerHTML = ''; $('#mnav').innerHTML = '';
-  const root = $('#main');
-  root.querySelector('form[data-form="masuk"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+  const bg = $('#modalBg'), m = $('#modal');
+  m.innerHTML = `
+  <div class="masuk-tab"><button type="button" data-mode="masuk" class="${mode==='masuk'?'on':''}">Masuk</button><button type="button" data-mode="daftar" class="${mode==='daftar'?'on':''}">Daftar (gratis)</button></div>
+  ${pesan ? `<div class="small" style="color:var(--gold-2);margin-bottom:10px">${pesan}</div>` : ''}
+  <form class="form" data-form="masuk" style="${mode==='masuk'?'':'display:none'}">
+    <label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
+    <label class="f">Kata sandi<input type="password" name="sandi" required minlength="6" autocomplete="current-password"></label>
+    <div class="actions"><button class="btn ghost" type="button" data-act="lupa-sandi">Lupa sandi</button><button class="btn primary" type="submit">Masuk</button></div>
+    <div class="small dim" style="margin-top:10px">Mau coba dulu tanpa akun? <a href="#" data-act="mode-coba">Coba di browser ini</a> (data tidak ikut ke HP lain).</div>
+  </form>
+  <form class="form" data-form="daftar" style="${mode==='daftar'?'':'display:none'}">
+    <label class="f">Nama panggilan<input type="text" name="nama" required maxlength="40"></label>
+    <label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
+    <label class="f">Kata sandi (min. 6 huruf)<input type="password" name="sandi" required minlength="6" autocomplete="new-password"></label>
+    <div class="actions"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">Buat akun</button></div>
+    <div class="small dim" style="margin-top:10px">Setelah mendaftar, cek email untuk tautan konfirmasi, lalu masuk. Datamu hanya bisa dibaca oleh akunmu sendiri.</div>
+  </form>`;
+  bg.classList.add('show');
+  const close = () => { bg.classList.remove('show'); m.innerHTML = ''; };
+  m.querySelectorAll('[data-close]').forEach(b => b.onclick = close);
+  m.querySelectorAll('.masuk-tab button').forEach(b => b.onclick = () => vMasuk('', b.dataset.mode));
+  m.querySelector('form[data-form="masuk"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
     const { error } = await sb.auth.signInWithPassword({ email: d.email.trim(), password: d.sandi }); if (error) return toast(error.message.includes('Invalid') ? 'Email atau sandi salah' : error.message, true); location.reload(); };
-  root.querySelector('form[data-form="daftar"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
+  m.querySelector('form[data-form="daftar"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
     const { error } = await sb.auth.signUp({ email: d.email.trim(), password: d.sandi, options: { data: { nama: d.nama.trim(), aplikasi: 'markas' }, emailRedirectTo: alur } });
-    if (error) return toast(error.message, true); try { localStorage.setItem(LS+'nama-daftar', d.nama.trim()); } catch {} vMasuk('Akun dibuat. Buka email <b>' + esc(d.email) + '</b>, klik tautan konfirmasinya, lalu masuk di sini.'); };
-  root.querySelector('[data-act="lupa-sandi"]').onclick = async () => { const email = root.querySelector('form[data-form="masuk"] [name=email]').value.trim(); if (!email) return toast('Isi email dulu', true);
+    if (error) return toast(error.message, true); try { localStorage.setItem(LS+'nama-daftar', d.nama.trim()); } catch {} vMasuk('Akun dibuat. Buka email <b>' + esc(d.email) + '</b>, klik tautan konfirmasinya, lalu masuk di sini.', 'masuk'); };
+  m.querySelector('[data-act="lupa-sandi"]').onclick = async () => { const email = m.querySelector('form[data-form="masuk"] [name=email]').value.trim(); if (!email) return toast('Isi email dulu', true);
     const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: alur }); toast(error ? error.message : 'Tautan ganti sandi dikirim ke ' + email, !!error); };
-  root.querySelector('[data-act="mode-coba"]').onclick = e => { e.preventDefault(); try { localStorage.setItem(LS+'mode-coba', '1'); } catch {} location.reload(); };
+  m.querySelector('[data-act="mode-coba"]').onclick = e => { e.preventDefault(); try { localStorage.setItem(LS+'mode-coba', '1'); } catch {} location.reload(); };
+  setTimeout(() => { const first = m.querySelector('form[data-form="'+mode+'"] input'); if (first) first.focus(); }, 30);
 }
+
+/* ---------- data contoh untuk tamu (belum masuk): supaya isi Markas terlihat nyata ---------- */
+function contohHarian(){
+  const out = {}; const tk = todayKey();
+  for (let i = 27; i >= 0; i--) {
+    const k = addDays(tk, -i); const dow = parseKey(k).getDay();
+    const bolos = i === 9 || i === 22;
+    out[k] = { sholat: i === 0 ? {} : { status: bolos ? 'bolos' : 'lengkap' },
+      kebiasaan: i === 0 ? { quran:true, olahraga:true } : { olahraga: dow !== 5 && i % 4 !== 1, belajar: i % 3 !== 2, ilmu: i % 2 === 0, fokus: !bolos, quran: i % 5 !== 3 },
+      pelanggaran: i === 9 ? [{ id:'c1', aturan:'disiplin', catatan:'Bangun kesiangan, jadwal pagi berantakan — Langkah: tidur 22.00', jam:'' }] : [],
+      jurnal: i === 0 ? { mood:'baik', syukur:'Bisa bangun sebelum Subuh dan sempat lari 20 menit.', refleksi:'Kemarin sore terlalu lama scrolling. Besok HP ditaruh di luar kamar.', pelajaran:'Satu tugas besar selesai kalau dipecah jadi tiga bagian kecil.', besok:'Bayar cicilan minggu ini dan rapikan catatan pengeluaran.' } : i % 6 === 0 ? { mood:'biasa', syukur:'Sehat, bisa kuliah dan kerja.', refleksi:'', pelajaran:'', besok:'' } : {} };
+  }
+  return out;
+}
+let _CONTOH = null;   // dibuat saat pertama diminta (DEF baru ada di bawah)
+const contohDok = () => _CONTOH || (_CONTOH = (() => {
+  const tk = todayKey(), bln = tk.slice(0,7);
+  const tgl = d => bln + '-' + String(d).padStart(2,'0');
+  const hariIni = +tk.slice(8);
+  const tx = [
+    [1,'Gaji bulan ini','Pemasukan',3500000,0],[1,'Kos','Kebutuhan',0,700000],[2,'Belanja dapur','Kebutuhan',0,180000],[3,'Bensin','Kebutuhan',0,50000],
+    [5,'Bayar hutang','Kewajiban',0,250000],[6,'Kopi & nongkrong','Keinginan',0,45000],[8,'Buku kuliah','Kuliah',0,120000],[10,'Tabungan dana darurat','Tabungan',0,300000],
+    [12,'Bayar hutang','Kewajiban',0,250000],[14,'Pulsa & internet','Kebutuhan',0,100000],[15,'Freelance desain','Pemasukan',600000,0],[16,'Makan siang seminggu','Kebutuhan',0,210000]
+  ].filter(t => t[0] <= hariIni).map(([d,ket,kategori,masuk,keluar],i) => ({ id:'ctx'+i, tanggal:tgl(d), ket, kategori, masuk, keluar }));
+  return {
+    'pengaturan/utama': Object.assign(clone(DEF.pengaturan), { nama:'Kawan' }),
+    'kuliah/semester5': { items: [ { id:'ck1', contoh:true, hari:1, mulai:'08:00', selesai:'09:40', mk:'Statistika', ruang:'B-204', dosen:'' }, { id:'ck2', contoh:true, hari:3, mulai:'13:00', selesai:'14:40', mk:'Manajemen Keuangan', ruang:'A-101', dosen:'' } ] },
+    'rencana/3tahun': { items: clone(DEF.rencana.items).map((r,i) => Object.assign(r, { progres:[35,20,60,45,15,10][i] })) },
+    'keputusan/daftar': { items: [ { id:'ck', tanggal:addDays(tk,-12), keputusan:'Berhenti pakai paylater, semua belanja pakai uang yang sudah ada', alasan:'Cicilan kecil-kecil menumpuk jadi 20% pengeluaran bulanan', alternatif:'Tetap pakai tapi dibatasi 200 ribu/bulan', tinjau:addDays(tk,18), hasil:'', status:'' } ] },
+    'fokus/daftar': Object.assign(clone(DEF.fokus), { pengeluaranBulanan:2200000, puncakUtang:6000000, cicilanMingguan:250000, items: clone(DEF.fokus.items).map(x => x.id==='perempuan' ? Object.assign(x, { judul:'Scrolling tengah malam', terakhir:addDays(tk,-9) }) : x) }),
+    'jadwal/rutinitas': clone(DEF.jadwal),
+    'keuangan/aruskas': { bulan:{}, transaksi:tx, rutin:[] },
+    'keuangan/aset': { aset:[ { id:'ca1', nama:'Tabungan bank', kategori:'Kas & Tabungan', nilai:1800000 }, { id:'ca2', nama:'Emas 1 gram', kategori:'Emas', nilai:1450000 } ], utang:[ { id:'cu1', nama:'Pinjaman ke kakak', nilai:3500000, ket:'Cicil 250 ribu tiap Sabtu' } ], riwayat:{}, setoran:[] }
+  };
+})());
 
 /* ---------- waktu sholat (metode Kemenag: Subuh 20°, Isya 18°, ihtiyat 2 menit) ---------- */
 const KOTA = {
@@ -1328,13 +1370,23 @@ function modalPengaturan(){
 /* ================= ROUTER & EVENT ================= */
 function render(){
   const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan }[v] || vHariIni;
-  $('#main').innerHTML = fn();
+  const barTamu = tamu ? `<div class="tamu"><div class="t"><b>Ini contoh isi Markas.</b> Semua angka di sini data contoh. Masuk atau daftar (gratis) untuk mengisi dan menyimpan data sendiri.</div><div class="a"><button class="btn ghost" data-act="masuk">Masuk</button><button class="btn primary" data-act="daftar">Daftar</button></div></div>` : '';
+  $('#main').innerHTML = barTamu + fn();
   const navHtml = VIEWS.map(([id,l,ic]) => `<a href="#${id}" class="${v===id?'on':''}"><span class="ic">${I[ic]}</span><span>${l}</span></a>`).join('');
   $('#nav').innerHTML = navHtml; $('#mnav').innerHTML = navHtml;
   const n = new Date(); $('#footDate').textContent = `${n.getDate()} ${BULAN[n.getMonth()]} ${n.getFullYear()} · ${hijri(n)}`;
 }
 function route(){ const h = (location.hash||'#hari-ini').slice(1); S.view = VIEWS.some(v=>v[0]===h) ? h : 'hari-ini'; render(); window.scrollTo(0,0); }
 window.addEventListener('hashchange', route);
+
+/* penjaga tamu: boleh lihat & berpindah halaman, tapi setiap upaya mengisi/mengubah diarahkan ke Masuk/Daftar */
+const AKSI_BEBAS = new Set(['tab','jurnal-hari-ini','jurnal-buka','jadwal-geser','masuk','daftar','keluar','mode-coba','lupa-sandi']);
+const FIELD_BEBAS = new Set(['sholatBulan','bulanTx','jurnalTgl','rencanaKat']);
+const diModal = el => !!el.closest('#modal');
+document.addEventListener('click', e => { if (!tamu) return; const el = e.target.closest('[data-act]'); if (!el || diModal(el) || AKSI_BEBAS.has(el.dataset.act)) return; e.preventDefault(); e.stopImmediatePropagation(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
+document.addEventListener('focusin', e => { if (!tamu) return; const el = e.target; if (!['INPUT','TEXTAREA','SELECT'].includes(el.tagName) || diModal(el) || FIELD_BEBAS.has(el.dataset.field)) return; el.blur(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
+document.addEventListener('change', e => { if (!tamu) return; const el = e.target; if (diModal(el) || FIELD_BEBAS.has(el.dataset.field)) return; e.stopImmediatePropagation(); vMasuk('Masuk atau daftar dulu untuk mengisi bagian ini.'); }, true);
+document.addEventListener('submit', e => { if (!tamu) return; if (diModal(e.target)) return; e.preventDefault(); e.stopImmediatePropagation(); vMasuk('Masuk atau daftar dulu supaya isianmu tersimpan.'); }, true);
 
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return; const act = el.dataset.act, id = el.dataset.id;
@@ -1351,6 +1403,8 @@ document.addEventListener('click', async e => {
     case 'aturan-edit': modalAturan(S.pengaturan.aturan.find(a=>a.id===id)); break;
     case 'aturan-hapus': if (confirm('Hapus aturan ini?')) { S.pengaturan.aturan = S.pengaturan.aturan.filter(a=>a.id!==id); await store.set('pengaturan/utama', S.pengaturan); render(); } break;
     case 'pengaturan': modalPengaturan(); break;
+    case 'masuk': e.preventDefault(); vMasuk('', 'masuk'); break;
+    case 'daftar': e.preventDefault(); vMasuk('', 'daftar'); break;
     case 'keluar': if (pengguna) await sb.auth.signOut(); localStorage.removeItem(LS+'mode-coba'); location.reload(); break;
     case 'jurnal-hari-ini': S.jurnalTgl = todayKey(); render(); break;
     case 'jurnal-buka': S.jurnalTgl = el.dataset.tgl; render(); window.scrollTo(0,0); break;
@@ -1437,9 +1491,9 @@ document.addEventListener('submit', async e => {
 (async () => {
   $('#main').innerHTML = '<div class="empty" style="margin-top:40px">Memuat…</div>';
   await store.init();
-  if (!pengguna && !localStorage.getItem(LS+'mode-coba')) { vMasuk(); return; }
-  await loadAll(); await jalankanRutin(); route();
-  if (!S.pengaturan.nama) { const n = localStorage.getItem(LS+'nama-daftar') || ''; if (n) { S.pengaturan.nama = n; await store.set('pengaturan/utama', S.pengaturan); render(); } else { toast('Isi nama dan kotamu dulu'); modalPengaturan(); } }
+  await loadAll(); if (!tamu) await jalankanRutin(); route();
+  if (tamu) { /* lihat-lihat dulu; Masuk/Daftar ada di bar atas & pojok kiri bawah */ }
+  else if (!S.pengaturan.nama) { const n = localStorage.getItem(LS+'nama-daftar') || ''; if (n) { S.pengaturan.nama = n; await store.set('pengaturan/utama', S.pengaturan); render(); } else { toast('Isi nama dan kotamu dulu'); modalPengaturan(); } }
   if ('serviceWorker' in navigator && (location.hostname.endsWith('github.io') || location.hostname.endsWith('markasku.my.id'))) navigator.serviceWorker.register('sw.js').catch(() => {});
   setInterval(async () => { const baru = await jalankanRutin(); const sibuk = $('#modalBg').classList.contains('show') || ['TEXTAREA','INPUT','SELECT'].includes(document.activeElement.tagName); if (!sibuk && (S.view==='hari-ini' || baru)) render(); }, 60000);
 })();

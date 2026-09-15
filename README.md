@@ -14,7 +14,7 @@ tiap pengguna punya datanya sendiri.
 
 | Berkas | Isi |
 |---|---|
-| `index.html` | Seluruh aplikasi (tanpa build tool). Layar masuk/daftar → dasbor. |
+| `index.html` | Seluruh aplikasi (tanpa build tool). Tamu langsung melihat dasbor berisi data contoh; Masuk/Daftar muncul saat mau mengisi. |
 | `supabase/skema.sql` | Tabel `markas_dokumen` + kebijakan RLS: tiap orang hanya bisa membaca/menulis barisnya sendiri. **Jalankan sekali** di Supabase → SQL Editor. |
 | `manifest.webmanifest`, `sw.js`, `ikon-*.png` | Supaya bisa dipasang di layar utama HP (PWA). |
 
