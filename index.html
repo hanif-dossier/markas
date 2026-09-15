@@ -1320,7 +1320,7 @@ function modalPengaturan(){
   modal(`<h3>Pengaturan</h3><form class="form">${F('Nama panggilan', `<input type="text" name="nama" value="${esc(p.nama)}" required>`)}
   ${F('Kota (untuk jadwal sholat)', `<select name="kota">${Object.keys(KOTA).map(k=>`<option ${p.kota===k?'selected':''}>${k}</option>`).join('')}<option value="__manual" ${!KOTA[p.kota]?'selected':''}>Koordinat manual</option></select>`)}
   <div class="form cols2">${F('Lintang', `<input type="number" name="lat" step="0.0001" value="${p.lat}">`)}${F('Bujur', `<input type="number" name="lng" step="0.0001" value="${p.lng}">`)}</div>
-  ${F('Awal rencana 3 tahun', `<input type="date" name="mulai3Tahun" value="${p.mulai3Tahun||'2026-09-01'}">`)}
+  ${F('Awal periode planning (3 tahun)', `<input type="date" name="mulai3Tahun" value="${p.mulai3Tahun||'2026-09-01'}">`)}
   <div class="small dim">Koordinat otomatis mengikuti kota yang dipilih; isi manual hanya bila kotamu tidak ada di daftar.</div>${ACTIONS()}</form>`,
   async d => { p.nama = d.nama; p.mulai3Tahun = d.mulai3Tahun; if (d.kota!=='__manual' && KOTA[d.kota]) { p.kota = d.kota; [p.lat,p.lng] = KOTA[d.kota]; } else { p.kota = 'Lokasi manual'; p.lat = +d.lat; p.lng = +d.lng; } await store.set('pengaturan/utama', p); toast('Pengaturan disimpan'); render(); });
 }
@@ -1330,7 +1330,7 @@ function render(){
   const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan }[v] || vHariIni;
   $('#main').innerHTML = fn();
   const navHtml = VIEWS.map(([id,l,ic]) => `<a href="#${id}" class="${v===id?'on':''}"><span class="ic">${I[ic]}</span><span>${l}</span></a>`).join('');
-  $('#nav').innerHTML = navHtml; $('#mnav').innerHTML = navHtml.replace('Rencana 3 tahun','Rencana');
+  $('#nav').innerHTML = navHtml; $('#mnav').innerHTML = navHtml;
   const n = new Date(); $('#footDate').textContent = `${n.getDate()} ${BULAN[n.getMonth()]} ${n.getFullYear()} · ${hijri(n)}`;
 }
 function route(){ const h = (location.hash||'#hari-ini').slice(1); S.view = VIEWS.some(v=>v[0]===h) ? h : 'hari-ini'; render(); window.scrollTo(0,0); }
