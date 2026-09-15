@@ -58,3 +58,30 @@ dipotong. Lukisan Aivazovsky domain publik (Wikimedia Commons). Berkas mentah da
 kandidat lain ada di `langit/pilihan/` dan `langit/keemasan/`; gambar bazar kiriman
 pemilik (`langit/bazar-senja-hd.jpg`) tetap disimpan dan menjadi bahan ikon aplikasi
 (`ikon-*.png?v=4`: kubah dan menara di depan langit senja, tanpa kios dan orang).
+
+## Aplikasi Android (`aplikasi/`)
+
+Pembungkus Capacitor yang memuat markasku.my.id di dalam WebView, ditambah bagian native
+(Java, `aplikasi/android/app/src/main/java/my/id/markasku/`) untuk **alarm adzan yang
+berbunyi walau aplikasi tertutup dan layar mati**:
+
+- `AdzanPlugin` — jembatan dari index.html (`Capacitor.registerPlugin('Adzan')`): `atur`,
+  `status`, `coba`, `stop`, `mintaIzinAlarm`, `abaikanBaterai`.
+- `WaktuSholat` — rumus jadwal sholat yang sama dengan index.html (Kemenag, ihtiyat +2).
+- `Penjadwal` — simpan pengaturan (SharedPreferences) dan pasang satu alarm tepat waktu
+  (`AlarmManager.setAlarmClock`) untuk waktu sholat berikutnya.
+- `AlarmReceiver` → `AdzanService` (foreground service, MediaPlayer `USAGE_ALARM`, berkas
+  `res/raw/adzan_*.mp3`, tombol Berhenti di notifikasi) → pasang alarm berikutnya lagi.
+- `BootReceiver` — pasang ulang setelah HP dinyalakan atau jam/zona waktu berubah.
+
+Di index.html, kalau `window.Capacitor.isNativePlatform()` benar: pengaturan adzan dikirim
+ke native lewat `sinkronAdzanNatif()` (saat dibuka dan saat Pengaturan disimpan), suara
+in-app dimatikan (`cekAdzan` lewat), tombol Coba memakai layanan native, dan kotak
+notifikasi push disembunyikan. Jadi satu index.html melayani web dan aplikasi.
+
+Membangun: tidak perlu Android Studio. Setiap push yang menyentuh `aplikasi/` menjalankan
+`.github/workflows/android.yml` (Ubuntu + JDK 21 + SDK 36) → artefak **markasku-debug**
+(`app-debug.apk`) di tab Actions. Kalau secret `KEYSTORE_B64`, `KEYSTORE_PASS`, `KEY_ALIAS`
+sudah diisi, workflow juga membuat AAB rilis bertanda tangan untuk Play Store.
+Menjalankan lokal (kalau ada JDK + SDK): `cd aplikasi && npm ci && npx cap sync android &&
+cd android && ./gradlew assembleDebug`.
