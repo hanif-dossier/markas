@@ -745,7 +745,7 @@ function vMasuk(pesan='', mode='masuk'){
     <label class="f">Email<input type="email" name="email" required autocomplete="email"></label>
     <label class="f">Kata sandi (min. 6 huruf)<input type="password" name="sandi" required minlength="6" autocomplete="new-password"></label>
     <div class="actions"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">Buat akun</button></div>
-    <div class="small dim" style="margin-top:10px">Setelah mendaftar, klik tombol konfirmasi di email dan kamu langsung masuk. Datamu hanya bisa dibaca oleh akunmu sendiri. Sudah punya akun situs Hanif Dossier? Langsung <a href="#" data-mode="masuk" class="ke-masuk">masuk</a>, akunnya sama.</div>
+    <div class="small dim" style="margin-top:10px">Setelah mendaftar, klik tombol konfirmasi di email dan kamu langsung masuk. Datamu hanya bisa dibaca oleh akunmu sendiri. Sudah punya akun? Langsung <a href="#" data-mode="masuk" class="ke-masuk">masuk</a>.</div>
   </form>`;
   bg.classList.add('show');
   const close = () => { bg.classList.remove('show'); m.innerHTML = ''; };
@@ -759,7 +759,7 @@ function vMasuk(pesan='', mode='masuk'){
     if (error) return toast(error.message, true);
     // Email sudah terdaftar: Supabase tidak mengirim email apa pun dan mengembalikan user "kosong" (identities = []).
     if (res && res.user && Array.isArray(res.user.identities) && res.user.identities.length === 0) {
-      vMasuk('Email <b>' + esc(email) + '</b> sudah punya akun (akun situs Hanif Dossier berlaku di sini juga). Masuk dengan sandi yang sama, atau klik <b>Lupa sandi</b>.', 'masuk');
+      vMasuk('Email <b>' + esc(email) + '</b> sudah terdaftar. Silakan masuk, atau klik <b>Lupa sandi</b> kalau lupa.', 'masuk');
       $('#modal form[data-form="masuk"] [name=email]').value = email; $('#modal form[data-form="masuk"] [name=sandi]').focus(); return; }
     try { localStorage.setItem(LS+'nama-daftar', d.nama.trim()); } catch {}
     vMasuk('Akun dibuat. Buka email <b>' + esc(email) + '</b> dan klik tombol konfirmasinya: kamu langsung masuk ke Markasku. Tidak ada email? Cek folder spam.', 'masuk');
