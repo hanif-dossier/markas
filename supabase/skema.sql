@@ -42,7 +42,6 @@ begin
   if auth.uid() is null then
     raise exception 'belum masuk';
   end if;
-  delete from public.anggota where id = auth.uid();
   delete from auth.users where id = auth.uid();
 end;
 $$;
@@ -148,7 +147,7 @@ create extension if not exists pg_cron;
 create extension if not exists pg_net;
 select cron.schedule('adzan-push-tiap-menit', '* * * * *', $$
   select net.http_post(
-    url := 'https://fqpktykrkpqaztnpqgxz.supabase.co/functions/v1/adzan-push',
+    url := 'https://hzxfheydtrjhizbwbddh.supabase.co/functions/v1/adzan-push',
     headers := '{"Content-Type":"application/json","x-cron-key":"<CRON_KEY>"}'::jsonb,
     body := '{}'::jsonb);
 $$);

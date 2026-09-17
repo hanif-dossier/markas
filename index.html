@@ -680,8 +680,8 @@ function toast(msg, bad=false){ const t = $('#toast'); t.textContent = msg; t.cl
 /* ---------- penyimpanan: Supabase (satu baris per dokumen per pengguna) ---------- */
 // Tabel public.markas_dokumen(user_id, path, data jsonb, diperbarui). RLS: tiap orang hanya barisnya sendiri.
 // Kunci di bawah kunci PUBLIK; yang menjaga data adalah kebijakan RLS (lihat supabase/skema.sql).
-const SUPABASE_URL = 'https://fqpktykrkpqaztnpqgxz.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_UcFfp0XqHZWMZ2jpSRlDvg_vySECBzo';
+const SUPABASE_URL = 'https://hzxfheydtrjhizbwbddh.supabase.co';   // proyek Supabase khusus Markasku (pindah 17 Sep 2026; dulu berbagi dengan situs lain)
+const SUPABASE_KEY = 'sb_publishable_3c_5VhfP4Z9g1dSU9c00HQ_0QkuiHTm';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 let pengguna = null;           // auth.user Supabase; null = belum masuk (mode coba: localStorage)
 let tamu = false;              // belum masuk & bukan mode coba: lihat-lihat dengan data contoh, tidak bisa menyimpan
@@ -752,7 +752,15 @@ function vMasuk(pesan='', mode='masuk'){
   m.querySelectorAll('[data-close]').forEach(b => b.onclick = close);
   m.querySelectorAll('.masuk-tab button, .ke-masuk').forEach(b => b.onclick = e => { e.preventDefault(); vMasuk('', b.dataset.mode); });
   m.querySelector('form[data-form="masuk"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
-    const { error } = await sb.auth.signInWithPassword({ email: d.email.trim(), password: d.sandi }); if (error) return toast(error.message.includes('Invalid') ? 'Email atau sandi salah' : error.message, true); location.reload(); };
+    const masuk = () => sb.auth.signInWithPassword({ email: d.email.trim(), password: d.sandi });
+    let { error } = await masuk();
+    // Akun pindahan (17 Sep 2026) belum bersandi di basis baru: fungsi "pindah-sandi" memeriksa sandi yang baru diketik
+    // ke basis lama, memasangnya di sini, lalu kita coba masuk sekali lagi. Pengguna tidak merasakan apa-apa.
+    if (error && error.message.includes('Invalid')) {
+      try { const r = await fetch(SUPABASE_URL + '/functions/v1/pindah-sandi', { method: 'POST', headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: d.email.trim(), sandi: d.sandi }) });
+        if (r.ok) ({ error } = await masuk()); } catch {}
+    }
+    if (error) return toast(error.message.includes('Invalid') ? 'Email atau sandi salah' : error.message, true); location.reload(); };
   m.querySelector('form[data-form="daftar"]').onsubmit = async e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target).entries());
     const email = d.email.trim();
     const { data: res, error } = await sb.auth.signUp({ email, password: d.sandi, options: { data: { nama: d.nama.trim(), aplikasi: 'markas' }, emailRedirectTo: alur } });
