@@ -920,13 +920,16 @@ const DEF = {
   bugar: {
     profil: { tinggi:0, umur:0, kelamin:'l', aktivitas:1.375, tujuan:'turun', targetBerat:0 },
     berat: [],
+    // Tiga sesi saja, semuanya bisa dikerjakan di dalam rumah. Jalan kaki dibuang
+    // karena butuh keluar rumah. Jumat sengaja kosong sebagai hari istirahat:
+    // otot tumbuh saat istirahat, bukan saat dilatih.
     latihan: [
-      // Jumat sengaja dikosongkan. Otot tumbuh saat istirahat, bukan saat dilatih,
-      // dan satu hari penuh tanpa latihan membuat program ini bertahan lama.
-      { id:'l-dorong', nama:'Dorong', hari:[1,4], takaran:'4 set x sebanyak mungkin', ket:'Push up. Turunkan badan pelan tiga hitungan. Kalau sudah terasa ringan, naikkan kaki ke kursi.' },
-      { id:'l-tarik',  nama:'Tarik',  hari:[2,6], takaran:'4 set x 10 tiap tangan',   ket:'Membungkuk, punggung lurus, tarik beban ke pinggang. Pakai jerigen air, galon, atau tas berisi buku.' },
-      { id:'l-kaki',   nama:'Kaki',   hari:[3,0], takaran:'4 set x 15',               ket:'Squat dan lunge bergantian. Peluk beban di dada kalau sudah ringan.' },
-      { id:'l-jalan',  nama:'Jalan kaki', hari:[0,1,2,3,4,6], takaran:'30 menit',     ket:'Paling murah untuk membakar, dan paling gampang diteruskan tiap hari.' }
+      { id:'l-dorong', nama:'Dorong', hari:[1,4], takaran:'4 set, tutup 10 menit kardio',
+        ket:'Push up. Turunkan badan pelan tiga hitungan. Kalau sudah ringan, naikkan kaki ke kursi. Tutup dengan jumping jack atau naik-turun bangku.' },
+      { id:'l-tarik',  nama:'Tarik',  hari:[2,6], takaran:'4 set x 10 tiap tangan, tutup 10 menit kardio',
+        ket:'Membungkuk, punggung lurus, tarik beban ke pinggang. Pakai jerigen air, galon, atau tas berisi buku. Tutup dengan mountain climber.' },
+      { id:'l-kaki',   nama:'Kaki',   hari:[3,0], takaran:'4 set x 15, tutup 10 menit kardio',
+        ket:'Squat dan lunge bergantian. Peluk beban di dada kalau sudah ringan. Tutup dengan naik-turun bangku.' }
     ]
   },
   jadwal: { items: [
@@ -2399,7 +2402,9 @@ function grafikBerat(data, target){
    demi lima menit sampai ketemu jendela yang benar-benar kosong DI SEMUA HARI
    latihan itu, bukan cuma di satu hari. Waktu sholat dihitung dari tanggal terdekat
    yang jatuh pada hari tersebut. */
-const PEGANGAN = ['ashar', 'isya', 'subuh', 'maghrib'];
+// Sore dan malam dicoba lebih dulu. Pagi ditaruh paling belakang karena buat
+// kebanyakan orang pagi itu jam paling padat.
+const PEGANGAN = ['ashar', 'maghrib', 'isya', 'subuh'];
 function celahBersama(hariList, durasi){
   if (!hariList || !hariList.length) return null;
   const info = hariList.map(dow => {
@@ -2483,10 +2488,10 @@ function vBugar(){
         <span><b>${esc(l.nama)}</b> <span class="pill">${esc(l.takaran || '')}</span><span class="small dim" style="display:block">${esc(l.ket || '')}</span></span>
         <button class="btn sm ghost" data-act="bugar-latihan-hapus" data-id="${l.id}" title="Hapus dari program">×</button></label>`).join('')
       : `<div class="empty">${hariIni === 5 ? 'Jumat hari istirahat. Otot tumbuh saat istirahat, bukan saat dilatih.' : 'Tidak ada latihan terjadwal hari ini. Hari kosong juga bagian dari program.'}</div>`}
-    <div class="small dim" style="margin-top:10px">Seratus push up tiap sore itu cuma sekitar 40 kkal, setara satu pisang goreng. Latihan membentuk otot, yang menurunkan berat adalah makanannya. Punggung dan kaki jangan dilewat: itu yang membuat bahu terlihat lebar dan pinggang terlihat sempit.</div>
+    <div class="small dim" style="margin-top:10px">Seratus push up tiap sore itu cuma sekitar 40 kkal, setara satu pisang goreng. Latihan membentuk otot, yang menurunkan berat adalah makanannya. Punggung dan kaki jangan dilewat: itu yang membuat bahu terlihat lebar dan pinggang terlihat sempit. Centang di bawah ini sifatnya pilihan; yang jadi ukuran sebenarnya grafik berat di bawah.</div>
     <div class="row between" style="margin-top:10px"><button class="btn sm" data-act="bugar-ke-jadwal">Masukkan program ini ke Jadwal</button>
       ${(() => { const sudah = (S.jadwal.items||[]).filter(x => String(x.id).startsWith('j-bugar-'));
-        if (!sudah.length) return '<span class="small dim">Dicarikan jam kosong, tidak akan menabrak jadwalmu</span>';
+        if (!sudah.length) return '<span class="small dim">Dicarikan jam kosong sore hari, tidak akan menabrak jadwalmu</span>';
         const j = sudah[0]; return `<span class="small dim">Sudah di jadwal: setelah ${esc(namaSholat(j.setelah||'ashar'))}${j.jeda ? ' + ' + j.jeda + ' menit' : ''}</span>`;
       })()}</div></div>`;
 
@@ -2603,24 +2608,38 @@ document.addEventListener('click', async e => {
       await simpanHari(k, h); render(); break; }
     // Menyalin program latihan ke halaman Jadwal, supaya ia muncul bersama sholat
     // dan kebiasaan lain. Yang sudah pernah disalin tidak digandakan.
-    case 'bugar-ke-jadwal': { const daftar = S.jadwal.items = S.jadwal.items||[]; let n = 0; const gagal = [];
-      // Satu per satu, supaya latihan yang baru dimasukkan ikut terhitung sebagai
-      // "sudah terisi" waktu mencari celah untuk latihan berikutnya.
+    case 'bugar-ke-jadwal': {
+      // Hitung ulang dari awal: jadwal latihan lama dibuang dulu supaya penempatannya
+      // tidak menumpuk di jam lama yang mungkin sudah tidak cocok.
+      const lamaCount = (S.jadwal.items||[]).filter(x => String(x.id).startsWith('j-bugar-')).length;
+      S.jadwal.items = (S.jadwal.items||[]).filter(x => !String(x.id).startsWith('j-bugar-'));
+      // Blok "Olahraga" bawaan dihapus kalau ada: program Bugar menggantikannya,
+      // dan dua-duanya tertaut ke aturan harian yang sama.
+      const adaLama = S.jadwal.items.some(x => x.id === 'j-olahraga');
+      if (adaLama) S.jadwal.items = S.jadwal.items.filter(x => x.id !== 'j-olahraga');
+      const daftar = S.jadwal.items; let n = 0; const gagal = [];
       for (const l of (S.bugar.latihan||[])) {
-        const kode = 'j-bugar-' + l.id;
-        if (daftar.some(x => x.id===kode)) continue;
         const m = /(\d+)\s*menit/.exec(l.takaran||'');
-        const durasi = m ? Math.min(90, +m[1] + 10) : 40;
-        const c = celahBersama(l.hari||[], durasi);
-        if (!c) { gagal.push(l.nama); continue; }
-        daftar.push({ id:kode, judul:'Latihan: ' + l.nama, jenis:'kebiasaan', hari:l.hari||[],
-          setelah:c.setelah, jeda:c.jeda, durasi, link:'',
-          ket:(l.takaran? l.takaran+' \u00b7 ':'') + (l.ket||'') });
-        n++;
+        const durasi = m ? Math.min(90, +m[1] + 35) : 45;
+        // Tiap hari dicarikan celahnya sendiri. Hari yang kebetulan dapat jam sama
+        // digabung jadi satu baris supaya jadwalnya tidak penuh baris kembar.
+        const per = {};
+        for (const dow of (l.hari||[])) {
+          const c = celahBersama([dow], durasi);
+          if (!c) { gagal.push(l.nama + ' ' + HARI[dow]); continue; }
+          const kunci = c.setelah + '|' + c.jeda;
+          (per[kunci] = per[kunci] || { setelah:c.setelah, jeda:c.jeda, hari:[] }).hari.push(dow);
+        }
+        Object.values(per).forEach((g, i) => {
+          daftar.push({ id:'j-bugar-' + l.id + (i ? '-' + i : ''), judul:'Latihan: ' + l.nama,
+            jenis:'kebiasaan', hari:g.hari, setelah:g.setelah, jeda:g.jeda, durasi, link:'olahraga',
+            ket:(l.takaran ? l.takaran + ' \u00b7 ' : '') + (l.ket||'') });
+          n++;
+        });
       }
-      if (!n && !gagal.length) { toast('Semua latihan sudah ada di jadwal'); break; }
-      if (n) await store.set('jadwal/rutinitas', S.jadwal);
-      toast(gagal.length ? `${n} latihan masuk; ${gagal.join(', ')} tidak dapat celah kosong` : `${n} latihan masuk ke jadwal tanpa bentrok`);
+      await store.set('jadwal/rutinitas', S.jadwal);
+      toast(gagal.length ? `${n} sesi masuk; ${gagal.join(', ')} tidak dapat celah`
+        : `${n} sesi latihan ditaruh di jam kosong${adaLama ? ', blok Olahraga lama diganti' : ''}`);
       render(); break; }
     case 'pengaturan': modalPengaturan(); break;
     case 'masuk': e.preventDefault(); vMasuk('', 'masuk'); break;
