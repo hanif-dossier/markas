@@ -1763,25 +1763,43 @@ function blokHari(k){
   (S.kuliah.items||[]).filter(c => c.hari===dow).forEach(c => out.push({ id:'kuliah-'+c.id, judul:c.mk, jenis:'kuliah', mulai:c.mulai, selesai:c.selesai, ket:c.ruang||'' }));
   (S.jadwal.agenda||[]).filter(a => a.tanggal===k && a.mulai).forEach(a => out.push({ id:'agenda-'+a.id, judul:a.judul, jenis:'agenda', mulai:a.mulai, selesai:a.selesai||a.mulai, ket:a.ket||'', link:'agenda:'+a.id }));
   const kuliahHariIni = (S.kuliah.items||[]).filter(c => c.hari===dow).map(c => [keMenit(c.mulai), keMenit(c.selesai)]);
-  (S.jadwal.items||[]).filter(x => (x.hari||[]).includes(dow)).forEach(x => {
-    if (!x.setelah || wt[x.setelah]===undefined) {
-      // Kegiatan berjam tetap ikut digeser kalau menabrak jam kuliah, sama seperti
-      // kegiatan yang berpegangan pada waktu sholat. Tanpa ini, blok belajar pagi
-      // dan jam kuliah bertumpuk di jam yang sama dan dua-duanya ditandai bentrok.
-      if (!x.mulai) { out.push({ ...x }); return; }
-      const awalTetap = keMenit(x.mulai);
-      const lamaTetap = x.selesai ? Math.max(15, keMenit(x.selesai) - awalTetap) : 15;
-      let mulaiTetap = awalTetap, digeser = false;
-      for (const [a, b] of kuliahHariIni) if (mulaiTetap < b && mulaiTetap + lamaTetap > a) { mulaiTetap = b; digeser = true; }
-      out.push({ ...x, mulai: jam(mulaiTetap), selesai: jam(mulaiTetap + lamaTetap),
-        ket: digeser ? `Digeser: selesai kuliah dulu${x.ket ? ' · ' + x.ket : ''}` : x.ket });
-      return;
+  // Jam yang sudah terpakai hari itu: kuliah, agenda bertanggal, dan tiap kegiatan
+  // rutin yang sudah selesai ditempatkan. Sholat sengaja tidak dihitung karena cuma
+  // 15 menit dan memang boleh bersisian dengan kegiatan lain.
+  const terisi = kuliahHariIni.slice();
+  out.filter(o => o.jenis==='agenda').forEach(o => terisi.push([keMenit(o.mulai), keMenit(o.selesai||o.mulai)]));
+  // Taruh di celah kosong pertama pada atau sesudah jam yang diinginkan. Dulu
+  // kegiatan hanya menghindari jam kuliah, tidak saling menghindari, sehingga dua
+  // kegiatan yang sama-sama terdorong oleh kuliah bisa mendarat di jam yang sama.
+  // Kalau sampai lewat jam 23.00, dibiarkan di tempat semula supaya ditandai
+  // bentrok, bukan didorong ke tengah malam.
+  const taruh = (m0, lama) => {
+    let geser = false;
+    for (let putar = 0; putar < 12; putar++) {
+      const tabrak = terisi.find(([a, b]) => m0 < b && a < m0 + lama);
+      if (!tabrak) break;
+      if (tabrak[1] + lama > 23 * 60) return { m0, geser };
+      m0 = tabrak[1]; geser = true;
     }
-    // relatif terhadap sholat: mulai setelah sholat (15 menit) + jeda; geser ke setelah kuliah kalau bertabrakan
-    const lama = +x.durasi || 15; let m0 = wt[x.setelah] + 15 + (+x.jeda||0), geser = false;
-    for (const [a, b] of kuliahHariIni) if (m0 < b && m0 + lama > a) { m0 = b; geser = true; }
-    out.push({ ...x, mulai:jam(m0), selesai:jam(m0 + lama), ket: geser ? `Digeser: selesai kuliah dulu${x.ket?' · '+x.ket:''}` : x.ket });
-  });
+    terisi.push([m0, m0 + lama]);
+    return { m0, geser };
+  };
+  // Urutan penempatan menentukan siapa yang mengalah. Ibadah ditaruh lebih dulu,
+  // supaya dzikir sore tidak terdorong sampai mepet Maghrib gara-gara blok belajar
+  // kebetulan disebut lebih awal di daftar. Sesudah itu urut jam yang diinginkan.
+  const URUT = { ibadah:0, kebiasaan:1, keuangan:2 };
+  (S.jadwal.items||[]).filter(x => (x.hari||[]).includes(dow)).map(x => {
+    const berpegang = x.setelah && wt[x.setelah] !== undefined;
+    return { x, berpegang,
+      lama: berpegang ? (+x.durasi || 15) : (x.selesai && x.mulai ? Math.max(15, keMenit(x.selesai) - keMenit(x.mulai)) : 15),
+      awalnya: berpegang ? wt[x.setelah] + 15 + (+x.jeda || 0) : (x.mulai ? keMenit(x.mulai) : null) };
+  }).sort((a, b) => (URUT[a.x.jenis] ?? 3) - (URUT[b.x.jenis] ?? 3) || (a.awalnya ?? 1e9) - (b.awalnya ?? 1e9))
+    .forEach(({ x, lama, awalnya }) => {
+      if (awalnya === null) { out.push({ ...x }); return; }
+      const hasil = taruh(awalnya, lama);
+      out.push({ ...x, mulai: jam(hasil.m0), selesai: jam(hasil.m0 + lama),
+        ket: hasil.geser ? 'Digeser: jamnya sudah terpakai' + (x.ket ? ' · ' + x.ket : '') : x.ket });
+    });
   (S.aset.aset||[]).filter(a => a.dca && a.dca.aktif && +a.dca.jumlah>0).forEach(a => { const p = a.dca;
     const cocok = p.frek==='bulanan' ? d.getDate() === Math.min(+p.tanggal||1, 28) : dow === +p.hari;
     if (cocok) out.push({ id:'dca-'+a.id, judul:`DCA ${a.nama} ${rpS(p.jumlah)}`, jenis:'keuangan', mulai:p.jam||'10:15', selesai:jam(keMenit(p.jam||'10:15')+15), link:'dca:'+a.id, ket:p.frek==='bulanan'?'setoran bulanan':'setoran mingguan' }); });
