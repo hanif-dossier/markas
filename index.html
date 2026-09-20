@@ -614,6 +614,26 @@ body[data-tema="terang"] .lokasi-kartu .lokasi-btn{background:linear-gradient(13
 }
 .panel h2 :is(.pill,.btn,.tabs,button,select,input,.small){font-family:var(--sans)}
 .tabs{max-width:100%;overflow-x:auto;scrollbar-width:none}.tabs button{white-space:nowrap;flex:none}
+
+/* Bugar */
+.ubin4{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-top:12px}
+.ubin4>div{background:var(--panel-2,rgba(255,255,255,.04));border-radius:16px;padding:14px 16px;min-width:0}
+.takar-list{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.takar{background:var(--panel-2,rgba(255,255,255,.04));border-radius:16px;padding:12px 14px}
+.cek{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:14px;background:var(--panel-2,rgba(255,255,255,.04));margin-top:8px}
+.cek.on{background:rgba(94,164,130,.16)}
+.cek input{margin-top:3px;flex:none}
+.cek>span{flex:1;min-width:0}
+.cek .pill{margin-left:6px}
+.riwayat-berat{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pekan{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:12px 0 4px}
+.pekan>div{background:var(--panel-2,rgba(255,255,255,.04));border-radius:11px;padding:7px 4px;text-align:center;min-width:0}
+.pekan b{display:block;font-size:11px;letter-spacing:.04em;opacity:.7}
+.pekan span{display:block;font-size:10.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pekan .kini{background:rgba(94,164,130,.2);outline:1px solid rgba(94,164,130,.45)}
+.pekan .rehat span{opacity:.5;font-style:italic}
+.pilih-hari{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:var(--panel-2,rgba(255,255,255,.05));cursor:pointer}
+.pilih-hari input{margin:0}
 </style>
 
 <div class="app">
@@ -644,6 +664,7 @@ const I = {
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>',
   sholat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1 3-4 4-4 8a4 4 0 0 0 8 0c0-4-3-5-4-8Z"/><path d="M4 21h16"/><path d="M8 15c0 3 1 6 4 6s4-3 4-6"/></svg>',
   disiplin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  bugar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M4 9v5M17.5 6.5v11M20 9v5M6.5 12h11"/></svg>',
   jurnal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4Z"/><path d="M5 4v14a2 2 0 0 0 2 2"/><path d="M9 8h6M9 12h6"/></svg>',
   kuliah:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5L2 9Z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/></svg>',
   rencana:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="M12 3v2M21 12h-2"/></svg>',
@@ -893,6 +914,21 @@ const DEF = {
   keputusan: { items: [] },
   /* rutinitas harian/mingguan. Sholat, kuliah, dan DCA ditambahkan otomatis oleh blokHari().
      `link` menghubungkan kegiatan ke sesuatu yang bisa dicek selesai/belum. */
+  // Bugar: pola makan dengan takaran tangan, latihan beban seadanya, dan berat badan.
+  // Angka gizinya dihitung dari profil, bukan ditebak: rumus Mifflin-St Jeor (1990)
+  // yang dipakai klinik gizi, lalu dikali faktor aktivitas.
+  bugar: {
+    profil: { tinggi:0, umur:0, kelamin:'l', aktivitas:1.375, tujuan:'turun', targetBerat:0 },
+    berat: [],
+    latihan: [
+      // Jumat sengaja dikosongkan. Otot tumbuh saat istirahat, bukan saat dilatih,
+      // dan satu hari penuh tanpa latihan membuat program ini bertahan lama.
+      { id:'l-dorong', nama:'Dorong', hari:[1,4], takaran:'4 set x sebanyak mungkin', ket:'Push up. Turunkan badan pelan tiga hitungan. Kalau sudah terasa ringan, naikkan kaki ke kursi.' },
+      { id:'l-tarik',  nama:'Tarik',  hari:[2,6], takaran:'4 set x 10 tiap tangan',   ket:'Membungkuk, punggung lurus, tarik beban ke pinggang. Pakai jerigen air, galon, atau tas berisi buku.' },
+      { id:'l-kaki',   nama:'Kaki',   hari:[3,0], takaran:'4 set x 15',               ket:'Squat dan lunge bergantian. Peluk beban di dada kalau sudah ringan.' },
+      { id:'l-jalan',  nama:'Jalan kaki', hari:[0,1,2,3,4,6], takaran:'30 menit',     ket:'Paling murah untuk membakar, dan paling gampang diteruskan tiap hari.' }
+    ]
+  },
   jadwal: { items: [
     // `setelah` = mulai setelah sholat itu (+15 menit sholat, + `jeda`), lama `durasi` menit.
     // Kalau jatuh di jam kuliah, otomatis digeser ke setelah kuliah selesai.
@@ -930,14 +966,17 @@ const QUOTES = [
 ];
 
 /* ---------- state ---------- */
-const S = { pengaturan:null, harian:{}, kuliah:null, rencana:null, keputusan:null, fokus:null, jadwal:null, aruskas:null, aset:null, view:'hari-ini', tab:{}, bulanTx:monthKey(new Date()), jurnalTgl: todayKey(), jadwalOff:0 };
+const S = { pengaturan:null, harian:{}, bugar:null, kuliah:null, rencana:null, keputusan:null, fokus:null, jadwal:null, aruskas:null, aset:null, view:'hari-ini', tab:{}, bulanTx:monthKey(new Date()), jurnalTgl: todayKey(), jadwalOff:0 };
 
 async function loadAll(){
-  [S.pengaturan, S.harian, S.kuliah, S.rencana, S.keputusan, S.fokus, S.jadwal, S.aruskas, S.aset] = await Promise.all([
-    store.get('pengaturan/utama', DEF.pengaturan), store.listHarian(), store.get('kuliah/semester5', DEF.kuliah),
+  [S.pengaturan, S.harian, S.bugar, S.kuliah, S.rencana, S.keputusan, S.fokus, S.jadwal, S.aruskas, S.aset] = await Promise.all([
+    store.get('pengaturan/utama', DEF.pengaturan), store.listHarian(), store.get('bugar/utama', DEF.bugar), store.get('kuliah/semester5', DEF.kuliah),
     store.get('rencana/3tahun', DEF.rencana), store.get('keputusan/daftar', DEF.keputusan), store.get('fokus/daftar', DEF.fokus),
     store.get('jadwal/rutinitas', DEF.jadwal), store.get('keuangan/aruskas', DEF.aruskas), store.get('keuangan/aset', DEF.aset)
   ]);
+  if (!S.bugar.profil) S.bugar.profil = clone(DEF.bugar.profil);
+  if (!S.bugar.berat) S.bugar.berat = [];
+  if (!S.bugar.latihan) S.bugar.latihan = clone(DEF.bugar.latihan);
   if (!S.aset.setoran) S.aset.setoran = [];
   if (!S.pengaturan.aturan) S.pengaturan.aturan = clone(DEF.pengaturan.aturan);
   if (!S.aruskas.rutin) S.aruskas.rutin = clone(DEF.aruskas.rutin);
@@ -1152,7 +1191,7 @@ function lineChart(points){ // [{label, v}]
 
 /* ================= HALAMAN ================= */
 const VIEWS = [
-  ['hari-ini','Beranda','home'],['jadwal','Jadwal','jadwal'],['sholat','Sholat','sholat'],['disiplin','Disiplin','disiplin'],['fokus','Fokus','fokus'],['jurnal','Jurnal','jurnal'],
+  ['hari-ini','Beranda','home'],['jadwal','Jadwal','jadwal'],['sholat','Sholat','sholat'],['disiplin','Disiplin','disiplin'],['bugar','Bugar','bugar'],['fokus','Fokus','fokus'],['jurnal','Jurnal','jurnal'],
   ['kuliah','Kuliah','kuliah'],['rencana','Planning','rencana'],['keputusan','Keputusan','keputusan'],['keuangan','Keuangan','uang'],
   ['akun','Akun','setting']
 ];
@@ -1725,7 +1764,19 @@ function blokHari(k){
   (S.jadwal.agenda||[]).filter(a => a.tanggal===k && a.mulai).forEach(a => out.push({ id:'agenda-'+a.id, judul:a.judul, jenis:'agenda', mulai:a.mulai, selesai:a.selesai||a.mulai, ket:a.ket||'', link:'agenda:'+a.id }));
   const kuliahHariIni = (S.kuliah.items||[]).filter(c => c.hari===dow).map(c => [keMenit(c.mulai), keMenit(c.selesai)]);
   (S.jadwal.items||[]).filter(x => (x.hari||[]).includes(dow)).forEach(x => {
-    if (!x.setelah || wt[x.setelah]===undefined) { out.push({ ...x }); return; }
+    if (!x.setelah || wt[x.setelah]===undefined) {
+      // Kegiatan berjam tetap ikut digeser kalau menabrak jam kuliah, sama seperti
+      // kegiatan yang berpegangan pada waktu sholat. Tanpa ini, blok belajar pagi
+      // dan jam kuliah bertumpuk di jam yang sama dan dua-duanya ditandai bentrok.
+      if (!x.mulai) { out.push({ ...x }); return; }
+      const awalTetap = keMenit(x.mulai);
+      const lamaTetap = x.selesai ? Math.max(15, keMenit(x.selesai) - awalTetap) : 15;
+      let mulaiTetap = awalTetap, digeser = false;
+      for (const [a, b] of kuliahHariIni) if (mulaiTetap < b && mulaiTetap + lamaTetap > a) { mulaiTetap = b; digeser = true; }
+      out.push({ ...x, mulai: jam(mulaiTetap), selesai: jam(mulaiTetap + lamaTetap),
+        ket: digeser ? `Digeser: selesai kuliah dulu${x.ket ? ' · ' + x.ket : ''}` : x.ket });
+      return;
+    }
     // relatif terhadap sholat: mulai setelah sholat (15 menit) + jeda; geser ke setelah kuliah kalau bertabrakan
     const lama = +x.durasi || 15; let m0 = wt[x.setelah] + 15 + (+x.jeda||0), geser = false;
     for (const [a, b] of kuliahHariIni) if (m0 < b && m0 + lama > a) { m0 = b; geser = true; }
@@ -2256,8 +2307,240 @@ function modalPengaturan(){
 }
 
 /* ================= ROUTER & EVENT ================= */
+
+/* ----- Bugar: makan, latihan, berat badan -----------------------------------
+   Takaran memakai tangan sendiri, bukan gram. Alasannya praktis: makanan rumahan
+   dan makanan khas daerah tidak punya label gizi, dan orang yang harus menimbang
+   tiap makan biasanya berhenti dalam dua minggu. Ukuran tangan juga otomatis
+   menyesuaikan besar badan pemiliknya.
+     satu telapak tangan  = protein (ikan, ayam, telur, tempe)
+     satu kepal tangan    = karbohidrat (nasi, mie, bihun, kentang, sagu)
+     satu ruas jempol     = lemak tambahan (minyak, santan, kacang)
+     dua genggam          = sayur
+   Makanan bersantan atau digoreng rendam dihitung dua jempol.                */
+const TAKARAN = [
+  ['telapak', 'Protein',       'telapak tangan', 'ikan, ayam, telur, tempe, tahu'],
+  ['kepal',   'Karbohidrat',   'kepal tangan',   'nasi, mie tiaw, bihun, kentang, sagu'],
+  ['jempol',  'Lemak tambahan','ruas jempol',    'minyak goreng, santan, kacang'],
+  ['sayur',   'Sayur',         'genggam',        'apa saja, makin banyak makin baik']
+];
+const TUJUAN = { turun:['Turunkan berat', -500], jaga:['Jaga berat', 0], naik:['Naikkan berat', 300] };
+const AKTIVITAS = [
+  [1.2,   'Hampir selalu duduk'],
+  [1.375, 'Gerak ringan, olahraga 1–3 hari seminggu'],
+  [1.55,  'Gerak sedang, olahraga 3–5 hari seminggu'],
+  [1.725, 'Kerja fisik atau olahraga hampir tiap hari']
+];
+
+const beratTerakhir = () => { const d = (S.bugar.berat||[]).slice().sort((a,b)=>a.tgl.localeCompare(b.tgl)); return d.length ? d[d.length-1].kg : 0; };
+
+// Semua angka gizi dihitung di sini, satu tempat, supaya tidak ada angka ajaib
+// yang tersebar di tampilan.
+function angkaBugar(){
+  const p = S.bugar.profil || {}, berat = beratTerakhir();
+  if (!p.tinggi || !p.umur || !berat) return null;
+  const bmr = Math.round(10 * berat + 6.25 * p.tinggi - 5 * p.umur + (p.kelamin === 'p' ? -161 : 5));
+  const tdee = Math.round(bmr * (+p.aktivitas || 1.375));
+  const kalori = Math.max(1200, tdee + (TUJUAN[p.tujuan] || TUJUAN.jaga)[1]);
+  const protein = Math.round(1.6 * berat);            // cukup untuk menahan otot saat defisit
+  const lemak = Math.round(0.8 * berat);              // batas bawah supaya hormon tidak terganggu
+  const karbo = Math.max(50, Math.round((kalori - protein * 4 - lemak * 9) / 4));
+  const t = p.tinggi / 100, imt = +(berat / (t * t)).toFixed(1);
+  return { berat, bmr, tdee, kalori, protein, lemak, karbo, imt,
+    sehatBawah: Math.round(18.5 * t * t), sehatAtas: Math.round(24.9 * t * t),
+    jatah: {
+      telapak: Math.max(2, Math.round(protein / 30)),
+      kepal:   Math.max(2, Math.round(karbo / 50)),
+      jempol:  Math.max(1, Math.round(lemak * .5 / 12)),
+      sayur:   3
+    } };
+}
+
+const bacaIMT = v => v < 18.5 ? ['Kurang', 'var(--warn)'] : v < 25 ? ['Sehat', 'var(--good)'] : v < 30 ? ['Berlebih', 'var(--warn)'] : ['Obesitas', 'var(--bad)'];
+
+// Grafik berat sederhana: garis dari timbangan pertama sampai terakhir.
+function grafikBerat(data, target){
+  if (data.length < 2) return '';
+  const W = 320, H = 96, pad = 10;
+  const nilai = data.map(d => d.kg).concat(target ? [target] : []);
+  const min = Math.min(...nilai) - 1, max = Math.max(...nilai) + 1, rentang = (max - min) || 1;
+  const x = i => pad + (W - pad * 2) * (i / (data.length - 1));
+  const y = v => pad + (H - pad * 2) * (1 - (v - min) / rentang);
+  const garis = data.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(d.kg).toFixed(1)}`).join('');
+  const titik = data.map((d, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(d.kg).toFixed(1)}" r="2.4" fill="var(--teal)"/>`).join('');
+  const garisTarget = target ? `<line x1="${pad}" y1="${y(target).toFixed(1)}" x2="${W - pad}" y2="${y(target).toFixed(1)}" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3 3"/>` : '';
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik berat badan">${garisTarget}<path d="${garis}" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${titik}</svg>`;
+}
+
+
+/* Mencari celah kosong untuk latihan.
+   Pengguna bilang jadwal lamanya tidak pernah ia bolos atau langgar, jadi latihan
+   baru tidak boleh menabraknya: yang menyelip di jadwal yang sudah jalan pasti
+   kalah dan akhirnya ditinggalkan. Fungsi ini mencoba beberapa titik pegangan
+   (setelah Ashar dulu, lalu Isya, Subuh, Maghrib) dan menggeser jedanya lima menit
+   demi lima menit sampai ketemu jendela yang benar-benar kosong DI SEMUA HARI
+   latihan itu, bukan cuma di satu hari. Waktu sholat dihitung dari tanggal terdekat
+   yang jatuh pada hari tersebut. */
+const PEGANGAN = ['ashar', 'isya', 'subuh', 'maghrib'];
+function celahBersama(hariList, durasi){
+  if (!hariList || !hariList.length) return null;
+  const info = hariList.map(dow => {
+    const d = new Date(); d.setDate(d.getDate() + ((dow - d.getDay()) + 7) % 7);
+    return { wt: waktuSholat(d, S.pengaturan.lat, S.pengaturan.lng), isi: blokHari(key(d)).map(b => [b.m0, b.m1]) };
+  });
+  for (const sh of PEGANGAN) {
+    for (let jeda = 0; jeda <= 180; jeda += 5) {
+      const muat = info.every(({ wt, isi }) => {
+        if (wt[sh] === undefined) return false;
+        const m0 = wt[sh] + 15 + jeda;            // 15 menit untuk sholatnya sendiri
+        if (m0 + durasi > 22 * 60) return false;  // jangan sampai lewat jam 10 malam
+        return !isi.some(([a, b]) => m0 < b && a < m0 + durasi);
+      });
+      if (muat) return { setelah: sh, jeda };
+    }
+  }
+  return null;
+}
+const namaSholat = id => (SHOLAT.find(x => x[0] === id) || [id, id])[1];
+
+function vBugar(){
+  const tk = todayKey(), h = hari(tk), a = angkaBugar();
+  const p = S.bugar.profil || {};
+  const isi = h.bugar || {};
+  const hariIni = new Date().getDay();
+  const latihanHariIni = (S.bugar.latihan || []).filter(l => (l.hari || []).includes(hariIni));
+  const beres = h.latihan || {};
+  const data = (S.bugar.berat || []).slice().sort((a2, b2) => a2.tgl.localeCompare(b2.tgl));
+
+  // --- kartu angka
+  const kartuAngka = !a ? `<div class="c12 panel"><h2>Angka kamu belum bisa dihitung</h2>
+      <div class="desc">Isi tinggi, umur, dan berat badan dulu. Setelah itu kebutuhan kalori dan proteinmu dihitung otomatis dengan rumus Mifflin-St Jeor, rumus yang dipakai klinik gizi sejak 1990.</div>
+      <div class="row" style="margin-top:10px"><button class="btn primary" data-act="bugar-profil">Isi profil</button><button class="btn" data-act="bugar-timbang">Catat berat badan</button></div></div>`
+    : (() => {
+      const [label, warna] = bacaIMT(a.imt);
+      const target = +p.targetBerat || 0;
+      const sisa = target ? +(a.berat - target).toFixed(1) : 0;
+      return `<div class="c12 panel"><h2><span>Angka kamu</span><button class="btn sm" data-act="bugar-profil">Ubah profil</button></h2>
+      <div class="ubin4">
+        <div><div class="lbl">Target makan sehari</div><div class="big mono" style="color:var(--gold-2)">${a.kalori}</div><div class="lbl">kkal</div></div>
+        <div><div class="lbl">Protein sehari</div><div class="big mono" style="color:var(--teal)">${a.protein}</div><div class="lbl">gram</div></div>
+        <div><div class="lbl">Berat sekarang</div><div class="big mono">${a.berat}</div><div class="lbl">kg${target ? ` · sisa ${sisa > 0 ? sisa + ' kg lagi' : 'tercapai'}` : ''}</div></div>
+        <div><div class="lbl">IMT</div><div class="big mono" style="color:${warna}">${a.imt}</div><div class="lbl">${label} · sehat ${a.sehatBawah}–${a.sehatAtas} kg</div></div>
+      </div>
+      <div class="kv" style="margin-top:12px">
+        <span class="k">Kalori tubuh saat diam (BMR)</span><span class="v mono">${a.bmr} kkal</span>
+        <span class="k">Kebutuhan dengan aktivitasmu</span><span class="v mono">${a.tdee} kkal</span>
+        <span class="k">Tujuan</span><span class="v">${(TUJUAN[p.tujuan] || TUJUAN.jaga)[0]}${p.tujuan === 'turun' ? ' · turun sekitar 0,45 kg per minggu' : ''}</span>
+        <span class="k">Pembagian sehari</span><span class="v mono">${a.protein} g protein · ${a.lemak} g lemak · ${a.karbo} g karbo</span>
+      </div>
+      <div class="small dim" style="margin-top:10px">Rumus: Mifflin-St Jeor (1990) untuk BMR, dikali faktor aktivitas. Target protein 1,6 gram per kg berat badan, angka yang dipakai untuk menahan otot saat sedang menurunkan berat. Ini hitungan Markasku, bukan nasihat medis; kalau ada penyakit atau obat rutin, tanyakan dulu ke ahli gizi atau dokter.</div></div>`;
+    })();
+
+  // --- takaran tangan hari ini
+  const barisTakar = ([k, nama, satuan, contoh]) => {
+    const n = +isi[k] || 0, jatah = a ? a.jatah[k] : 0;
+    const penuh = jatah ? Math.min(100, Math.round(n / jatah * 100)) : 0;
+    return `<div class="takar">
+      <div class="row between"><div><b>${nama}</b><div class="small dim">${esc(contoh)}</div></div>
+        <div class="row" style="gap:6px"><button class="btn sm ghost" data-act="bugar-takar" data-k="${k}" data-v="-1" aria-label="Kurangi ${nama}">−</button>
+          <span class="mono" style="min-width:52px;text-align:center">${n}${jatah ? ' / ' + jatah : ''}</span>
+          <button class="btn sm" data-act="bugar-takar" data-k="${k}" data-v="1" aria-label="Tambah ${nama}">+</button></div></div>
+      <div class="prog" style="margin-top:6px"><b style="width:${penuh}%;background:${penuh >= 100 ? 'var(--good)' : 'var(--teal)'}"></b></div>
+      <div class="small dim" style="margin-top:3px">1 = ${satuan}</div></div>`;
+  };
+
+  const kartuMakan = `<div class="c6 panel"><h2><span>Makan hari ini</span><span class="small dim">${fmtTgl(tk, false)}</span></h2>
+    <div class="desc">Ketuk tambah tiap habis makan. Tidak perlu timbangan, tidak perlu mencari nama makanan. Ukurannya tanganmu sendiri.</div>
+    <div class="takar-list">${TAKARAN.map(barisTakar).join('')}</div>
+    <div class="small dim" style="margin-top:10px">Yang bersantan atau digoreng rendam dihitung <b>dua jempol</b>, bukan satu.</div></div>`;
+
+  // --- latihan hari ini
+  const kartuLatihan = `<div class="c6 panel"><h2><span>Latihan hari ini</span><button class="btn sm" data-act="bugar-latihan-tambah">Tambah</button></h2>
+    ${(() => { const n = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+        const isiHari = i => (S.bugar.latihan||[]).filter(l => (l.hari||[]).includes(i) && l.id !== 'l-jalan').map(l => l.nama).join(' + ') || 'istirahat';
+        return `<div class="pekan">${n.map((nm, i) => `<div class="${i === hariIni ? 'kini' : ''} ${isiHari(i) === 'istirahat' ? 'rehat' : ''}"><b>${nm}</b><span>${esc(isiHari(i))}</span></div>`).join('')}</div>`;
+      })()}
+    ${latihanHariIni.length ? latihanHariIni.map(l => `<label class="cek ${beres[l.id] ? 'on' : ''}">
+        <input type="checkbox" data-act="bugar-latih" data-id="${l.id}" ${beres[l.id] ? 'checked' : ''}>
+        <span><b>${esc(l.nama)}</b> <span class="pill">${esc(l.takaran || '')}</span><span class="small dim" style="display:block">${esc(l.ket || '')}</span></span>
+        <button class="btn sm ghost" data-act="bugar-latihan-hapus" data-id="${l.id}" title="Hapus dari program">×</button></label>`).join('')
+      : `<div class="empty">${hariIni === 5 ? 'Jumat hari istirahat. Otot tumbuh saat istirahat, bukan saat dilatih.' : 'Tidak ada latihan terjadwal hari ini. Hari kosong juga bagian dari program.'}</div>`}
+    <div class="small dim" style="margin-top:10px">Seratus push up tiap sore itu cuma sekitar 40 kkal, setara satu pisang goreng. Latihan membentuk otot, yang menurunkan berat adalah makanannya. Punggung dan kaki jangan dilewat: itu yang membuat bahu terlihat lebar dan pinggang terlihat sempit.</div>
+    <div class="row between" style="margin-top:10px"><button class="btn sm" data-act="bugar-ke-jadwal">Masukkan program ini ke Jadwal</button>
+      ${(() => { const sudah = (S.jadwal.items||[]).filter(x => String(x.id).startsWith('j-bugar-'));
+        if (!sudah.length) return '<span class="small dim">Dicarikan jam kosong, tidak akan menabrak jadwalmu</span>';
+        const j = sudah[0]; return `<span class="small dim">Sudah di jadwal: setelah ${esc(namaSholat(j.setelah||'ashar'))}${j.jeda ? ' + ' + j.jeda + ' menit' : ''}</span>`;
+      })()}</div></div>`;
+
+  // --- berat badan
+  const kartuBerat = `<div class="c12 panel"><h2><span>Berat badan</span><button class="btn sm primary" data-act="bugar-timbang">Catat berat hari ini</button></h2>
+    ${data.length ? `${grafikBerat(data, +p.targetBerat || 0)}
+      <div class="row between small" style="margin-top:8px"><span class="dim">Timbangan pertama ${fmtTgl(data[0].tgl, false)}: <b class="mono">${data[0].kg} kg</b></span>
+        <span class="dim">${data.length > 1 ? `Sejak itu <b class="mono" style="color:${data[data.length - 1].kg <= data[0].kg ? 'var(--good)' : 'var(--warn)'}">${(data[data.length - 1].kg - data[0].kg).toFixed(1)} kg</b>` : ''}</span>
+        ${+p.targetBerat ? `<span class="dim">Garis putus-putus = target ${p.targetBerat} kg</span>` : ''}</div>
+      <div class="riwayat-berat">${data.slice(-8).reverse().map(d => `<span class="pill">${fmtTgl(d.tgl, false)} · <b class="mono">${d.kg}</b> kg</span>`).join('')}</div>`
+      : '<div class="empty">Belum ada timbangan. Timbang seminggu sekali saja, di pagi hari sebelum makan, supaya angkanya bisa dibandingkan.</div>'}
+    <div class="small dim" style="margin-top:10px">Berat harian naik turun satu sampai dua kilogram karena air dan isi perut. Yang dilihat arah garisnya selama sebulan, bukan angka satu hari.</div></div>`;
+
+  return kartuAngka + kartuMakan + kartuLatihan + kartuBerat;
+}
+
+function modalProfilBugar(){
+  const p = S.bugar.profil || {};
+  modal(`<h3>Profil bugar</h3><div class="desc">Dipakai untuk menghitung kebutuhan kalori dan protein. Tidak dibagikan ke mana pun.</div>
+  <form class="form"><div class="form cols3">
+    ${F('Tinggi (cm)', `<input type="number" name="tinggi" step="0.5" min="100" max="230" value="${p.tinggi || ''}" required>`)}
+    ${F('Umur (tahun)', `<input type="number" name="umur" step="1" min="10" max="100" value="${p.umur || ''}" required>`)}
+    ${F('Jenis kelamin', `<select name="kelamin"><option value="l" ${p.kelamin !== 'p' ? 'selected' : ''}>Laki-laki</option><option value="p" ${p.kelamin === 'p' ? 'selected' : ''}>Perempuan</option></select>`)}
+  </div>
+  ${F('Seberapa banyak kamu bergerak', `<select name="aktivitas">${AKTIVITAS.map(([v, t]) => `<option value="${v}" ${(+p.aktivitas || 1.375) === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`)}
+  <div class="form cols2">
+    ${F('Tujuan', `<select name="tujuan">${Object.entries(TUJUAN).map(([k, v]) => `<option value="${k}" ${p.tujuan === k ? 'selected' : ''}>${v[0]}</option>`).join('')}</select>`)}
+    ${F('Target berat (kg, opsional)', `<input type="number" name="targetBerat" step="0.5" min="0" value="${p.targetBerat || ''}">`)}
+  </div>
+  <div class="actions"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">Simpan</button></div></form>`,
+  async d => {
+    S.bugar.profil = { tinggi: +d.tinggi, umur: +d.umur, kelamin: d.kelamin, aktivitas: +d.aktivitas, tujuan: d.tujuan, targetBerat: +d.targetBerat || 0 };
+    await store.set('bugar/utama', S.bugar); toast('Profil tersimpan'); render();
+  });
+}
+
+function modalTimbang(){
+  const tk = todayKey(), ada = (S.bugar.berat || []).find(x => x.tgl === tk);
+  modal(`<h3>Catat berat badan</h3><div class="desc">Paling jujur kalau ditimbang pagi hari, setelah ke kamar mandi, sebelum makan dan minum.</div>
+  <form class="form"><div class="form cols2">
+    ${F('Tanggal', `<input type="date" name="tgl" value="${tk}" max="${tk}" required>`)}
+    ${F('Berat (kg)', `<input type="number" name="kg" step="0.1" min="20" max="300" value="${ada ? ada.kg : beratTerakhir() || ''}" required autofocus>`)}
+  </div>
+  <div class="actions"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">Simpan</button></div></form>`,
+  async d => {
+    const list = S.bugar.berat = S.bugar.berat || [];
+    const i = list.findIndex(x => x.tgl === d.tgl);
+    if (i >= 0) list[i].kg = +d.kg; else list.push({ tgl: d.tgl, kg: +d.kg });
+    await store.set('bugar/utama', S.bugar); toast('Berat tersimpan'); render();
+  });
+}
+
+function modalLatihan(x){
+  const baru = !x; x = x || { id: uid(), nama: '', hari: [1, 4], takaran: '', ket: '' };
+  const nama = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  modal(`<h3>${baru ? 'Tambah latihan' : 'Ubah latihan'}</h3>
+  <form class="form">${F('Nama latihan', `<input type="text" name="nama" value="${esc(x.nama)}" required placeholder="Dorong, Tarik, Kaki, Lari…">`)}
+  ${F('Takaran', `<input type="text" name="takaran" value="${esc(x.takaran || '')}" placeholder="4 set x 10, atau 30 menit">`)}
+  ${F('Hari', `<div class="row wrap">${nama.map((n, i) => `<label class="pilih-hari"><input type="checkbox" name="h${i}" ${(x.hari || []).includes(i) ? 'checked' : ''}><span>${n}</span></label>`).join('')}</div>`)}
+  ${F('Catatan', `<input type="text" name="ket" value="${esc(x.ket || '')}" placeholder="Cara melakukannya, atau pengingat untuk diri sendiri">`)}
+  <div class="actions"><button type="button" class="btn ghost" data-close>Batal</button><button class="btn primary" type="submit">Simpan</button></div></form>`,
+  async d => {
+    const hari = []; for (let i = 0; i < 7; i++) if (d['h' + i]) hari.push(i);
+    const obj = { ...x, nama: d.nama, takaran: d.takaran || '', ket: d.ket || '', hari: hari.length ? hari : [1, 4] };
+    const list = S.bugar.latihan = S.bugar.latihan || [];
+    const i = list.findIndex(y => y.id === x.id); if (i >= 0) list[i] = obj; else list.push(obj);
+    await store.set('bugar/utama', S.bugar); toast('Latihan tersimpan'); render();
+  });
+}
+
 function render(){
-  const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan, akun:vAkun }[v] || vHariIni;
+  const v = S.view; const fn = { 'hari-ini':vHariIni, jadwal:vJadwal, sholat:vSholat, disiplin:vDisiplin, bugar:vBugar, fokus:vFokus, jurnal:vJurnal, kuliah:vKuliah, rencana:vRencana, keputusan:vKeputusan, keuangan:vKeuangan, akun:vAkun }[v] || vHariIni;
   const barTamu = tamu ? `<div class="tamu"><div class="t"><b>Ini contoh isi Markasku.</b> Semua angka di sini data contoh. Masuk atau daftar (gratis) untuk mengisi dan menyimpan data sendiri.</div><div class="a">${htmlPilihBahasa('sm')}<button class="btn ghost" data-act="masuk">Masuk</button><button class="btn primary" data-act="daftar">Daftar</button></div></div>` : '';
   $('#main').innerHTML = barTamu + fn();
   if (v==='akun') muatNilai();
@@ -2293,6 +2576,34 @@ document.addEventListener('click', async e => {
     case 'aturan-edit': modalAturan(S.pengaturan.aturan.find(a=>a.id===id)); break;
     case 'aturan-hapus': if (confirm('Hapus aturan ini? Kegiatan jadwal yang tertaut ikut dihapus.')) { S.pengaturan.aturan = S.pengaturan.aturan.filter(a=>a.id!==id); const tulis = [store.set('pengaturan/utama', S.pengaturan)];
       if ((S.jadwal.items||[]).some(x => x.link===id)) { S.jadwal.items = S.jadwal.items.filter(x => x.link!==id); tulis.push(store.set('jadwal/rutinitas', S.jadwal)); } await Promise.all(tulis); render(); } break;
+    case 'bugar-profil': modalProfilBugar(); break;
+    case 'bugar-timbang': modalTimbang(); break;
+    case 'bugar-latihan-tambah': modalLatihan(); break;
+    case 'bugar-latihan-hapus': if (confirm('Hapus latihan ini dari program?')) { S.bugar.latihan = (S.bugar.latihan||[]).filter(x=>x.id!==id); await store.set('bugar/utama', S.bugar); toast('Latihan dihapus'); render(); } break;
+    case 'bugar-takar': { const k = todayKey(), h = hari(k); h.bugar = h.bugar||{};
+      h.bugar[el.dataset.k] = Math.max(0, (+h.bugar[el.dataset.k]||0) + (+el.dataset.v));
+      await simpanHari(k, h); render(); break; }
+    // Menyalin program latihan ke halaman Jadwal, supaya ia muncul bersama sholat
+    // dan kebiasaan lain. Yang sudah pernah disalin tidak digandakan.
+    case 'bugar-ke-jadwal': { const daftar = S.jadwal.items = S.jadwal.items||[]; let n = 0; const gagal = [];
+      // Satu per satu, supaya latihan yang baru dimasukkan ikut terhitung sebagai
+      // "sudah terisi" waktu mencari celah untuk latihan berikutnya.
+      for (const l of (S.bugar.latihan||[])) {
+        const kode = 'j-bugar-' + l.id;
+        if (daftar.some(x => x.id===kode)) continue;
+        const m = /(\d+)\s*menit/.exec(l.takaran||'');
+        const durasi = m ? Math.min(90, +m[1] + 10) : 40;
+        const c = celahBersama(l.hari||[], durasi);
+        if (!c) { gagal.push(l.nama); continue; }
+        daftar.push({ id:kode, judul:'Latihan: ' + l.nama, jenis:'kebiasaan', hari:l.hari||[],
+          setelah:c.setelah, jeda:c.jeda, durasi, link:'',
+          ket:(l.takaran? l.takaran+' \u00b7 ':'') + (l.ket||'') });
+        n++;
+      }
+      if (!n && !gagal.length) { toast('Semua latihan sudah ada di jadwal'); break; }
+      if (n) await store.set('jadwal/rutinitas', S.jadwal);
+      toast(gagal.length ? `${n} latihan masuk; ${gagal.join(', ')} tidak dapat celah kosong` : `${n} latihan masuk ke jadwal tanpa bentrok`);
+      render(); break; }
     case 'pengaturan': modalPengaturan(); break;
     case 'masuk': e.preventDefault(); vMasuk('', 'masuk'); break;
     case 'daftar': e.preventDefault(); vMasuk('', 'daftar'); break;
@@ -2377,6 +2688,9 @@ document.addEventListener('change', async e => {
   else if (act==='rencana-selesai') { const x = S.rencana.items.find(y=>y.id===id); x.selesai = el.checked; if (el.checked) x.progres = 100; await store.set('rencana/3tahun', S.rencana); render(); }
   else if (act==='aset-nilai') { const a = S.aset.aset.find(y=>y.id===id); a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Nilai aset diperbarui'); render(); }
   else if (act==='utang-nilai') { const a = S.aset.utang.find(y=>y.id===id); a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Sisa utang diperbarui'); render(); }
+  else if (act==='bugar-latih') { const k = todayKey(), h = hari(k); h.latihan = h.latihan||{};
+    if (el.checked) h.latihan[id] = true; else delete h.latihan[id];
+    await simpanHari(k, h); render(); }
   else if (act==='fokus-field') { const x = S.fokus.items.find(y=>y.id===id); x[el.dataset.k] = el.value; await store.set('fokus/daftar', S.fokus); toast('Tersimpan'); if (el.tagName!=='TEXTAREA') render(); }
   else if (act==='fokus-angka') { S.fokus[el.dataset.k] = +el.value||0; await store.set('fokus/daftar', S.fokus); render(); }
   else if (act==='rutin-aktif' || act==='rutin-field') { const r = S.aruskas.rutin.find(y=>y.id===id); if (!r) return;

@@ -1,2 +1,5 @@
 .push.env
 rahasia/
+
+# cadangan otomatis sebelum menyunting index.html
+index.html.cadangan-*
