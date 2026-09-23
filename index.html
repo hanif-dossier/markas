@@ -984,6 +984,7 @@ async function loadAll(){
   if (!S.pengaturan.aturan) S.pengaturan.aturan = clone(DEF.pengaturan.aturan);
   if (!S.aruskas.rutin) S.aruskas.rutin = clone(DEF.aruskas.rutin);
   if (!S.aruskas.transaksi) S.aruskas.transaksi = [];
+  await siapkanKas(); await sinkronKas();
   await sambungkanJadwal();
 }
 /* Kegiatan rutinitas yang belum ditautkan (link kosong) disambungkan ke aturan harian
@@ -1053,7 +1054,7 @@ async function jalankanRutin(){
       if (!ids.has(id) && !(r.lewati||[]).includes(k)) { tx.push({ id, tanggal:k, ket:`${r.nama} (rutin mingguan)`, kategori:r.kategori||'Kewajiban', masuk:0, keluar:+r.jumlah, rutin:r.id }); ids.add(id); tambah++; }
       k = addDays(k, 7); }
   });
-  if (tambah) await store.set('keuangan/aruskas', S.aruskas);
+  if (tambah) { await store.set('keuangan/aruskas', S.aruskas); await sinkronKas(); }
   return tambah;
 }
 async function bayarHutang(d){
@@ -1062,7 +1063,7 @@ async function bayarHutang(d){
   const j = Math.round(+d.jumlah||0); if (!(j>0)) { toast('Isi jumlah yang dibayar', true); return false; }
   u.nilai = Math.max(0, (+u.nilai||0) - j);
   S.aruskas.transaksi.push({ id:uid(), tanggal:d.tanggal||todayKey(), ket:'Bayar hutang' + (d.catatan ? ' · '+d.catatan : ''), kategori:'Kewajiban', masuk:0, keluar:j, hutang:u.id });
-  await Promise.all([store.set('keuangan/aset', S.aset), store.set('keuangan/aruskas', S.aruskas)]);
+  await Promise.all([store.set('keuangan/aset', S.aset), store.set('keuangan/aruskas', S.aruskas)]); await sinkronKas();
   toast(u.nilai ? `Hutang berkurang ${rp(j)}. Sisa ${rp(u.nilai)}` : 'Alhamdulillah, hutang ini lunas!');
   return true;
 }
@@ -1115,6 +1116,33 @@ function ringkasBulan(mk){
 }
 const totalAset = () => (S.aset.aset||[]).reduce((n,a) => n + (+a.nilai||0), 0);
 const totalUtang = () => (S.aset.utang||[]).reduce((n,a) => n + (+a.nilai||0), 0);
+/* ---------- Akun kas: jembatan Arus kas -> Aset ----------
+   Satu aset ditandai akun kas (kas:true). Nilainya tidak diketik manual, tapi dihitung ulang:
+   saldoAwal (per tanggal kasMulai) + semua uang masuk - uang keluar di Arus kas sejak tanggal itu.
+   Jadi gaji yang dicatat di Arus kas langsung menambah aset, dan setoran ke aset lain memindahkan
+   uangnya dari kas ke aset itu. Dihitung ulang (bukan ditambah-tambah) supaya menghapus atau
+   membatalkan transaksi otomatis ikut benar. Diminta pemilik 23 September 2026. */
+const asetKas = () => (S.aset.aset||[]).find(a => a.kas);
+function saldoKas(){
+  const k = asetKas(); if (!k) return 0; const mulai = k.kasMulai || '0000-00-00';
+  return Math.round((+k.saldoAwal||0) + (S.aruskas.transaksi||[]).filter(t => (t.tanggal||'') >= mulai)
+    .reduce((n,t) => n + (+t.masuk||0) - (+t.keluar||0), 0));
+}
+async function sinkronKas(){
+  const k = asetKas(); if (!k) return false; const v = saldoKas();
+  if (Math.round(+k.nilai||0) === v) return false;
+  k.nilai = v; await store.set('keuangan/aset', S.aset); return true;
+}
+/* Sekali jalan: kalau belum ada akun kas, pakai aset Kas & Tabungan pertama, atau buat satu.
+   Nilai yang sudah ada dijadikan saldo awal per hari ini, jadi angka di layar tidak berubah
+   saat ditandai, dan transaksi sesudahnya yang menggerakkannya. */
+async function siapkanKas(){
+  if (asetKas()) return; S.aset.aset = S.aset.aset||[];
+  let k = S.aset.aset.find(a => (a.kategori||'') === 'Kas & Tabungan');
+  if (!k) { k = { id:uid(), nama:'Kas & rekening', kategori:'Kas & Tabungan', nilai:0 }; S.aset.aset.unshift(k); }
+  k.kas = true; k.saldoAwal = Math.round(+k.nilai||0); k.kasMulai = todayKey();
+  await store.set('keuangan/aset', S.aset);
+}
 /* fokus: angka turunan untuk kartu utama */
 function pengeluaranRata(){ // rata-rata 3 bulan penuh terakhir yang punya data
   if (+S.fokus.pengeluaranBulanan > 0) return { nilai:+S.fokus.pengeluaranBulanan, sumber:'manual' };
@@ -1949,18 +1977,18 @@ const jadwalDCA = p => p.frek==='bulanan' ? `tiap tanggal ${Math.min(+p.tanggal|
 async function setorAset(d){
   const a = (S.aset.aset||[]).find(x => x.id===d.aset); if (!a) { toast('Pilih asetnya dulu', true); return false; }
   const j = Math.round(+d.jumlah||0); if (!(j>0)) { toast('Isi jumlah setoran', true); return false; }
-  const id = uid(), tgl = d.tanggal || todayKey(), keArus = d.arus==='on';
+  const id = uid(), tgl = d.tanggal || todayKey(), keArus = true;   // selalu dicatat di arus kas (pemilik, 23 Sep 2026)
   a.nilai = (+a.nilai||0) + j; a.disetor = (+a.disetor||0) + j;
   S.aset.setoran.push({ id, tanggal:tgl, aset:a.id, jumlah:j, catatan:d.catatan||'', arus:keArus });
   const tulis = [store.set('keuangan/aset', S.aset)];
   if (keArus) { S.aruskas.transaksi.push({ id:'setor-'+id, tanggal:tgl, ket:`Setor ${a.nama}${d.catatan?' · '+d.catatan:''}`, kategori:'Tabungan', masuk:0, keluar:j, aset:a.id, setoran:id }); tulis.push(store.set('keuangan/aruskas', S.aruskas)); }
-  await Promise.all(tulis); toast(`${a.nama} bertambah ${rp(j)} → ${rp(a.nilai)}`); return true;
+  await Promise.all(tulis); await sinkronKas(); toast(`${a.nama} bertambah ${rp(j)} → ${rp(a.nilai)}`); return true;
 }
 async function batalSetor(sid){
   const s = (S.aset.setoran||[]).find(x => x.id===sid); if (!s) return;
   const a = (S.aset.aset||[]).find(x => x.id===s.aset); if (a) { a.nilai = Math.max(0, (+a.nilai||0) - s.jumlah); a.disetor = Math.max(0, (+a.disetor||0) - s.jumlah); }
   S.aset.setoran = S.aset.setoran.filter(x => x.id!==sid); S.aruskas.transaksi = S.aruskas.transaksi.filter(t => t.setoran!==sid);
-  await Promise.all([store.set('keuangan/aset', S.aset), store.set('keuangan/aruskas', S.aruskas)]); toast('Setoran dibatalkan, nilai aset dikembalikan');
+  await Promise.all([store.set('keuangan/aset', S.aset), store.set('keuangan/aruskas', S.aruskas)]); await sinkronKas(); toast('Setoran dibatalkan, nilai aset dikembalikan');
 }
 function modalSetor(asetId){
   const A = S.aset.aset||[]; if (!A.length) { toast('Belum ada aset. Tambahkan dulu di tab Aset & utang.', true); return; }
@@ -1969,7 +1997,7 @@ function modalSetor(asetId){
   <form class="form">${F('Aset', `<select name="aset">${A.map(x => `<option value="${x.id}" ${x.id===a.id?'selected':''}>${esc(x.nama)} · ${rpS(x.nilai)}</option>`).join('')}</select>`)}
   <div class="form cols2">${F('Jumlah (Rp)', `<input type="number" name="jumlah" min="1" step="1" value="${saran}" required inputmode="numeric" style="font-family:var(--mono)">`)}${F('Tanggal', `<input type="date" name="tanggal" value="${todayKey()}" max="${todayKey()}" required>`)}</div>
   ${F('Catatan', `<input type="text" name="catatan" placeholder="opsional, misal: beli di harga turun">`)}
-  <label class="row small muted" style="cursor:pointer;gap:8px"><input type="checkbox" name="arus" checked> Catat juga di arus kas sebagai Tabungan & investasi (uangnya keluar dari kas)</label>${ACTIONS('Setor')}</form>`,
+  <div class="small muted">Otomatis tercatat di Arus kas sebagai Tabungan & investasi, dan saldo akun kas berkurang sebesar setoran ini.</div>${ACTIONS('Setor')}</form>`,
   async d => { const ok = await setorAset(d); if (ok) render(); return ok; });
 }
 function modalDCA(asetId){
@@ -1992,6 +2020,7 @@ function formCepat(ringkas){
     <input type="text" name="ket" required placeholder="${ringkas?'Catat pengeluaran: makan, bensin…':'Keterangan: makan siang, bensin, gaji…'}" aria-label="Keterangan">
     <input type="number" name="jumlah" min="1" step="1" required placeholder="Rp" aria-label="Jumlah" inputmode="numeric">
     <select name="kategori" aria-label="Kategori">${KAT_TX.map(k=>`<option ${k==='Kebutuhan'?'selected':''}>${k}</option>`).join('')}</select>
+    ${ringkas || !((S.aset.aset||[]).some(a=>!a.kas)) ? '' : `<select name="aset" aria-label="Masuk ke aset" title="Isi kalau uangnya berpindah ke aset (tabungan, emas, crypto)"><option value="">Tanpa aset</option>${(S.aset.aset||[]).filter(a=>!a.kas).map(a=>`<option value="${a.id}">Ke ${esc(a.nama)}</option>`).join('')}</select>`}
     <button class="btn primary" type="submit">Catat</button></form>`;
 }
 
@@ -2071,7 +2100,8 @@ function vKeuangan(){
     <div class="c4">${tile('Total aset', rpS(ta), `${A.length} pos`, 'gold')}</div>
     <div class="c4">${tile('Total utang', rpS(tu), `${U.length} pos`, tu?'bad':'')}</div>
     <div class="c4">${tile('Kekayaan bersih', rpS(kb), kb<0?'masih minus, terus kurangi utang':'positif', kb>=0?'good':'bad')}</div>
-    <div class="c8 panel"><h2>Aset <span class="row"><button class="btn sm primary" data-act="setor">+ Setor / DCA</button><button class="btn sm ghost" data-act="aset-tambah">+ Aset baru</button></span></h2><div class="scroll"><table class="tbl"><thead><tr><th>Nama</th><th>Kategori</th><th class="num">Nilai sekarang (Rp)</th><th>Rencana DCA</th><th></th></tr></thead><tbody>${A.slice().sort((a,b)=>(+b.nilai)-(+a.nilai)).map(a => `<tr><td><b>${esc(a.nama)}</b>${+a.disetor?`<div class="small muted">disetor tercatat ${rpS(a.disetor)}</div>`:''}</td><td><span class="pill">${esc(a.kategori||'Lainnya')}</span></td><td class="num"><input type="number" value="${+a.nilai||0}" data-act="aset-nilai" data-id="${a.id}" style="width:140px;text-align:right;padding:5px 8px" title="Sesuaikan dengan harga pasar"></td><td class="small">${a.dca&&a.dca.aktif&&+a.dca.jumlah?`<span class="muted">${rpS(a.dca.jumlah)} ${jadwalDCA(a.dca)}</span>`:'<span class="dim">—</span>'}</td><td class="num" style="white-space:nowrap"><button class="btn sm" data-act="setor" data-id="${a.id}">+ Setor</button> <button class="btn sm ghost" data-act="dca" data-id="${a.id}">DCA</button><button class="btn sm ghost" data-act="aset-hapus" data-id="${a.id}" title="Hapus aset">×</button></td></tr>`).join('')||'<tr><td colspan="5" class="dim">Belum ada aset. Klik + Aset baru.</td></tr>'}</tbody></table></div>
+    <div class="c8 panel"><h2>Aset <span class="row"><button class="btn sm primary" data-act="setor">+ Setor / DCA</button><button class="btn sm ghost" data-act="aset-tambah">+ Aset baru</button></span></h2><div class="scroll"><table class="tbl"><thead><tr><th>Nama</th><th>Kategori</th><th class="num">Nilai sekarang (Rp)</th><th>Rencana DCA</th><th></th></tr></thead><tbody>${A.slice().sort((a,b)=>(+b.nilai)-(+a.nilai)).map(a => `<tr><td><b>${esc(a.nama)}</b>${+a.disetor?`<div class="small muted">disetor tercatat ${rpS(a.disetor)}</div>`:''}</td><td><span class="pill">${esc(a.kategori||'Lainnya')}</span></td><td class="num">${a.kas ? `<b class="mono">${rp(+a.nilai||0)}</b>` : `<input type="number" value="${+a.nilai||0}" data-act="aset-nilai" data-id="${a.id}" style="width:140px;text-align:right;padding:5px 8px" title="Sesuaikan dengan harga pasar">`}</td><td class="small">${a.kas ? `<span class="muted">saldo awal ${rpS(a.saldoAwal||0)} sejak ${fmtTgl(a.kasMulai,false)}, lalu ikut Arus kas</span>` : a.dca&&a.dca.aktif&&+a.dca.jumlah?`<span class="muted">${rpS(a.dca.jumlah)} ${jadwalDCA(a.dca)}</span>`:'<span class="dim">—</span>'}</td><td class="num" style="white-space:nowrap">${a.kas ? `<button class="btn sm ghost" data-act="kas-awal">Saldo awal</button>` : `<button class="btn sm" data-act="setor" data-id="${a.id}">+ Setor</button> <button class="btn sm ghost" data-act="dca" data-id="${a.id}">DCA</button><button class="btn sm ghost" data-act="aset-hapus" data-id="${a.id}" title="Hapus aset">×</button>`}</td></tr>`).join('')||'<tr><td colspan="5" class="dim">Belum ada aset. Klik + Aset baru.</td></tr>'}</tbody></table></div>
+      <div class="small dim" style="margin-top:8px">Semua uang dicatat sekali saja di <b>Arus kas</b>. Pemasukan seperti gaji menambah saldo akun kas, pengeluaran menguranginya, dan setoran ke aset lain memindahkan uangnya dari kas ke aset itu. Nilai aset selain kas tetap bisa disesuaikan dengan harga pasar.</div>
       <div class="small dim" style="margin-top:10px">+ Setor menambah nilai aset yang sudah ada, seperti DCA. Kolom nilai dipakai untuk menyesuaikan harga pasar, misalnya saat crypto naik atau turun.</div></div>
     <div class="c4 panel"><h2>Rencana DCA</h2>${(() => { const P = A.filter(a => a.dca && a.dca.aktif && +a.dca.jumlah>0); return P.length ? `<div class="list">${P.map(a => { const s = statusDCA(a); return `<div class="item"><div class="hd"><b>${esc(a.nama)}</b><span class="pill ${s.ok?'good':'warn'}">${s.ok?'sudah '+s.periode:'belum '+s.periode}</span></div><div class="row between small"><span class="muted">${rpS(a.dca.jumlah)} ${jadwalDCA(a.dca)} · ${a.dca.jam||'09:30'}</span><span class="mono">${rpS(s.sudah)} / ${rpS(s.target)}</span></div><div class="prog gold"><b style="width:${Math.min(100, pct(s.sudah, s.target))}%"></b></div>${s.ok?'':`<div><button class="btn sm primary" data-act="setor" data-id="${a.id}">Setor ${rpS(s.target - s.sudah)} sekarang</button></div>`}</div>`; }).join('')}</div>` : '<div class="empty">Belum ada rencana DCA. Klik tombol DCA di baris aset untuk membuat setoran rutin mingguan atau bulanan.</div>'; })()}
       <div class="small dim" style="margin-top:10px">Rencana DCA otomatis muncul di halaman Jadwal pada hari dan jamnya.</div></div>
@@ -2180,6 +2210,15 @@ function modalHasil(x){
 function modalAset(){
   modal(`<h3>Tambah aset</h3><form class="form">${F('Nama', `<input type="text" name="nama" required placeholder="BTC, ZAMA, RD Syariah, tabungan BRI…">`)}<div class="form cols2">${F('Kategori', `<select name="kategori">${KAT_ASET.map(k=>`<option>${k}</option>`).join('')}</select>`)}${F('Nilai sekarang (Rp)', `<input type="number" name="nilai" min="0" step="1000" required>`)}</div>${ACTIONS('Tambah')}</form>`,
   async d => { S.aset.aset = S.aset.aset||[]; S.aset.aset.push({ id:uid(), nama:d.nama, kategori:d.kategori, nilai:+d.nilai }); await store.set('keuangan/aset', S.aset); toast('Aset ditambahkan'); render(); });
+}
+/* Saldo awal akun kas: satu-satunya angka kas yang diketik tangan. Sisanya digerakkan Arus kas. */
+function modalKasAwal(){
+  const k = asetKas(); if (!k) return;
+  modal(`<h3>Saldo awal akun kas</h3><div class="desc">Saldo <b>${esc(k.nama)}</b> dihitung dari saldo awal ini, ditambah semua pemasukan dan dikurangi semua pengeluaran di Arus kas sejak tanggalnya. Isi dengan uang yang benar-benar kamu pegang pada tanggal itu.</div>
+  <form class="form">${F('Nama akun', `<input type="text" name="nama" value="${esc(k.nama)}" required>`)}
+  <div class="form cols2">${F('Saldo awal (Rp)', `<input type="number" name="saldoAwal" min="0" step="1000" value="${Math.round(+k.saldoAwal||0)}" required inputmode="numeric" style="font-family:var(--mono)">`)}${F('Berlaku sejak', `<input type="date" name="kasMulai" value="${k.kasMulai||todayKey()}" max="${todayKey()}" required>`)}</div>${ACTIONS('Simpan')}</form>`,
+  async d => { k.nama = d.nama || k.nama; k.saldoAwal = Math.round(+d.saldoAwal||0); k.kasMulai = d.kasMulai || todayKey();
+    await store.set('keuangan/aset', S.aset); await sinkronKas(); toast(`Saldo kas sekarang ${rp(saldoKas())}`); render(); });
 }
 function modalUtang(){
   modal(`<h3>Tambah utang</h3><form class="form">${F('Nama', `<input type="text" name="nama" required placeholder="Utang pribadi, SPP…">`)}${F('Sisa (Rp)', `<input type="number" name="nilai" min="0" step="1000" required>`)}${F('Keterangan', `<input type="text" name="ket" placeholder="opsional">`)}${ACTIONS('Tambah')}</form>`,
@@ -2691,7 +2730,7 @@ document.addEventListener('click', async e => {
       if (t.rutin) { const r = (S.aruskas.rutin||[]).find(x=>x.id===t.rutin); if (r) { r.lewati = r.lewati||[]; if (!r.lewati.includes(t.tanggal)) r.lewati.push(t.tanggal); } }
       const tulis = [store.set('keuangan/aruskas', S.aruskas)];
       if (t.hutang) { const u = (S.aset.utang||[]).find(x=>x.id===t.hutang); if (u) { u.nilai = (+u.nilai||0) + (+t.keluar||0); tulis.push(store.set('keuangan/aset', S.aset)); } }
-      await Promise.all(tulis); toast(t.hutang ? 'Pembayaran dibatalkan, sisa hutang dikembalikan' : t.rutin ? 'Minggu ini dilewati' : 'Transaksi dihapus'); render(); break; }
+      await Promise.all(tulis); await sinkronKas(); toast(t.hutang ? 'Pembayaran dibatalkan, sisa hutang dikembalikan' : t.rutin ? 'Minggu ini dilewati' : 'Transaksi dihapus'); render(); break; }
     case 'rutin-tambah': modalRutin(); break;
     case 'blok': await klikBlok(el.dataset.link, el.dataset.tgl); break;
     case 'nilai': e.preventDefault(); await kirimNilai(el.dataset.v==='1'); break;
@@ -2710,6 +2749,7 @@ document.addEventListener('click', async e => {
     case 'rutin-hapus': if (confirm('Hapus aturan rutin ini? Baris yang sudah tercatat tetap ada.')) { S.aruskas.rutin = S.aruskas.rutin.filter(x=>x.id!==id); await store.set('keuangan/aruskas', S.aruskas); render(); } break;
     case 'bulan-manual': modalBulanManual(); break;
     case 'aset-tambah': modalAset(); break;
+    case 'kas-awal': modalKasAwal(); break;
     case 'utang-tambah': modalUtang(); break;
     case 'aset-hapus': S.aset.aset = S.aset.aset.filter(a=>a.id!==id); await store.set('keuangan/aset', S.aset); render(); break;
     case 'utang-hapus': S.aset.utang = S.aset.utang.filter(a=>a.id!==id); await store.set('keuangan/aset', S.aset); render(); break;
@@ -2723,7 +2763,9 @@ document.addEventListener('change', async e => {
   if (el.dataset.file === 'latar') { const f = el.files && el.files[0]; const fase = el.dataset.fase; el.value = ''; await gantiLatar(fase, f); const g = document.getElementById('latarGrid'); if (g) g.innerHTML = htmlLatarGrid(); return; }
   if (act==='rencana-progres') { const x = S.rencana.items.find(y=>y.id===id); x.progres = +el.value; await store.set('rencana/3tahun', S.rencana); render(); }
   else if (act==='rencana-selesai') { const x = S.rencana.items.find(y=>y.id===id); x.selesai = el.checked; if (el.checked) x.progres = 100; await store.set('rencana/3tahun', S.rencana); render(); }
-  else if (act==='aset-nilai') { const a = S.aset.aset.find(y=>y.id===id); a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Nilai aset diperbarui'); render(); }
+  else if (act==='aset-nilai') { const a = S.aset.aset.find(y=>y.id===id);
+    if (a.kas) { toast('Saldo akun kas ikut Arus kas. Ubah lewat tombol Saldo awal.', true); render(); return; }
+    a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Nilai aset diperbarui'); render(); }
   else if (act==='utang-nilai') { const a = S.aset.utang.find(y=>y.id===id); a.nilai = +el.value; await store.set('keuangan/aset', S.aset); toast('Sisa utang diperbarui'); render(); }
   else if (act==='bugar-latih') { const k = todayKey(), h = hari(k); h.latihan = h.latihan||{};
     if (el.checked) h.latihan[id] = true; else delete h.latihan[id];
@@ -2763,8 +2805,11 @@ document.addEventListener('submit', async e => {
   else if (which==='fokus') { S.fokus.items = S.fokus.items||[]; S.fokus.items.push({ id:uid(), jenis:d.jenis, judul:d.judul, tenggat:d.tenggat||'', nominal:+d.nominal||0, mataUang:d.mataUang||'IDR', catatan:d.catatan||'', selesai:false }); await store.set('fokus/daftar', S.fokus); toast('Ditambahkan'); }
   else if (which==='keputusan') { S.keputusan.items = S.keputusan.items||[]; S.keputusan.items.push({ id:uid(), tanggal:d.tanggal, keputusan:d.keputusan, alasan:d.alasan, alternatif:d.alternatif, tinjau:d.tinjau, hasil:'', status:'' }); await store.set('keputusan/daftar', S.keputusan); toast('Keputusan dicatat'); }
   else if (which==='tx') { const tgl = d.tanggal || todayKey(); const j = Math.round(+d.jumlah||0); const masuk = d.kategori==='Pemasukan';
+    // Uang keluar yang ditujukan ke sebuah aset = setoran: kas berkurang, aset itu bertambah, satu kali input.
+    if (!masuk && d.aset) { if (!(await setorAset({ aset:d.aset, jumlah:j, tanggal:tgl, catatan:d.ket }))) return;
+      S.bulanTx = tgl.slice(0,7); render(); return; }
     S.aruskas.transaksi.push({ id:uid(), tanggal:tgl, ket:d.ket, kategori:d.kategori, masuk: masuk?j:0, keluar: masuk?0:j });
-    S.bulanTx = tgl.slice(0,7); await store.set('keuangan/aruskas', S.aruskas);
+    S.bulanTx = tgl.slice(0,7); await store.set('keuangan/aruskas', S.aruskas); await sinkronKas();
     const r = ringkasBulan(S.bulanTx); toast(`${masuk?'Masuk':'Keluar'} ${rp(j)} · pengeluaran ${fmtBulan(S.bulanTx)} jadi ${rp(r.pengeluaran)}`); S.fokusCepat = true; }
   else if (which==='bayar') { if (!(await bayarHutang(d))) return; }
   render();
