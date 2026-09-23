@@ -92,7 +92,7 @@ html[dir=rtl] body{font-family:"Noto Naskh Arabic","Segoe UI",Tahoma,system-ui,s
 
 /* ---------- surfaces ---------- */
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-.c12{grid-column:span 12}.c8{grid-column:span 8}.c6{grid-column:span 6}.c4{grid-column:span 4}.c3{grid-column:span 3}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}.c3{grid-column:span 3}
 .panel{background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 40%),var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
 .panel.tight{padding:14px 16px}
 .panel h2{font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
@@ -230,6 +230,8 @@ body[data-tema="terang"][data-fase="fajar"]{--langit-atas:#EBDDE4}body[data-tema
 .beranda-sub a{font-size:12px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);text-decoration:none;background:var(--bg-2)}
 .beranda-sub a:hover{color:var(--text);border-color:var(--gold)}
 .tile .sub{font-size:12px;color:var(--dim)}
+.tile.kecil .big{font-size:23px}
+@media (max-width:980px){.tile.kecil .big{font-size:18px}}
 .tile.good .big{color:var(--good)}.tile.bad .big{color:var(--bad)}.tile.gold .big{color:var(--gold-2)}.tile.teal .big{color:var(--teal)}
 .tile::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.05),transparent 70%)}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -264,6 +266,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mu
 .tabs{display:inline-flex;gap:2px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:3px}
 .tabs button{border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:8px;font-weight:700;font-size:12.5px;cursor:pointer}
 .tabs button.on{background:var(--panel-3);color:var(--text)}
+@media (max-width:560px){.tabs{flex-wrap:wrap}}
 
 /* checks */
 .check{display:flex;align-items:center;gap:10px;padding:7px 10px;min-height:36px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--bg-2);cursor:pointer;user-select:none}
@@ -480,7 +483,7 @@ label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mu
 .mobile-nav{display:none}
 
 @media (max-width:980px){
-  .c8,.c6,.c4,.c3{grid-column:span 12}
+  .c8,.c7,.c6,.c5,.c4,.c3{grid-column:span 12}
   .week{grid-template-columns:repeat(2,1fr)}
   .tl{grid-template-columns:1fr}.tl .ph{border-right:0;padding-left:16px}.tl .ph::after{left:0;right:auto;top:20px}.tl .cards{padding-left:16px}
   .form.cols3,.form.cols4{grid-template-columns:1fr 1fr}
@@ -955,6 +958,44 @@ const DEF = {
   aruskas: { bulan: {}, transaksi: [], rutin: [] }, // biaya kuliah diinput manual (kategori Kuliah), tidak lagi otomatis
   aset: { aset: [], utang: [], riwayat: {} }
 };
+/* ---------- Paket ibadah ketat ----------
+   Diminta pemilik 23 September 2026: jadwal harus lebih padat dan lebih banyak mendekat kepada
+   Allah, karena jam siang dan malam yang kosong adalah jam paling rawan tergelincir. Paket ini
+   menutup jam-jam kosong itu dengan ibadah, ilmu, dan kerja tanpa mengubah kegiatan yang sudah
+   ada. Kegiatan yang jamnya jatuh di jam kuliah digeser otomatis oleh blokHari(), dan yang
+   id-nya sudah ada di jadwal tidak ditambahkan dua kali, jadi tombolnya aman ditekan berulang. */
+const PAKET_KETAT = {
+  aturan: [
+    { id:'tahajud', nama:'Tahajud & witir', jenis:'harian', ket:'Minimal dua rakaat sebelum Subuh, tutup dengan witir dan istighfar' },
+    { id:'dhuha', nama:'Sholat Dhuha', jenis:'harian', ket:'Dua sampai empat rakaat sebelum mulai kerja apa pun' },
+    { id:'tadabbur', nama:'Tadabbur siang', jenis:'harian', ket:'Satu ayat dibaca artinya dan direnungkan, di jam siang yang rawan' },
+    { id:'istighfar', nama:'Istighfar & muhasabah malam', jenis:'harian', ket:'Istighfar 100 kali, sholawat, lalu hitung hari ini dengan jujur sebelum tidur' }
+  ],
+  items: [
+    { id:'j-k-sahur', judul:'Sahur & niat puasa Senin–Kamis', jenis:'ibadah', hari:[1,4], mulai:'03:30', selesai:'03:45', link:'', ket:'Puasa sunnah melatih menahan yang halal, supaya kuat menahan yang haram' },
+    { id:'j-k-tahajud', judul:'Tahajud, witir & istighfar', jenis:'ibadah', hari:[0,1,2,3,4,5,6], mulai:'03:45', selesai:'04:00', link:'tahajud', ket:'Bangun 03.45. Dua rakaat cukup untuk memulai, yang penting tidak putus' },
+    { id:'j-k-dhuha', judul:'Sholat Dhuha', jenis:'ibadah', hari:[0,1,2,3,4,5,6], mulai:'06:15', selesai:'06:30', link:'dhuha', ket:'Setelah jurnal pagi, sebelum sarapan' },
+    { id:'j-k-kahfi', judul:'Baca Al-Kahfi', jenis:'ibadah', hari:[5], mulai:'06:30', selesai:'07:00', link:'', ket:'Sunnah hari Jumat' },
+    { id:'j-k-ilmu', judul:'Ilmu baru / review pelajaran', jenis:'kebiasaan', hari:[0,1,2,3,4,5,6], mulai:'07:00', selesai:'07:45', link:'ilmu', ket:'Satu hal baru, atau ulang materi kuliah kemarin' },
+    { id:'j-k-kerja', judul:'Kerja: konten & riset', jenis:'kebiasaan', hari:[0,1,2,4,5,6], mulai:'10:15', selesai:'11:30', link:'', ket:'Mencari rezeki halal juga ibadah. Tanpa media sosial di luar keperluan kerja' },
+    { id:'j-k-tadabbur', judul:'Tilawah & tadabbur siang', jenis:'ibadah', hari:[0,1,2,3,4,5,6], setelah:'dzuhur', jeda:0, durasi:30, link:'tadabbur', ket:'Langsung setelah Dzuhur, sebelum makan siang' },
+    { id:'j-k-kajian', judul:'Dengar kajian / murottal', jenis:'ibadah', hari:[0,1,2,4,5,6], mulai:'13:00', selesai:'13:45', link:'', ket:'Jam paling rawan melamun: isi telinga dengan yang baik' },
+    { id:'j-k-qailulah', judul:'Qailulah, tidur siang 20 menit', jenis:'kebiasaan', hari:[0,1,2,4,5,6], mulai:'13:45', selesai:'14:05', link:'', ket:'Tidur sebentar supaya kuat bangun tahajud. Pasang alarm, HP jauh dari tangan' },
+    { id:'j-k-belajar-2', judul:'Belajar / tugas kuliah sesi 2', jenis:'kebiasaan', hari:[0,1,2,4,5,6], mulai:'14:05', selesai:'14:35', link:'', ket:'Sampai Ashar. Selesaikan satu tugas, bukan sekadar membuka' },
+    { id:'j-k-sore', judul:'Tugas kuliah / baca materi', jenis:'kebiasaan', hari:[0,1,5,6], mulai:'16:30', selesai:'17:30', link:'', ket:'Sore tanpa kuliah diisi tugas, bukan rebahan' },
+    { id:'j-k-maghrib', judul:'Tilawah antara Maghrib dan Isya', jenis:'ibadah', hari:[0,1,5,6], setelah:'maghrib', jeda:0, durasi:30, link:'', ket:'Waktu paling sunyi, jangan diisi layar' },
+    { id:'j-k-malam', judul:'Kajian / buku agama malam', jenis:'ibadah', hari:[0,6], setelah:'isya', jeda:15, durasi:45, link:'', ket:'Malam tanpa kuliah paling rawan: isi dengan ilmu' },
+    { id:'j-k-muhasabah', judul:'Istighfar 100×, sholawat & muhasabah', jenis:'ibadah', hari:[0,1,2,3,4,5,6], mulai:'21:30', selesai:'21:50', link:'istighfar', ket:'Hitung hari ini dengan jujur, minta ampun, lalu tidur' }
+  ]
+};
+async function pasangPaketKetat(){
+  let nAturan = 0, nItem = 0; S.pengaturan.aturan = S.pengaturan.aturan||[]; S.jadwal.items = S.jadwal.items||[];
+  PAKET_KETAT.aturan.forEach(a => { if (!S.pengaturan.aturan.some(x => x.id===a.id)) { S.pengaturan.aturan.push(clone(a)); nAturan++; } });
+  PAKET_KETAT.items.forEach(x => { if (!S.jadwal.items.some(y => y.id===x.id)) { S.jadwal.items.push(clone(x)); nItem++; } });
+  if (nAturan) await store.set('pengaturan/utama', S.pengaturan);
+  if (nItem) await store.set('jadwal/rutinitas', S.jadwal);
+  return { nAturan, nItem };
+}
 const KATEGORI_RENCANA = ['Ibadah','Disiplin','Olahraga','Belajar','Finansial','Bisnis','Kesehatan','Lainnya'];
 const KAT_TX = ['Pemasukan','Kebutuhan','Keinginan','Kuliah','Tabungan','Kewajiban'];
 const KAT_ASET = ['Bitcoin','Altcoin','Stablecoin','Kas & Tabungan','Reksa dana','Emas','Lainnya'];
@@ -984,7 +1025,7 @@ async function loadAll(){
   if (!S.pengaturan.aturan) S.pengaturan.aturan = clone(DEF.pengaturan.aturan);
   if (!S.aruskas.rutin) S.aruskas.rutin = clone(DEF.aruskas.rutin);
   if (!S.aruskas.transaksi) S.aruskas.transaksi = [];
-  await siapkanKas(); await sinkronKas();
+  await siapkanKas(); await sinkronKas(); await potretAset(); await siapkanGoyah();
   await sambungkanJadwal();
 }
 /* Kegiatan rutinitas yang belum ditautkan (link kosong) disambungkan ke aturan harian
@@ -1103,6 +1144,42 @@ function hitungStreak(){
 }
 
 /* ---------- keuangan ---------- */
+/* Potret otomatis: total aset dan utang bulan berjalan disimpan tiap kali aplikasi dibuka atau
+   halaman Keuangan dirender. Bulan yang sudah lewat tidak disentuh lagi, jadi nilai akhir tiap
+   bulan membeku dan bisa dibandingkan dengan bulan atau tahun sebelumnya. Dulu nilai bulanan
+   hanya tersimpan kalau tombol "Simpan nilai" ditekan. Diminta pemilik 23 September 2026. */
+async function potretAset(){
+  const ta = totalAset(), tu = totalUtang(); S.aset.riwayat = S.aset.riwayat||{}; S.aset.riwayatUtang = S.aset.riwayatUtang||{};
+  if (!ta && !tu && !Object.keys(S.aset.riwayat).length) return false;   // akun kosong: jangan bikin catatan nol
+  const mk = monthKey(new Date()); if (S.aset.riwayat[mk] === ta && S.aset.riwayatUtang[mk] === tu) return false;
+  S.aset.riwayat[mk] = ta; S.aset.riwayatUtang[mk] = tu; await store.set('keuangan/aset', S.aset); return true;
+}
+/* Deret bulanan dan tahunan dari potret itu. Perubahan dibandingkan dengan potret sebelumnya
+   yang ada (bulan yang tidak dipotret dilewati). Untuk tahun, nilai yang dipakai adalah potret
+   bulan terakhir di tahun itu. */
+function perkembanganAset(){
+  const R = S.aset.riwayat||{}, U = S.aset.riwayatUtang||{};
+  const kunci = Object.keys(R).filter(k => /^\d{4}-\d{2}$/.test(k)).sort();
+  const bulan = kunci.map((mk,i) => { const aset = Math.round(+R[mk]||0); const utang = U[mk]===undefined ? null : Math.round(+U[mk]||0); const seb = i ? Math.round(+R[kunci[i-1]]||0) : null;
+    return { mk, aset, utang, bersih: utang===null ? null : aset - utang, sebMk: i ? kunci[i-1] : null, ubah: seb===null ? null : aset - seb, persen: seb ? Math.round((aset-seb)/Math.abs(seb)*1000)/10 : null, ditabung: ringkasBulan(mk).tabungan||0 }; });
+  const perTahun = {}; bulan.forEach(b => { const y = b.mk.slice(0,4); (perTahun[y] = perTahun[y]||[]).push(b); });
+  const tahunan = Object.keys(perTahun).sort().map((y,i,arr) => { const B = perTahun[y], akhir = B[B.length-1], awal = B[0]; const seb = i ? perTahun[arr[i-1]].slice(-1)[0].aset : null;
+    return { tahun:y, aset:akhir.aset, utang:akhir.utang, bersih:akhir.bersih, sampai:akhir.mk, awalMk:awal.mk, ubah: seb===null ? null : akhir.aset - seb, persen: seb ? Math.round((akhir.aset-seb)/Math.abs(seb)*1000)/10 : null, dalamTahun: akhir.aset - awal.aset, ditabung: B.reduce((n,b) => n + b.ditabung, 0), n: B.length }; });
+  return { bulan, tahunan };
+}
+/* Batang naik-turun untuk perubahan bulanan: hijau di atas garis nol, merah di bawahnya. */
+function deltaChart(items){
+  if (!items.length) return '<div class="empty">Butuh dua bulan potret untuk melihat perubahan.</div>';
+  const W = 600, H = 170, padL = 58, padB = 24, padT = 14, padR = 8;
+  const max = Math.max(1, ...items.map(x => Math.abs(x.v))); const step = Math.pow(10, Math.floor(Math.log10(max))); const nice = Math.ceil(max/step)*step;
+  const gw = (W-padL-padR)/items.length, bw = Math.min(34, gw-10); const Y = v => padT + (H-padT-padB)*(1 - (v + nice)/(2*nice)); const y0 = Y(0);
+  let g = '<g class="grid">'; [-nice, -nice/2, 0, nice/2, nice].forEach(v => { g += `<line x1="${padL}" x2="${W-padR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"${v===0?' style="stroke-dasharray:0;stroke:var(--muted)"':''}/><text x="${padL-8}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${(v<0?'−':'')+rpS(Math.abs(v)).replace('Rp','')}</text>`; }); g += '</g>';
+  let bars = ''; items.forEach((x,i) => { const h = Math.max(1.5, Math.abs(Y(x.v)-y0)); const y = x.v>=0 ? y0-h : y0; const xx = padL + gw*i + (gw-bw)/2;
+    bars += `<rect x="${xx.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="4" fill="${x.v>=0?'var(--good)':'var(--bad)'}" opacity=".9"><title>${x.label}: ${x.v>=0?'+':'−'}${rp(Math.abs(x.v))}</title></rect>`;
+    if (items.length <= 8) bars += `<text class="nilai" x="${(xx+bw/2).toFixed(1)}" y="${(x.v>=0 ? y-4 : y+h+10).toFixed(1)}" text-anchor="middle">${(x.v<0?'−':'+')+rpS(Math.abs(x.v)).replace('Rp','')}</text>`;
+    bars += `<text x="${(xx+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle">${x.label}</text>`; });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${g}${bars}</svg>`;
+}
 function ringkasBulan(mk){
   const tx = (S.aruskas.transaksi||[]).filter(t => t.tanggal && t.tanggal.startsWith(mk));
   if (tx.length) {
@@ -1257,7 +1334,8 @@ function vHariIni(){
       ${tile('Hari bersih', st.bersih, st.lastV ? 'sejak '+fmtTgl(st.lastV,false) : 'belum pernah melanggar', st.bersih>=7?'good':'')}
       ${tile('Streak disiplin', st.streak, 'hari lengkap berturut-turut', 'gold')}
       ${tile('Sholat 30 hari', st.sholat30+'%', 'rekor streak '+st.rekor+' hari', 'teal')}
-      ${tile('Kekayaan bersih', rpS(kb), `aset ${rpS(totalAset())} · utang ${rpS(totalUtang())}`, kb>=0?'good':'bad')}
+      ${(() => { const B = perkembanganAset().bulan; const k = B[B.length-1]; const u = k && k.ubah!==null ? k.ubah : null;
+        return tile('Kekayaan bersih', rpS(kb), `aset ${rpS(totalAset())} · utang ${rpS(totalUtang())}${u!==null ? ` · <span style="color:var(--${u>0?'good':u<0?'bad':'muted'})">${u>0?'▲':u<0?'▼':'='} ${rpS(Math.abs(u))} dari ${BLN[+k.sebMk.slice(5)-1]}</span>` : ''}`, kb>=0?'good':'bad'); })()}
     </div>
 
 
@@ -1283,7 +1361,7 @@ function vHariIni(){
       </div>
       ${(() => { const hu = infoHutang(), ff = infoFF(); const items = S.fokus.items||[]; const pr = items.find(x=>x.id==='perempuan'); const nn = pr ? hariSejak(pr.terakhir) : null;
         return `<div class="panel"><h2>Fokus utama <a class="act" href="#fokus">Buka</a></h2><div class="kv">
-          ${pr?`<span class="k">${esc(pr.judul)} · hari fokus</span><span class="v" style="color:${nn===null?'var(--dim)':'var(--good)'}">${nn===null?'belum diisi':nn+' hari'}</span>`:''}
+          ${pr?`<span class="k">${esc(pr.judul)} · hari fokus</span><span class="v" style="color:${nn===null?'var(--dim)':'var(--good)'}">${nn===null?'belum diisi':nn+' hari'} <span class="dim">· rekor ${statGoyah(pr).rekor}</span></span>`:''}
           ${items.some(x=>x.id==='hutang')?`<span class="k">Hutang · sisa</span><span class="v" style="color:var(--bad)">${rpS(hu.sisa)} <span class="dim">· lunas ${hu.minggu?BLN[parseKey(hu.lunas).getMonth()]+' '+hu.lunas.slice(0,4):'—'}</span></span>`:''}
           ${items.some(x=>x.id==='ff')?`<span class="k">Financial freedom</span><span class="v">${ff.progres}% <span class="dim">dari ${rpS(ff.target)}</span></span>`:''}
           <span class="k">Tugas & target terbuka</span><span class="v">${fokusBuka.length}</span></div>
@@ -1611,6 +1689,82 @@ function vDisiplin(){
 
 /* ----- Fokus: masalah utama + tugas/target ----- */
 const hariSejak = k => k ? Math.max(0, Math.round((parseKey(todayKey())-parseKey(k))/864e5)) : null;
+/* ---------- Riwayat goyah: setiap tanggal jatuh disimpan, bukan hanya yang terakhir ----------
+   Diminta pemilik 23 September 2026. Penghitung "hari fokus" dulu cuma menyimpan tanggal terakhir,
+   jadi begitu direset, sejarahnya hilang dan tidak kelihatan apakah ada kemajuan. Sekarang setiap
+   reset menambah satu tanggal ke daftar, dan dari daftar itu dihitung jarak antar-jatuh. Kalau
+   jaraknya makin panjang, itulah kemajuan yang sebenarnya, walau penghitung utama baru saja nol.
+   Pelanggaran "Maksiat" yang dicatat lewat halaman Disiplin ikut dibaca supaya satu sumber. */
+const kartuGoyah = () => (S.fokus.items||[]).find(x => x.id==='perempuan');
+const hariMaksiat = () => Object.keys(S.harian).filter(k => (S.harian[k].pelanggaran||[]).some(p => p.aturan==='maksiat'));
+function riwayatGoyah(x){
+  const set = new Set((x.riwayat||[]).filter(Boolean)); if (x.terakhir) set.add(x.terakhir); hariMaksiat().forEach(k => set.add(k));
+  return [...set].filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+}
+function statGoyah(x){
+  const tgl = riwayatGoyah(x); const tk = todayKey();
+  const awal = Object.keys(S.harian).sort()[0] || S.pengaturan.mulai3Tahun || tk;
+  const selisih = (a,b) => Math.max(0, Math.round((parseKey(b)-parseKey(a))/864e5));
+  // rentang bersih: dari awal pemakaian ke jatuh pertama, antar-jatuh, lalu dari jatuh terakhir ke hari ini
+  const rentang = tgl.map((t,i) => ({ akhir:t, hari: i ? selisih(tgl[i-1], t) : (t > awal ? selisih(awal, t) : 0), selesai:true }));
+  const kini = tgl.length ? selisih(tgl[tgl.length-1], tk) : selisih(awal, tk) + 1;
+  rentang.push({ akhir: tk, hari: kini, selesai:false });
+  const rekor = Math.max(0, ...rentang.map(r => r.hari));
+  const beres = rentang.filter(r => r.selesai && r.hari > 0);
+  const rata = beres.length ? Math.round(beres.reduce((n,r) => n + r.hari, 0) / beres.length) : null;
+  const perBulan = []; for (let i=5;i>=0;i--){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); const mk = monthKey(d); perBulan.push({ mk, n: tgl.filter(t => t.startsWith(mk)).length }); }
+  return { tgl, rentang, kini, rekor, rata, bulanIni: perBulan[5].n, bulanLalu: perBulan[4].n, perBulan, total: tgl.length, awal };
+}
+/* Satu jatuh dicatat di dua tempat sekaligus: riwayat kartu Fokus (untuk grafik jarak) dan
+   pelanggaran "Maksiat" di catatan harian (yang mereset hari bersih di Beranda dan Disiplin),
+   supaya dua angka itu tidak saling bertentangan. */
+async function catatGoyah(x, tgl){
+  x.riwayat = (x.riwayat||[]).filter(Boolean); if (!x.riwayat.includes(tgl)) x.riwayat.push(tgl); x.riwayat.sort();
+  if (!x.terakhir || tgl > x.terakhir) x.terakhir = tgl;
+  await store.set('fokus/daftar', S.fokus);
+  if ((S.pengaturan.aturan||[]).some(a => a.id==='maksiat')) { const h = hari(tgl); h.pelanggaran = h.pelanggaran||[];
+    if (!h.pelanggaran.some(p => p.aturan==='maksiat')) { h.pelanggaran.push({ id:uid(), aturan:'maksiat', catatan:'Dari kartu ' + (x.judul||'Fokus'), jam: tgl===todayKey() ? jam(menitSekarang()) : '' }); await simpanHari(tgl, h); } }
+}
+async function siapkanGoyah(){ const x = kartuGoyah(); if (!x) return; const r = (x.riwayat||[]).filter(Boolean); let ubah = !x.riwayat;
+  if (x.terakhir && !r.includes(x.terakhir)) { r.push(x.terakhir); ubah = true; } if (ubah) { x.riwayat = r.sort(); await store.set('fokus/daftar', S.fokus); } }
+/* Grafik kemajuan: satu batang = satu rentang bersih (hari), batang terakhir = yang sedang berjalan. */
+function grafikGoyah(st){
+  const R = st.rentang.slice(-12); if (!R.length) return '<div class="empty">Belum ada catatan.</div>';
+  const W = 600, H = 190, padL = 34, padB = 30, padT = 18, padR = 8;
+  const max = Math.max(7, ...R.map(r => r.hari)); const nice = Math.ceil(max/7)*7;
+  const gw = (W-padL-padR)/R.length, bw = Math.min(38, gw-10);
+  let g = '<g class="grid">'; for (let i=0;i<=4;i++){ const y = padT + (H-padT-padB)*(1-i/4); g += `<line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text x="${padL-6}" y="${(y+3).toFixed(1)}" text-anchor="end">${Math.round(nice*i/4)}</text>`; } g += '</g>';
+  const rekorY = padT + (H-padT-padB)*(1-st.rekor/nice);
+  let bars = st.rekor ? `<line x1="${padL}" x2="${W-padR}" y1="${rekorY.toFixed(1)}" y2="${rekorY.toFixed(1)}" stroke="var(--gold)" stroke-dasharray="4 4" opacity=".7"/><text x="${W-padR}" y="${(rekorY-4).toFixed(1)}" text-anchor="end" fill="var(--gold-2)">rekor ${st.rekor} hari</text>` : '';
+  R.forEach((r,i) => { const h = Math.max(r.hari ? 3 : 1.5, (H-padT-padB)*r.hari/nice); const x = padL + gw*i + (gw-bw)/2, y = H-padB-h;
+    const warna = !r.selesai ? 'var(--gold)' : (r.hari >= st.rekor && r.hari > 0) ? 'var(--good)' : 'var(--teal)';
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${warna}" opacity="${r.selesai?'.85':'1'}"><title>${r.selesai ? 'Bersih '+r.hari+' hari, lalu jatuh '+fmtTgl(r.akhir,false) : 'Sedang berjalan: '+r.hari+' hari'}</title></rect>`;
+    bars += `<text class="nilai" x="${(x+bw/2).toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle">${r.hari}</text>`;
+    const d = parseKey(r.akhir); bars += `<text class="${r.selesai?'':'bulan-kini'}" x="${(x+bw/2).toFixed(1)}" y="${H-14}" text-anchor="middle">${r.selesai ? d.getDate()+' '+BLN[d.getMonth()] : 'kini'}</text>`;
+    if (r.selesai) bars += `<text x="${(x+bw/2).toFixed(1)}" y="${H-3}" text-anchor="middle" fill="var(--bad)" font-size="9">jatuh</text>`; });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}">${g}${bars}</svg>`;
+}
+function panelGoyah(x){
+  const st = statGoyah(x); const tk = todayKey(); const dariDisiplin = new Set(hariMaksiat()); const maxBulan = Math.max(1, ...st.perBulan.map(q => q.n));
+  const R = st.rentang; const arah = R.length >= 3 ? (R[R.length-2].hari > R[R.length-3].hari ? 'jarak sebelum jatuh terakhir lebih panjang daripada sebelumnya, itu kemajuan' : R[R.length-2].hari < R[R.length-3].hari ? 'jarak sebelum jatuh terakhir lebih pendek daripada sebelumnya, perketat lagi' : '') : '';
+  return `<div class="c12 panel"><h2>Riwayat & kemajuan: ${esc(x.judul)}</h2>
+    <div class="tiles" style="margin-bottom:14px">
+      ${tile('Bersih sekarang', st.kini, st.tgl.length ? 'hari sejak '+fmtTgl(st.tgl[st.tgl.length-1],false) : 'hari, belum pernah tercatat jatuh', st.kini>=st.rekor&&st.kini>0?'good':'')}
+      ${tile('Rekor terpanjang', st.rekor, 'hari bersih berturut-turut', 'gold')}
+      ${tile('Rata-rata jarak', st.rata===null?'—':st.rata, st.rata===null?'butuh dua kali catatan':'hari antara satu jatuh dan berikutnya', 'teal')}
+      ${tile('Tercatat jatuh', st.total, `${st.bulanIni} kali bulan ini · ${st.bulanLalu} kali bulan lalu`, st.bulanIni?'bad':'')}
+    </div>
+    <div class="grid" style="gap:14px">
+      <div class="c8"><div class="eyebrow" style="margin-bottom:6px">Jarak antar-jatuh (hari)</div>${grafikGoyah(st)}
+        <div class="small dim" style="margin-top:6px">Hijau = rentang bersih terpanjang, emas = yang sedang berjalan. Kemajuan bukan berarti tidak pernah jatuh, tapi jarak antar-jatuh yang makin panjang.${arah?' Saat ini: '+arah+'.':''}</div></div>
+      <div class="c4"><div class="eyebrow" style="margin-bottom:6px">Per bulan</div>
+        <div class="weeks">${st.perBulan.map(b => `<div class="wk" style="grid-template-columns:64px minmax(0,1fr) 36px"><span class="lbl">${BLN[+b.mk.slice(5)-1]} ${b.mk.slice(2,4)}</span><span class="tr"><b style="width:${Math.min(100, b.n/maxBulan*100)}%;background:${b.n?'linear-gradient(90deg,var(--warn),var(--bad))':'transparent'}"></b></span><span class="v mono">${b.n}</span></div>`).join('')}</div>
+        <hr class="sep"><div class="eyebrow" style="margin:8px 0 6px">Tanggal jatuh</div>
+        <div class="row" style="flex-wrap:wrap;gap:6px">${st.tgl.slice().reverse().map(t => `<span class="pill bad" title="${dariDisiplin.has(t)?'Juga tercatat sebagai pelanggaran di halaman Disiplin':''}">${fmtTgl(t,false)} ${t.slice(0,4)}<button class="btn sm ghost" data-act="goyah-hapus" data-tgl="${t}" title="Hapus tanggal ini" style="padding:0 4px;min-height:0;margin-left:2px">×</button></span>`).join('') || '<span class="small dim">Belum ada.</span>'}</div>
+        <form class="quick compact" data-form="goyah" style="margin-top:10px"><input type="date" name="tgl" max="${tk}" required aria-label="Tanggal jatuh yang terlewat dicatat"><button class="btn sm" type="submit">Tambah tanggal</button></form>
+        <div class="small dim" style="margin-top:6px">Lupa mencatat? Masukkan tanggalnya di sini supaya grafiknya jujur.</div></div>
+    </div></div>`;
+}
 const MATA_UANG = ['IDR','USD','EUR','SGD','MYR','SAR','JPY','AUD','GBP','USDT','BTC'];
 const uang = (n, mu) => { n = +n||0; if (!n) return ''; mu = mu||'IDR'; if (mu==='IDR') return rpS(n); return mu + ' ' + n.toLocaleString('id-ID', { maximumFractionDigits: mu==='BTC' ? 8 : 2 }); };
 const pilihMU = (v='IDR') => `<select name="mataUang">${MATA_UANG.map(m => `<option ${m===v?'selected':''}>${m}</option>`).join('')}</select>`;
@@ -1655,6 +1809,7 @@ function vFokus(){
     <div class="row">${hilang.length?`<button class="btn" data-act="fokus-pulihkan">Pulihkan kartu bawaan</button>`:''}</div></div>
   <div class="grid">
     ${utama.length ? `<div class="c12" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">${utama.map(kartu).join('')}</div>` : ''}
+    ${kartuGoyah() ? panelGoyah(kartuGoyah()) : ''}
     <div class="c4 panel"><h2>Tambah tugas / masalah / target</h2><form class="form" data-form="fokus">
       <label class="f">Judul<input type="text" name="judul" required placeholder="Tugas PBOS bab 3, bayar UKT, lari 5 km…"></label>
       <div class="form cols2"><label class="f">Jenis<select name="jenis"><option>Tugas</option><option>Masalah</option><option>Target</option></select></label><label class="f">Tenggat<input type="date" name="tenggat"></label></div>
@@ -1925,9 +2080,10 @@ function vJadwal(){
     isi = (belum.length ? `<div class="c12 panel" style="border-color:rgba(227,178,90,.35)"><h2>Kebiasaan belum dijadwalkan <span class="pill warn">${belum.length}</span></h2>
       <div class="small dim" style="margin-bottom:10px">Aturan harian ini hanya bisa dicentang di Beranda. Beri jam supaya muncul di jadwal dan bisa dicentang dari sana.</div>
       <div class="row" style="flex-wrap:wrap;gap:8px">${belum.map(a => `<button class="btn sm" data-act="aturan-edit" data-id="${a.id}">${esc(a.nama)} · jadwalkan</button>`).join('')}</div></div>` : '') +
-    `<div class="c12 panel"><h2>Rutinitas <button class="btn sm primary" data-act="jadwal-tambah">Tambah kegiatan</button></h2>
+    `<div class="c12 panel"><h2>Rutinitas <span class="row"><button class="btn sm" data-act="paket-ketat" title="Menambah tahajud, Dhuha, tadabbur siang, kajian, qailulah, tilawah Maghrib, dan muhasabah malam ke jam yang masih kosong">Paket ibadah ketat</button><button class="btn sm primary" data-act="jadwal-tambah">Tambah kegiatan</button></span></h2>
       <div class="scroll"><table class="tbl"><thead><tr><th>Jam</th><th>Kegiatan</th><th>Jenis</th><th>Hari</th><th>Dicek dari</th><th></th></tr></thead><tbody>${items.map(x => `<tr><td class="mono" style="white-space:nowrap">${jamItem(x)}</td><td><b>${esc(x.judul)}</b>${x.ket?`<div class="small muted">${esc(x.ket)}</div>`:''}</td><td><span class="pill" style="color:${WARNA[x.jenis]}">${JENIS[x.jenis]||x.jenis}</span></td><td><div class="chips">${[1,2,3,4,5,6,0].map(d => `<span class="${(x.hari||[]).includes(d)?'on':''}">${HARI[d].slice(0,2)}</span>`).join('')}</div></td><td class="small muted">${esc(tautan[x.link||'']||'—')}</td><td class="num" style="white-space:nowrap"><button class="btn sm ghost" data-act="jadwal-edit" data-id="${x.id}">Ubah</button><button class="btn sm ghost" data-act="jadwal-hapus" data-id="${x.id}">Hapus</button></td></tr>`).join('') || '<tr><td colspan="6" class="dim">Belum ada rutinitas.</td></tr>'}</tbody></table></div>
-      <div class="small dim" style="margin-top:10px">Sholat (jam kotamu), kuliah, dan rencana DCA tidak perlu ditambahkan di sini karena masuk otomatis. Kegiatan yang ditautkan akan dicek selesai/belum secara otomatis.</div></div>`;
+      <div class="small dim" style="margin-top:10px">Sholat (jam kotamu), kuliah, dan rencana DCA tidak perlu ditambahkan di sini karena masuk otomatis. Kegiatan yang ditautkan akan dicek selesai/belum secara otomatis.</div>
+      <div class="small dim" style="margin-top:6px"><b>Paket ibadah ketat</b> mengisi jam yang biasanya kosong dan rawan: sepertiga malam (tahajud), pagi (Dhuha, ilmu), siang (tadabbur, kajian, tidur siang singkat, belajar), sore (tugas), dan malam (tilawah, muhasabah). Kegiatan yang sudah ada tidak diubah, dan yang bertabrakan dengan kuliah digeser sendiri.</div></div>`;
   }
   return `
   <div class="topbar"><div><div class="eyebrow">Sistem harian</div><h1 class="serif">Jadwal <em>rutinitas</em></h1><div class="sub">Sholat, kuliah, kebiasaan, dan urusan uang dalam satu jadwal. Yang terjadwal lebih mudah dijaga daripada yang hanya diniatkan.</div></div>
@@ -2025,8 +2181,9 @@ function formCepat(ringkas){
 }
 
 function vKeuangan(){
+  potretAset();   // nilai bulan berjalan selalu segar; S.aset diperbarui sebelum menunggu penyimpanan
   const tab = S.tab.keuangan||'arus'; const mk = S.bulanTx; const r = ringkasBulan(mk); const tk = todayKey(); const ws = awalMinggu(tk);
-  const tabs = `<div class="tabs">${[['arus','Arus kas'],['hutang','Bayar hutang'],['aset','Aset & utang']].map(([v,l]) => `<button class="${tab===v?'on':''}" data-act="tab" data-k="keuangan" data-v="${v}">${l}</button>`).join('')}</div>`;
+  const tabs = `<div class="tabs">${[['arus','Arus kas'],['hutang','Bayar hutang'],['aset','Aset & utang'],['maju','Kemajuan']].map(([v,l]) => `<button class="${tab===v?'on':''}" data-act="tab" data-k="keuangan" data-v="${v}">${l}</button>`).join('')}</div>`;
   let isi = '';
 
   if (tab==='arus') {
@@ -2091,6 +2248,35 @@ function vKeuangan(){
       ${bayar.length ? `<div class="scroll"><table class="tbl"><thead><tr><th>Tanggal</th><th>Keterangan</th><th class="num">Jumlah</th><th></th></tr></thead><tbody>${bayar.map(t => `<tr><td class="mono">${fmtTgl(t.tanggal)}</td><td>${esc(t.ket)}</td><td class="num">${rp(t.keluar)}</td><td class="num"><button class="btn sm ghost" data-act="tx-hapus" data-id="${t.id}">Batalkan</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Kosong.</div>'}</div>`;
   }
 
+  else if (tab==='maju') {
+    const sub = S.tab.maju||'bulan'; const P = perkembanganAset(); const B = P.bulan, T = P.tahunan;
+    const kini = B[B.length-1], seb = B.length > 1 ? B[B.length-2] : null, thn = T[T.length-1];
+    const tanda = n => n>0 ? '▲' : n<0 ? '▼' : '=';
+    const warnaUbah = n => n===null ? '' : n>0 ? 'good' : n<0 ? 'bad' : '';
+    const ubahTeks = (u, p) => u===null ? '—' : `${tanda(u)} ${rpS(Math.abs(u))}${p!==null&&p!==undefined ? ` (${p>0?'+':''}${String(p).replace('.',',')}%)` : ''}`;
+    const selUbah = (u, p) => u===null ? '<td class="num dim">—</td>' : `<td class="num" style="color:var(--${u>0?'good':u<0?'bad':'muted'})">${ubahTeks(u, p)}</td>`;
+    const rekor = B.reduce((m,b) => !m || b.aset > m.aset ? b : m, null);
+    const rata = (() => { const u = B.filter(b => b.ubah!==null); return u.length ? Math.round(u.reduce((n,b) => n + b.ubah, 0)/u.length) : null; })();
+    const lbl = mk => BLN[+mk.slice(5)-1] + ' ' + mk.slice(2,4);
+    const subtabs = `<div class="tabs"><button class="${sub==='bulan'?'on':''}" data-act="tab" data-k="maju" data-v="bulan">Per bulan</button><button class="${sub==='tahun'?'on':''}" data-act="tab" data-k="maju" data-v="tahun">Per tahun</button></div>`;
+    const tabel = sub==='bulan'
+      ? `<div class="scroll"><table class="tbl"><thead><tr><th>Bulan</th><th class="num">Total aset</th><th class="num">Vs bulan sebelumnya</th><th class="num">Utang</th><th class="num">Kekayaan bersih</th><th class="num">Ditabung</th></tr></thead><tbody>${B.slice().reverse().map(b => `<tr${b.mk===monthKey(new Date())?' style="background:var(--gold-dim)"':''}><td><b>${fmtBulan(b.mk)}</b>${b.mk===monthKey(new Date())?' <span class="pill gold">berjalan</span>':''}${rekor&&rekor.mk===b.mk&&B.length>1?' <span class="pill good">tertinggi</span>':''}</td><td class="num"><b>${rp(b.aset)}</b></td>${selUbah(b.ubah, b.persen)}<td class="num">${b.utang===null?'<span class="dim">—</span>':rp(b.utang)}</td><td class="num" style="color:${b.bersih===null?'var(--dim)':b.bersih<0?'var(--bad)':'var(--good)'}">${b.bersih===null?'—':rp(b.bersih)}</td><td class="num">${b.ditabung?rp(b.ditabung):'<span class="dim">—</span>'}</td></tr>`).join('') || '<tr><td colspan="6" class="dim">Belum ada potret bulanan.</td></tr>'}</tbody></table></div>`
+      : `<div class="scroll"><table class="tbl"><thead><tr><th>Tahun</th><th class="num">Total aset</th><th class="num">Vs tahun sebelumnya</th><th class="num">Dalam tahun itu</th><th class="num">Utang</th><th class="num">Kekayaan bersih</th><th class="num">Ditabung setahun</th></tr></thead><tbody>${T.slice().reverse().map(t => `<tr><td><b>${t.tahun}</b><div class="small muted">${t.n} bulan dipotret, nilai per ${fmtBulan(t.sampai)}</div></td><td class="num"><b>${rp(t.aset)}</b></td>${selUbah(t.ubah, t.persen)}<td class="num" style="color:var(--${t.dalamTahun>0?'good':t.dalamTahun<0?'bad':'muted'})">${t.n>1 ? ubahTeks(t.dalamTahun, t.aset-t.dalamTahun ? Math.round(t.dalamTahun/Math.abs(t.aset-t.dalamTahun)*1000)/10 : null) + `<div class="small muted">${lbl(t.awalMk)} → ${lbl(t.sampai)}</div>` : '<span class="dim">baru satu bulan</span>'}</td><td class="num">${t.utang===null?'<span class="dim">—</span>':rp(t.utang)}</td><td class="num" style="color:${t.bersih===null?'var(--dim)':t.bersih<0?'var(--bad)':'var(--good)'}">${t.bersih===null?'—':rp(t.bersih)}</td><td class="num">${t.ditabung?rp(t.ditabung):'<span class="dim">—</span>'}</td></tr>`).join('') || '<tr><td colspan="7" class="dim">Belum ada potret.</td></tr>'}</tbody></table></div>`;
+    isi = `
+    <div class="c3">${tile('Aset sekarang', rpS(kini?kini.aset:totalAset()), kini ? 'potret '+fmtBulan(kini.mk) : 'belum ada potret', 'gold')}</div>
+    <div class="c3">${tile('Vs bulan lalu', kini&&kini.ubah!==null ? ubahTeks(kini.ubah, null) : '—', seb ? (kini.persen!==null ? (kini.persen>0?'+':'')+String(kini.persen).replace('.',',')+'% ' : '')+'dibanding '+fmtBulan(seb.mk) : 'butuh dua bulan potret', (kini?warnaUbah(kini.ubah):'')+' kecil')}</div>
+    <div class="c3">${tile('Tahun ini', thn&&thn.n>1 ? ubahTeks(thn.dalamTahun, null) : '—', thn&&thn.n>1 ? `${thn.aset-thn.dalamTahun ? (thn.dalamTahun>0?'+':'')+String(Math.round(thn.dalamTahun/Math.abs(thn.aset-thn.dalamTahun)*1000)/10).replace('.',',')+'% ' : ''}dari ${lbl(thn.awalMk)} ke ${lbl(thn.sampai)}` : 'butuh dua bulan dalam setahun', (thn?warnaUbah(thn.dalamTahun):'')+' kecil')}</div>
+    <div class="c3">${tile('Rata-rata per bulan', rata===null ? '—' : ubahTeks(rata, null), rekor ? 'tertinggi '+rpS(rekor.aset)+' pada '+lbl(rekor.mk) : '', (rata===null?'':warnaUbah(rata))+' kecil')}</div>
+    <div class="c7 panel"><h2>Perjalanan total aset</h2>${lineChart(B.map(b => ({ label: lbl(b.mk), v: b.aset })))}
+      <div class="small dim" style="margin-top:8px">Nilai bulan berjalan dipotret otomatis setiap aplikasi dibuka. Bulan yang sudah lewat membeku, jadi angkanya bisa dibandingkan dengan tenang.</div></div>
+    <div class="c5 panel"><h2>Naik-turun tiap bulan</h2>${deltaChart(B.filter(b => b.ubah!==null).slice(-8).map(b => ({ label: lbl(b.mk), v: b.ubah })))}
+      <div class="small dim" style="margin-top:8px">Perubahan dibanding potret sebelumnya. Yang menggerakkannya: uang yang ditabung, harga pasar aset, dan uang yang keluar dari kas.</div></div>
+    <div class="c12 panel"><h2><span>Perbandingan ${sub==='bulan'?'bulanan':'tahunan'}</span>${subtabs}</h2>${tabel}
+      <details style="margin-top:12px"><summary class="small muted" style="cursor:pointer">Isi atau betulkan nilai bulan lama</summary>
+        <form class="quick compact" data-form="potret" style="margin-top:8px"><input type="month" name="bulan" required aria-label="Bulan"><input type="number" name="aset" min="0" step="1" required placeholder="Total aset (Rp)" inputmode="numeric" aria-label="Total aset"><input type="number" name="utang" min="0" step="1" placeholder="Utang (Rp), boleh kosong" inputmode="numeric" aria-label="Utang"><button class="btn sm primary" type="submit">Simpan</button></form>
+        <div class="small dim" style="margin-top:6px">Untuk bulan-bulan sebelum kamu memakai Markasku, atau kalau potret otomatis pernah salah.</div></details></div>`;
+  }
+
   else {
     const A = S.aset.aset||[], U = S.aset.utang||[]; const ta = totalAset(), tu = totalUtang(), kb = ta - tu;
     const byKat = {}; A.forEach(a => byKat[a.kategori||'Lainnya'] = (byKat[a.kategori||'Lainnya']||0) + (+a.nilai||0));
@@ -2106,7 +2292,7 @@ function vKeuangan(){
     <div class="c4 panel"><h2>Rencana DCA</h2>${(() => { const P = A.filter(a => a.dca && a.dca.aktif && +a.dca.jumlah>0); return P.length ? `<div class="list">${P.map(a => { const s = statusDCA(a); return `<div class="item"><div class="hd"><b>${esc(a.nama)}</b><span class="pill ${s.ok?'good':'warn'}">${s.ok?'sudah '+s.periode:'belum '+s.periode}</span></div><div class="row between small"><span class="muted">${rpS(a.dca.jumlah)} ${jadwalDCA(a.dca)} · ${a.dca.jam||'09:30'}</span><span class="mono">${rpS(s.sudah)} / ${rpS(s.target)}</span></div><div class="prog gold"><b style="width:${Math.min(100, pct(s.sudah, s.target))}%"></b></div>${s.ok?'':`<div><button class="btn sm primary" data-act="setor" data-id="${a.id}">Setor ${rpS(s.target - s.sudah)} sekarang</button></div>`}</div>`; }).join('')}</div>` : '<div class="empty">Belum ada rencana DCA. Klik tombol DCA di baris aset untuk membuat setoran rutin mingguan atau bulanan.</div>'; })()}
       <div class="small dim" style="margin-top:10px">Rencana DCA otomatis muncul di halaman Jadwal pada hari dan jamnya.</div></div>
     <div class="c6 panel"><h2>Komposisi aset</h2>${donutChart(Object.entries(byKat).map(([k,v]) => ({ label:k, v, color: katColor[k]||'var(--muted)' })), rpS(ta).replace('Rp',''), 'total aset')}</div>
-    <div class="c6 panel"><h2>Perjalanan total aset <button class="act" data-act="riwayat-simpan">Simpan nilai ${fmtBulan(monthKey(new Date()))}</button></h2>${lineChart(riw)}</div>
+    <div class="c6 panel"><h2>Perjalanan total aset <button class="act" data-act="tab" data-k="keuangan" data-v="maju">Per bulan & tahun</button></h2>${lineChart(riw)}<div class="small dim" style="margin-top:6px">Dipotret otomatis tiap bulan. Perbandingan lengkapnya di tab Kemajuan.</div></div>
     <div class="c6 panel"><h2>Riwayat setoran <span class="pill">${(S.aset.setoran||[]).length}</span></h2>${(S.aset.setoran||[]).length ? `<div class="scroll"><table class="tbl"><thead><tr><th>Tanggal</th><th>Aset</th><th class="num">Jumlah</th><th></th></tr></thead><tbody>${S.aset.setoran.slice().sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).slice(0,30).map(s => `<tr><td class="mono">${fmtTgl(s.tanggal,false)}</td><td>${esc((A.find(a=>a.id===s.aset)||{}).nama||'?')}${s.catatan?`<div class="small muted">${esc(s.catatan)}</div>`:''}${s.arus?'':' <span class="pill">tanpa arus kas</span>'}</td><td class="num">${rp(s.jumlah)}</td><td class="num"><button class="btn sm ghost" data-act="setor-batal" data-id="${s.id}">Batalkan</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada setoran. Setoran pertamamu akan tercatat di sini.</div>'}</div>
     <div class="c6 panel"><h2>Utang <button class="act" data-act="utang-tambah">+ Tambah</button></h2><div class="scroll"><table class="tbl"><thead><tr><th>Nama</th><th class="num">Sisa (Rp)</th><th></th></tr></thead><tbody>${U.map(a => `<tr><td><b>${esc(a.nama)}</b>${a.ket?`<div class="small muted">${esc(a.ket)}</div>`:''}</td><td class="num"><input type="number" value="${+a.nilai||0}" data-act="utang-nilai" data-id="${a.id}" style="width:150px;text-align:right;padding:5px 8px"></td><td class="num"><button class="btn sm ghost" data-act="utang-hapus" data-id="${a.id}">×</button></td></tr>`).join('')||'<tr><td colspan="3" class="dim">Tidak ada utang.</td></tr>'}</tbody></table></div>
       <div class="small dim" style="margin-top:10px">Untuk mencicil, pakai tab Bayar hutang supaya tercatat. Kolom ini untuk koreksi sisa saja.</div></div>`;
@@ -2721,7 +2907,11 @@ document.addEventListener('click', async e => {
     case 'fokus-edit': modalFokus(S.fokus.items.find(y=>y.id===id)); break;
     case 'fokus-hapus': { const x = S.fokus.items.find(y=>y.id===id); if (confirm(`Hapus "${x.judul}"? Hapus hanya kalau memang sudah selesai atau tidak relevan lagi.`)) { S.fokus.items = S.fokus.items.filter(y=>y.id!==id); await store.set('fokus/daftar', S.fokus); toast('Dihapus. Satu beban berkurang.'); render(); } break; }
     case 'fokus-pulihkan': { DEF.fokus.items.forEach(d => { if (!S.fokus.items.some(x=>x.id===d.id)) S.fokus.items.push(clone(d)); }); await store.set('fokus/daftar', S.fokus); render(); break; }
-    case 'fokus-goyah': { const x = S.fokus.items.find(y=>y.id===id); x.terakhir = todayKey(); await store.set('fokus/daftar', S.fokus); toast('Direset ke 0. Besok mulai lagi, tidak apa-apa.', true); render(); break; }
+    case 'fokus-goyah': { const x = S.fokus.items.find(y=>y.id===id); await catatGoyah(x, todayKey()); toast('Direset ke 0, tanggalnya masuk riwayat. Besok mulai lagi, tidak apa-apa.', true); render(); break; }
+    case 'goyah-hapus': { const x = kartuGoyah(); const t = el.dataset.tgl; if (!x || !t) break; if (!confirm(`Hapus ${fmtTgl(t,false)} dari riwayat jatuh?`)) break;
+      x.riwayat = (x.riwayat||[]).filter(k => k!==t); if (x.terakhir===t) x.terakhir = x.riwayat[x.riwayat.length-1] || '';
+      const h = S.harian[t]; if (h && (h.pelanggaran||[]).some(q => q.aturan==='maksiat')) { h.pelanggaran = h.pelanggaran.filter(q => q.aturan!=='maksiat'); await simpanHari(t, h); }
+      await store.set('fokus/daftar', S.fokus); toast('Tanggal dihapus dari riwayat'); render(); break; }
     case 'tab': S.tab[el.dataset.k] = el.dataset.v; render(); break;
     case 'tx-hapus': { const t = S.aruskas.transaksi.find(x=>x.id===id); if (!t) break;
       if (t.setoran) { if (confirm(`Batalkan setoran ${rp(t.keluar)}? Nilai aset juga dikurangi kembali.`)) { await batalSetor(t.setoran); render(); } break; }
@@ -2740,6 +2930,8 @@ document.addEventListener('click', async e => {
     case 'agenda-edit': modalAgenda(clone((S.jadwal.agenda||[]).find(a => a.id===id))); break;
     case 'agenda-hapus': if (confirm('Hapus agenda ini?')) { S.jadwal.agenda = (S.jadwal.agenda||[]).filter(a => a.id!==id); await store.set('jadwal/rutinitas', S.jadwal); $('#modalBg').classList.remove('show'); toast('Agenda dihapus'); render(); } break;
     case 'jadwal-tambah': modalJadwal(); break;
+    case 'paket-ketat': { if (!confirm('Tambahkan paket ibadah ketat ke jadwal? 14 kegiatan dan 4 aturan harian baru (tahajud, Dhuha, tadabbur siang, istighfar malam). Kegiatan yang sudah ada tidak diubah.')) break;
+      const r = await pasangPaketKetat(); toast(r.nItem || r.nAturan ? `${r.nItem} kegiatan dan ${r.nAturan} aturan harian ditambahkan` : 'Semua isi paket sudah ada di jadwalmu'); render(); break; }
     case 'jadwal-edit': modalJadwal(clone(S.jadwal.items.find(x=>x.id===id))); break;
     case 'jadwal-hapus': if (confirm('Hapus kegiatan ini dari jadwal?')) { S.jadwal.items = S.jadwal.items.filter(x=>x.id!==id); await store.set('jadwal/rutinitas', S.jadwal); toast('Dihapus dari jadwal'); render(); } break;
     case 'jadwal-geser': S.jadwalOff = +el.dataset.v===0 ? 0 : (S.jadwalOff||0) + (+el.dataset.v); render(); break;
@@ -2770,7 +2962,9 @@ document.addEventListener('change', async e => {
   else if (act==='bugar-latih') { const k = todayKey(), h = hari(k); h.latihan = h.latihan||{};
     if (el.checked) h.latihan[id] = true; else delete h.latihan[id];
     await simpanHari(k, h); render(); }
-  else if (act==='fokus-field') { const x = S.fokus.items.find(y=>y.id===id); x[el.dataset.k] = el.value; await store.set('fokus/daftar', S.fokus); toast('Tersimpan'); if (el.tagName!=='TEXTAREA') render(); }
+  else if (act==='fokus-field') { const x = S.fokus.items.find(y=>y.id===id); x[el.dataset.k] = el.value;
+    if (el.dataset.k==='terakhir' && el.value) { await catatGoyah(x, el.value); toast('Tersimpan, tanggalnya masuk riwayat'); render(); return; }
+    await store.set('fokus/daftar', S.fokus); toast('Tersimpan'); if (el.tagName!=='TEXTAREA') render(); }
   else if (act==='fokus-angka') { S.fokus[el.dataset.k] = +el.value||0; await store.set('fokus/daftar', S.fokus); render(); }
   else if (act==='rutin-aktif' || act==='rutin-field') { const r = S.aruskas.rutin.find(y=>y.id===id); if (!r) return;
     if (act==='rutin-aktif') r.aktif = el.checked; else { const k = el.dataset.k; r[k] = k==='ff' ? el.checked : (k==='jumlah'||k==='hari') ? +el.value||0 : el.value; }
@@ -2812,6 +3006,10 @@ document.addEventListener('submit', async e => {
     S.bulanTx = tgl.slice(0,7); await store.set('keuangan/aruskas', S.aruskas); await sinkronKas();
     const r = ringkasBulan(S.bulanTx); toast(`${masuk?'Masuk':'Keluar'} ${rp(j)} · pengeluaran ${fmtBulan(S.bulanTx)} jadi ${rp(r.pengeluaran)}`); S.fokusCepat = true; }
   else if (which==='bayar') { if (!(await bayarHutang(d))) return; }
+  else if (which==='goyah') { const x = kartuGoyah(); if (!x || !d.tgl) return; await catatGoyah(x, d.tgl); toast(`${fmtTgl(d.tgl,false)} masuk riwayat`); }
+  else if (which==='potret') { const mk = d.bulan; if (!/^\d{4}-\d{2}$/.test(mk)) return toast('Pilih bulannya', true);
+    S.aset.riwayat = S.aset.riwayat||{}; S.aset.riwayatUtang = S.aset.riwayatUtang||{}; S.aset.riwayat[mk] = Math.round(+d.aset||0); if (d.utang!=='') S.aset.riwayatUtang[mk] = Math.round(+d.utang||0);
+    await store.set('keuangan/aset', S.aset); toast(`Nilai ${fmtBulan(mk)} disimpan`); }
   render();
   if (S.fokusCepat) { S.fokusCepat = false; if (S.view==='keuangan') { const i = document.querySelector('form[data-form="tx"] [name="ket"]'); if (i) i.focus(); } }
 });
