@@ -697,6 +697,7 @@ const fmtBulan = mk => { const [y,m] = mk.split('-'); return `${BULAN[+m-1]} ${y
 const rp = n => 'Rp' + Math.round(Number(n)||0).toLocaleString('id-ID');
 const rpS = n => { n = Number(n)||0; const a = Math.abs(n); const s = n<0?'−':''; if (a>=1e9) return s+'Rp'+(a/1e9).toFixed(2).replace('.',',')+' M'; if (a>=1e6) return s+'Rp'+(a/1e6).toFixed(a>=1e7?1:2).replace('.',',')+' jt'; if (a>=1e3) return s+'Rp'+Math.round(a/1e3)+' rb'; return s+'Rp'+a; };
 const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+const pctT = p => String(p).replace('.',',');   // persen dengan koma desimal untuk tampilan
 const clone = o => JSON.parse(JSON.stringify(o));
 const hijri = d => { try { return new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {day:'numeric', month:'long', year:'numeric'}).format(d); } catch { return ''; } };
 function toast(msg, bad=false){ const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (bad?' bad':''); clearTimeout(t._t); t._t = setTimeout(()=> t.classList.remove('show'), 2200); }
@@ -1244,7 +1245,7 @@ function infoHutang(){
 function infoFF(){
   const p = pengeluaranRata(); const kuliahMinggu = S.fokus.kuliahMingguan ?? 300000; const kuliahBulan = Math.round((+kuliahMinggu||0) * 52 / 12);
   const bulanan = p.nilai + kuliahBulan; const target = bulanan*12*25; const kb = totalAset()-totalUtang();
-  return { pengeluaran:p.nilai, kuliahMinggu:+kuliahMinggu||0, kuliahBulan, bulanan, sumber:p.sumber, target, kb, aset: totalAset(), progres: target ? Math.max(0, Math.min(100, Math.round(kb/target*100))) : 0, kurang: Math.max(0, target-kb) };
+  return { pengeluaran:p.nilai, kuliahMinggu:+kuliahMinggu||0, kuliahBulan, bulanan, sumber:p.sumber, target, kb, aset: totalAset(), progres: target ? Math.max(0, Math.min(100, Math.round(totalAset()/target*1000)/10)) : 0, kurang: Math.max(0, target-totalAset()) };   // progres dari total aset, bukan kekayaan bersih (pemilik 24 Sep 2026): utang dilihat terpisah
 }
 
 /* ---------- komponen kecil ---------- */
@@ -1363,7 +1364,7 @@ function vHariIni(){
         return `<div class="panel"><h2>Fokus utama <a class="act" href="#fokus">Buka</a></h2><div class="kv">
           ${pr?`<span class="k">${esc(pr.judul)} · hari fokus</span><span class="v" style="color:${nn===null?'var(--dim)':'var(--good)'}">${(() => { const t = persenTempo(pr.terakhir || awalPakai(), pr.tenggat); return t ? `${t.persen}% <span class="dim">· ${nn===null?0:nn} dari ${t.total} hari · rekor ${statGoyah(pr).rekor}</span>` : `${nn===null?'belum diisi':nn+' hari'} <span class="dim">· rekor ${statGoyah(pr).rekor}</span>`; })()}</span>`:''}
           ${items.some(x=>x.id==='hutang')?`<span class="k">Hutang · sisa</span><span class="v" style="color:var(--bad)">${rpS(hu.sisa)} <span class="dim">· lunas ${hu.minggu?BLN[parseKey(hu.lunas).getMonth()]+' '+hu.lunas.slice(0,4):'—'}</span></span>`:''}
-          ${items.some(x=>x.id==='ff')?`<span class="k">Financial freedom</span><span class="v">${ff.progres}% <span class="dim">dari ${rpS(ff.target)}</span></span>`:''}
+          ${items.some(x=>x.id==='ff')?`<span class="k">Financial freedom</span><span class="v">${pctT(ff.progres)}% <span class="dim">aset ${rpS(ff.aset)} dari ${rpS(ff.target)}</span></span>`:''}
           <span class="k">Tugas & target terbuka</span><span class="v">${fokusBuka.length}</span></div>
           ${fokusBuka.length ? `<div class="stack" style="margin-top:8px">${fokusBuka.slice(0,3).map(x => `<div class="row between small"><span><span class="pill ${({Tugas:'teal',Masalah:'bad',Target:'gold'})[x.jenis]||''}" style="margin-right:6px">${esc(x.jenis)}</span>${esc(x.judul)}</span><span class="row">${x.nominal?`<span class="uang">${uang(x.nominal,x.mataUang)}</span>`:''}${x.tenggat?`<span class="pill ${x.tenggat<tk?'bad':x.tenggat<=addDays(tk,3)?'warn':''}">${fmtTgl(x.tenggat,false)}</span>`:''}</span></div>`).join('')}</div>` : ''}</div>`; })()}
     </div>
@@ -1813,10 +1814,10 @@ function vFokus(){
       <form class="quick compact" data-form="bayar" style="margin-top:6px"><input type="hidden" name="utang" value="${(S.aset.utang||[])[0]?.id||''}"><input type="number" name="jumlah" min="1" step="1" value="${hu.cicilan||''}" required inputmode="numeric" aria-label="Jumlah bayar"><button class="btn primary" type="submit">Bayar hutang</button></form>
       <label class="f" style="margin-top:10px">Pegangan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan" style="min-height:56px">${esc(x.catatan||'')}</textarea></label></div>`;
     if (x.id==='ff') return `<div class="panel fk"><div class="row between"><span class="pill gold">Target utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
-      <div class="big mono" style="color:var(--gold-2)">${rpS(ff.target)}</div><div class="lbl">${ff.bulanan?`${rpS(ff.bulanan)} per bulan × 12 × 25`:'isi pengeluaran bulanan dulu'}</div>
+      <div class="big mono" style="color:var(--gold-2)">${rpS(ff.target)}</div><div class="lbl">${ff.bulanan?`${rpS(ff.bulanan)} per bulan × 12 × 25`:'isi pengeluaran bulanan dulu'} · <b style="color:var(--gold-2)">${pctT(ff.progres)}%</b> tercapai dari total aset ${rpS(ff.aset)}</div>
       <div class="prog gold" style="margin:8px 0"><b style="width:${ff.progres}%"></b></div>
-      ${(() => { const t = persenTempo(x.mulai || S.pengaturan.mulai3Tahun || awalPakai(), x.tenggat); if (!t) return `<div class="small muted">Isi jatuh tempo di bawah supaya progres ${ff.progres}% bisa dibanding dengan waktu yang terpakai.</div>`;
-        const depan = ff.progres >= t.persen; return `<div class="row between small"><span class="muted">Waktu terpakai <b class="mono">${t.persen}%</b> · tercapai <b class="mono">${ff.progres}%</b></span><span class="pill ${depan?'good':'warn'}">${depan?'di depan jadwal':'tertinggal jadwal'}</span></div>
+      ${(() => { const t = persenTempo(x.mulai || S.pengaturan.mulai3Tahun || awalPakai(), x.tenggat); if (!t) return `<div class="small muted">Isi jatuh tempo di bawah supaya progres ${pctT(ff.progres)}% bisa dibanding dengan waktu yang terpakai.</div>`;
+        const depan = ff.progres >= t.persen; return `<div class="row between small"><span class="muted">Waktu terpakai <b class="mono">${t.persen}%</b> · tercapai <b class="mono">${pctT(ff.progres)}%</b></span><span class="pill ${depan?'good':'warn'}">${depan?'di depan jadwal':'tertinggal jadwal'}</span></div>
         <div class="prog" style="margin:6px 0 4px"><b style="width:${t.persen}%;background:var(--muted)"></b></div>
         <div class="small muted">${t.lewatTempo ? 'Jatuh tempo sudah lewat '+(-t.sisa)+' hari.' : `Sisa ${t.sisa} hari sampai ${fmtTgl(x.tenggat,false)} ${x.tenggat.slice(0,4)}${t.sisa>0&&ff.kurang>0 ? ', perlu '+rpS(Math.round(ff.kurang / Math.max(1, t.sisa/30)))+' per bulan' : ''}.`}</div>`; })()}
       <label class="f" style="margin-top:8px">Jatuh tempo target<input type="date" value="${x.tenggat||''}" min="${tk}" data-act="fokus-field" data-id="${x.id}" data-k="tenggat"></label>
@@ -1824,7 +1825,7 @@ function vFokus(){
         <span class="k">Biaya kuliah per minggu</span><span class="v"><input type="number" value="${ff.kuliahMinggu}" step="50000" min="0" data-act="fokus-angka" data-k="kuliahMingguan" style="width:120px;padding:4px 8px;text-align:right"></span>
         <span class="k">+ Kuliah per bulan <span class="dim">(× 52 ÷ 12)</span></span><span class="v">${rpS(ff.kuliahBulan)}</span>
         <span class="k"><b>Total pengeluaran per bulan</b></span><span class="v"><b>${rpS(ff.bulanan)}</b></span>
-        <span class="k">Kekayaan bersih</span><span class="v" style="color:${ff.kb<0?'var(--bad)':'var(--good)'}">${rpS(ff.kb)}</span><span class="k">Progres</span><span class="v">${ff.progres}%</span><span class="k">Masih kurang</span><span class="v">${rpS(ff.kurang)}</span></div>
+        <span class="k"><b>Total aset</b></span><span class="v"><b>${rpS(ff.aset)}</b></span><span class="k">Progres (aset ÷ target)</span><span class="v" style="color:var(--gold-2)">${pctT(ff.progres)}%</span><span class="k">Kekayaan bersih <span class="dim">(aset − utang)</span></span><span class="v" style="color:${ff.kb<0?'var(--bad)':'var(--good)'}">${rpS(ff.kb)}</span><span class="k">Masih kurang</span><span class="v">${rpS(ff.kurang)}</span></div>
       <label class="f" style="margin-top:10px">Pegangan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan" style="min-height:56px">${esc(x.catatan||'')}</textarea></label></div>`;
     return `<div class="panel fk"><div class="row between"><span class="pill">${esc(x.jenis)}</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3><label class="f">Catatan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan">${esc(x.catatan||'')}</textarea></label></div>`;
   };
