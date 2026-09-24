@@ -1361,7 +1361,7 @@ function vHariIni(){
       </div>
       ${(() => { const hu = infoHutang(), ff = infoFF(); const items = S.fokus.items||[]; const pr = items.find(x=>x.id==='perempuan'); const nn = pr ? hariSejak(pr.terakhir) : null;
         return `<div class="panel"><h2>Fokus utama <a class="act" href="#fokus">Buka</a></h2><div class="kv">
-          ${pr?`<span class="k">${esc(pr.judul)} · hari fokus</span><span class="v" style="color:${nn===null?'var(--dim)':'var(--good)'}">${nn===null?'belum diisi':nn+' hari'} <span class="dim">· rekor ${statGoyah(pr).rekor}</span></span>`:''}
+          ${pr?`<span class="k">${esc(pr.judul)} · hari fokus</span><span class="v" style="color:${nn===null?'var(--dim)':'var(--good)'}">${(() => { const t = persenTempo(pr.terakhir || awalPakai(), pr.tenggat); return t ? `${t.persen}% <span class="dim">· ${nn===null?0:nn} dari ${t.total} hari · rekor ${statGoyah(pr).rekor}</span>` : `${nn===null?'belum diisi':nn+' hari'} <span class="dim">· rekor ${statGoyah(pr).rekor}</span>`; })()}</span>`:''}
           ${items.some(x=>x.id==='hutang')?`<span class="k">Hutang · sisa</span><span class="v" style="color:var(--bad)">${rpS(hu.sisa)} <span class="dim">· lunas ${hu.minggu?BLN[parseKey(hu.lunas).getMonth()]+' '+hu.lunas.slice(0,4):'—'}</span></span>`:''}
           ${items.some(x=>x.id==='ff')?`<span class="k">Financial freedom</span><span class="v">${ff.progres}% <span class="dim">dari ${rpS(ff.target)}</span></span>`:''}
           <span class="k">Tugas & target terbuka</span><span class="v">${fokusBuka.length}</span></div>
@@ -1689,6 +1689,17 @@ function vDisiplin(){
 
 /* ----- Fokus: masalah utama + tugas/target ----- */
 const hariSejak = k => k ? Math.max(0, Math.round((parseKey(todayKey())-parseKey(k))/864e5)) : null;
+/* Persen menuju jatuh tempo (diminta pemilik 24 September 2026): setiap target diukur sebagai
+   berapa persen jalan yang sudah ditempuh dari tanggal mulai ke tanggal jatuh tempo, supaya
+   semua kartu Fokus berbicara dengan satuan yang sama. Kalau jatuh temponya belum diisi,
+   hasilnya null dan kartu menampilkan hitungan hari seperti dulu. */
+function persenTempo(mulai, tenggat){
+  if (!tenggat) return null; const tk = todayKey(); const a = parseKey(mulai || tk), b = parseKey(tenggat);
+  const total = Math.max(1, Math.round((b - a) / 864e5)); const lewat = Math.max(0, Math.round((parseKey(tk) - a) / 864e5));
+  const sisa = Math.round((b - parseKey(tk)) / 864e5);
+  return { persen: Math.max(0, Math.min(100, Math.round(lewat / total * 100))), lewat, total, sisa, lewatTempo: sisa < 0 };
+}
+const barisTempo = (t, warna='') => t ? `<div class="prog${warna?' '+warna:''}" style="margin:6px 0 4px"><b style="width:${t.persen}%"></b></div><div class="small muted">${t.persen}% waktu terpakai · ${t.lewatTempo ? `lewat ${-t.sisa} hari dari jatuh tempo` : t.sisa===0 ? 'jatuh tempo hari ini' : `sisa ${t.sisa} hari`}</div>` : '';
 /* ---------- Riwayat goyah: setiap tanggal jatuh disimpan, bukan hanya yang terakhir ----------
    Diminta pemilik 23 September 2026. Penghitung "hari fokus" dulu cuma menyimpan tanggal terakhir,
    jadi begitu direset, sejarahnya hilang dan tidak kelihatan apakah ada kemajuan. Sekarang setiap
@@ -1781,14 +1792,22 @@ function vFokus(){
   const hilang = DEF.fokus.items.filter(d => !items.some(x=>x.id===d.id));
   const kartu = x => {
     const hapus = `<button class="btn sm ghost" data-act="fokus-hapus" data-id="${x.id}" title="Hapus bila sudah selesai">Selesai, hapus</button>`;
-    if (x.id==='perempuan') { const n = hariSejak(x.terakhir); return `<div class="panel fk"><div class="row between"><span class="pill bad">Masalah utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
-      <div class="big mono ${n===null?'dim':n>=30?'good':''}">${n===null?'—':n}</div><div class="lbl">${n===null?'isi tanggal terakhir goyah di bawah':'hari fokus, tidak goyah'}</div>
-      <label class="f" style="margin-top:10px">Terakhir goyah (tanggal terakhir kamu jatuh ke godaan ini)<input type="date" value="${x.terakhir||''}" max="${tk}" data-act="fokus-field" data-id="${x.id}" data-k="terakhir"></label>
+    if (x.id==='perempuan') { const n = hariSejak(x.terakhir); const t = persenTempo(x.terakhir || awalPakai(), x.tenggat);
+      return `<div class="panel fk"><div class="row between"><span class="pill bad">Masalah utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
+      ${t ? `<div class="big mono ${t.persen>=100?'good':t.persen>=50?'':''}" style="color:${t.persen>=100?'var(--good)':'var(--gold-2)'}">${t.persen}%</div><div class="lbl">${n===null?'':n+' hari bersih'} dari ${t.total} hari menuju ${fmtTgl(x.tenggat,false)} ${x.tenggat.slice(0,4)}${t.lewatTempo?' · jatuh tempo lewat, tetapkan tenggat baru':t.sisa===0?' · hari ini':' · sisa '+t.sisa+' hari'}</div><div class="prog good" style="margin:6px 0 2px"><b style="width:${t.persen}%"></b></div>`
+         : `<div class="big mono ${n===null?'dim':n>=30?'good':''}">${n===null?'—':n}</div><div class="lbl">${n===null?'isi tanggal terakhir goyah di bawah':'hari fokus, tidak goyah · isi jatuh tempo supaya jadi persen'}</div>`}
+      <div class="form cols2" style="margin-top:10px"><label class="f">Terakhir goyah<input type="date" value="${x.terakhir||''}" max="${tk}" data-act="fokus-field" data-id="${x.id}" data-k="terakhir"></label><label class="f">Jatuh tempo target<input type="date" value="${x.tenggat||''}" min="${tk}" data-act="fokus-field" data-id="${x.id}" data-k="tenggat"></label></div>
       <label class="f">Pegangan<textarea data-act="fokus-field" data-id="${x.id}" data-k="catatan" style="min-height:70px">${esc(x.catatan||'')}</textarea></label>
       <div class="row"><button class="btn sm danger" data-act="fokus-goyah" data-id="${x.id}">Hari ini goyah, reset</button></div></div>`; }
     if (x.id==='hutang') return `<div class="panel fk"><div class="row between"><span class="pill bad">Masalah utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
       <div class="big mono" style="color:var(--bad)">${rpS(hu.sisa)}</div><div class="lbl">sisa · terbayar ${hu.terbayar}% dari puncak ${rpS(hu.puncak)}</div>
       <div class="prog" style="margin:8px 0"><b style="width:${hu.terbayar}%;background:linear-gradient(90deg,var(--bad),var(--gold))"></b></div>
+      ${(() => { const t = persenTempo(x.mulai || awalPakai(), x.tenggat); if (!t) return `<div class="small muted">Isi jatuh tempo lunas di bawah supaya terlihat kamu di depan atau di belakang jadwal.</div>`;
+        const perMinggu = t.sisa > 0 ? Math.ceil(hu.sisa / Math.max(1, t.sisa/7) / 1000) * 1000 : hu.sisa; const depan = hu.terbayar >= t.persen;
+        return `<div class="row between small"><span class="muted">Waktu terpakai <b class="mono">${t.persen}%</b> · terbayar <b class="mono">${hu.terbayar}%</b></span><span class="pill ${depan?'good':'warn'}">${depan?'di depan jadwal':'tertinggal jadwal'}</span></div>
+        <div class="prog" style="margin:6px 0 4px"><b style="width:${t.persen}%;background:var(--muted)"></b></div>
+        <div class="small muted">${t.lewatTempo ? 'Jatuh tempo sudah lewat '+(-t.sisa)+' hari.' : `Sisa ${t.sisa} hari sampai ${fmtTgl(x.tenggat,false)} ${x.tenggat.slice(0,4)}: perlu ${rpS(perMinggu)} per minggu supaya lunas tepat waktu.`}</div>`; })()}
+      <label class="f" style="margin-top:8px">Jatuh tempo lunas<input type="date" value="${x.tenggat||''}" min="${tk}" data-act="fokus-field" data-id="${x.id}" data-k="tenggat"></label>
       <div class="kv"><span class="k">Cicilan per minggu</span><span class="v"><input type="number" value="${hu.cicilan}" step="50000" data-act="fokus-angka" data-k="cicilanMingguan" style="width:120px;padding:4px 8px;text-align:right"></span><span class="k">Puncak utang</span><span class="v"><input type="number" value="${hu.puncak}" step="100000" data-act="fokus-angka" data-k="puncakUtang" style="width:120px;padding:4px 8px;text-align:right"></span><span class="k">Perkiraan lunas</span><span class="v" style="color:var(--gold-2)">${hu.minggu?fmtTgl(hu.lunas,false)+' '+hu.lunas.slice(0,4)+` (${hu.minggu} mgg)`:'—'}</span></div>
       <div class="row between small" style="margin-top:10px"><span class="muted">Minggu ini dibayar <b class="mono" style="color:${bayarMinggu(awalMinggu(tk))>=hu.cicilan&&hu.cicilan?'var(--good)':'var(--text)'}">${rp(bayarMinggu(awalMinggu(tk)))}</b></span><a class="act" href="#keuangan" data-act="tab" data-k="keuangan" data-v="hutang">Riwayat</a></div>
       <form class="quick compact" data-form="bayar" style="margin-top:6px"><input type="hidden" name="utang" value="${(S.aset.utang||[])[0]?.id||''}"><input type="number" name="jumlah" min="1" step="1" value="${hu.cicilan||''}" required inputmode="numeric" aria-label="Jumlah bayar"><button class="btn primary" type="submit">Bayar hutang</button></form>
@@ -1796,6 +1815,11 @@ function vFokus(){
     if (x.id==='ff') return `<div class="panel fk"><div class="row between"><span class="pill gold">Target utama</span>${hapus}</div><h3 class="serif">${esc(x.judul)}</h3>
       <div class="big mono" style="color:var(--gold-2)">${rpS(ff.target)}</div><div class="lbl">${ff.bulanan?`${rpS(ff.bulanan)} per bulan × 12 × 25`:'isi pengeluaran bulanan dulu'}</div>
       <div class="prog gold" style="margin:8px 0"><b style="width:${ff.progres}%"></b></div>
+      ${(() => { const t = persenTempo(x.mulai || S.pengaturan.mulai3Tahun || awalPakai(), x.tenggat); if (!t) return `<div class="small muted">Isi jatuh tempo di bawah supaya progres ${ff.progres}% bisa dibanding dengan waktu yang terpakai.</div>`;
+        const depan = ff.progres >= t.persen; return `<div class="row between small"><span class="muted">Waktu terpakai <b class="mono">${t.persen}%</b> · tercapai <b class="mono">${ff.progres}%</b></span><span class="pill ${depan?'good':'warn'}">${depan?'di depan jadwal':'tertinggal jadwal'}</span></div>
+        <div class="prog" style="margin:6px 0 4px"><b style="width:${t.persen}%;background:var(--muted)"></b></div>
+        <div class="small muted">${t.lewatTempo ? 'Jatuh tempo sudah lewat '+(-t.sisa)+' hari.' : `Sisa ${t.sisa} hari sampai ${fmtTgl(x.tenggat,false)} ${x.tenggat.slice(0,4)}${t.sisa>0&&ff.kurang>0 ? ', perlu '+rpS(Math.round(ff.kurang / Math.max(1, t.sisa/30)))+' per bulan' : ''}.`}</div>`; })()}
+      <label class="f" style="margin-top:8px">Jatuh tempo target<input type="date" value="${x.tenggat||''}" min="${tk}" data-act="fokus-field" data-id="${x.id}" data-k="tenggat"></label>
       <div class="kv"><span class="k">Pengeluaran bulanan tanpa kuliah</span><span class="v"><input type="number" value="${+S.fokus.pengeluaranBulanan||''}" placeholder="${ff.pengeluaran}" step="100000" data-act="fokus-angka" data-k="pengeluaranBulanan" style="width:120px;padding:4px 8px;text-align:right"></span><span class="k dim small" style="grid-column:1/-1">${+S.fokus.pengeluaranBulanan>0?'angka manual · kosongkan untuk otomatis':ff.sumber}</span>
         <span class="k">Biaya kuliah per minggu</span><span class="v"><input type="number" value="${ff.kuliahMinggu}" step="50000" min="0" data-act="fokus-angka" data-k="kuliahMingguan" style="width:120px;padding:4px 8px;text-align:right"></span>
         <span class="k">+ Kuliah per bulan <span class="dim">(× 52 ÷ 12)</span></span><span class="v">${rpS(ff.kuliahBulan)}</span>
@@ -1817,7 +1841,7 @@ function vFokus(){
       <label class="f">Catatan<textarea name="catatan" placeholder="opsional"></textarea></label>
       <button class="btn primary" type="submit">Tambah</button></form></div>
     <div class="c8 panel"><h2>Daftar <span class="pill">${lain.filter(x=>!x.selesai).length} terbuka</span></h2>
-      <div class="list">${lain.map(x => `<div class="item" style="${x.selesai?'opacity:.55':''}"><div class="hd"><label class="row" style="cursor:pointer;gap:10px;flex:1"><input type="checkbox" data-act="fokus-selesai" data-id="${x.id}" ${x.selesai?'checked':''}><b style="${x.selesai?'text-decoration:line-through':''}">${esc(x.judul)}</b></label><span class="row"><span class="pill ${({Tugas:'teal',Masalah:'bad',Target:'gold'})[x.jenis]||''}">${esc(x.jenis)}</span>${x.nominal?`<span class="uang">${uang(x.nominal, x.mataUang)}</span>`:''}${x.tenggat?`<span class="pill ${!x.selesai&&x.tenggat<tk?'bad':!x.selesai&&x.tenggat<=addDays(tk,3)?'warn':''}">${fmtTgl(x.tenggat,false)}</span>`:''}<button class="btn sm ghost" data-act="fokus-edit" data-id="${x.id}">Ubah</button><button class="btn sm ghost" data-act="fokus-hapus" data-id="${x.id}">Hapus</button></span></div>${x.catatan?`<p>${esc(x.catatan)}</p>`:''}</div>`).join('')||'<div class="empty">Kosong. Bagus, atau belum jujur? Tugas kuliah minggu ini, misalnya.</div>'}</div></div>
+      <div class="list">${lain.map(x => `<div class="item" style="${x.selesai?'opacity:.55':''}"><div class="hd"><label class="row" style="cursor:pointer;gap:10px;flex:1"><input type="checkbox" data-act="fokus-selesai" data-id="${x.id}" ${x.selesai?'checked':''}><b style="${x.selesai?'text-decoration:line-through':''}">${esc(x.judul)}</b></label><span class="row"><span class="pill ${({Tugas:'teal',Masalah:'bad',Target:'gold'})[x.jenis]||''}">${esc(x.jenis)}</span>${x.nominal?`<span class="uang">${uang(x.nominal, x.mataUang)}</span>`:''}${x.tenggat?`<span class="pill ${!x.selesai&&x.tenggat<tk?'bad':!x.selesai&&x.tenggat<=addDays(tk,3)?'warn':''}">${fmtTgl(x.tenggat,false)}</span>`:''}<button class="btn sm ghost" data-act="fokus-edit" data-id="${x.id}">Ubah</button><button class="btn sm ghost" data-act="fokus-hapus" data-id="${x.id}">Hapus</button></span></div>${!x.selesai ? barisTempo(persenTempo(x.dibuat || awalPakai(), x.tenggat), x.jenis==='Target'?'gold':'') : ''}${x.catatan?`<p>${esc(x.catatan)}</p>`:''}</div>`).join('')||'<div class="empty">Kosong. Bagus, atau belum jujur? Tugas kuliah minggu ini, misalnya.</div>'}</div></div>
   </div>`;
 }
 
@@ -2996,7 +3020,7 @@ document.addEventListener('submit', async e => {
     const { error } = await sb.from('markas_masukan').insert(baris); if (error) return toast('Gagal mengirim: ' + error.message, true);
     f.reset(); return toast('Terkirim. Terima kasih, pesanmu dibaca langsung oleh pembuat Markasku.'); }
   if (which==='kuliah') { S.kuliah.items = (S.kuliah.items||[]).filter(c=>!c.contoh); S.kuliah.items.push({ id:uid(), hari:+d.hari, mulai:d.mulai, selesai:d.selesai, mk:d.mk, ruang:d.ruang, dosen:d.dosen }); await store.set('kuliah/semester5', S.kuliah); toast('Sesi kuliah ditambahkan'); }
-  else if (which==='fokus') { S.fokus.items = S.fokus.items||[]; S.fokus.items.push({ id:uid(), jenis:d.jenis, judul:d.judul, tenggat:d.tenggat||'', nominal:+d.nominal||0, mataUang:d.mataUang||'IDR', catatan:d.catatan||'', selesai:false }); await store.set('fokus/daftar', S.fokus); toast('Ditambahkan'); }
+  else if (which==='fokus') { S.fokus.items = S.fokus.items||[]; S.fokus.items.push({ id:uid(), jenis:d.jenis, judul:d.judul, tenggat:d.tenggat||'', nominal:+d.nominal||0, mataUang:d.mataUang||'IDR', catatan:d.catatan||'', selesai:false, dibuat: todayKey() }); await store.set('fokus/daftar', S.fokus); toast('Ditambahkan'); }
   else if (which==='keputusan') { S.keputusan.items = S.keputusan.items||[]; S.keputusan.items.push({ id:uid(), tanggal:d.tanggal, keputusan:d.keputusan, alasan:d.alasan, alternatif:d.alternatif, tinjau:d.tinjau, hasil:'', status:'' }); await store.set('keputusan/daftar', S.keputusan); toast('Keputusan dicatat'); }
   else if (which==='tx') { const tgl = d.tanggal || todayKey(); const j = Math.round(+d.jumlah||0); const masuk = d.kategori==='Pemasukan';
     // Uang keluar yang ditujukan ke sebuah aset = setoran: kas berkurang, aset itu bertambah, satu kali input.
