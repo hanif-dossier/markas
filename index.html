@@ -634,6 +634,11 @@ body[data-tema="terang"] .lokasi-kartu .lokasi-btn{background:linear-gradient(13
 .pekan b{display:block;font-size:11px;letter-spacing:.04em;opacity:.7}
 .pekan span{display:block;font-size:10.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pekan .kini{background:rgba(94,164,130,.2);outline:1px solid rgba(94,164,130,.45)}
+.tangga{margin:4px 0 10px 30px;padding-left:10px;border-left:2px solid var(--line)}
+.tangga .gk{padding:7px 0;border-bottom:1px dashed var(--line)}.tangga .gk:last-child{border-bottom:0}
+.tangga .gk-tk{gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px}.tangga .gk-btn{display:flex;gap:6px;flex-shrink:0}
+.tangga .ruas{display:inline-flex;gap:3px;vertical-align:middle;margin-right:4px}.tangga .ruas i{display:inline-block;width:12px;height:6px;border-radius:3px;background:var(--line)}.tangga .ruas i.on{background:var(--good)}
+@media (max-width:560px){.tangga{margin-left:0}}
 .pekan .rehat span{opacity:.5;font-style:italic}
 .pilih-hari{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:var(--panel-2,rgba(255,255,255,.05));cursor:pointer}
 .pilih-hari input{margin:0}
@@ -927,13 +932,45 @@ const DEF = {
     // Tiga sesi saja, semuanya bisa dikerjakan di dalam rumah. Jalan kaki dibuang
     // karena butuh keluar rumah. Jumat sengaja kosong sebagai hari istirahat:
     // otot tumbuh saat istirahat, bukan saat dilatih.
+    // Tiap gerakan punya "tangga": urutan versi dari yang paling ringan ke paling berat.
+    // Naik tingkat kalau semua set tembus angka atas dengan gerakan rapi dua sesi berturut-turut.
+    // Semua bisa dikerjakan di rumah dengan kursi, meja kokoh, jerigen air, dan tas berisi buku.
     latihan: [
-      { id:'l-dorong', nama:'Dorong', hari:[1,4], takaran:'4 set, tutup 10 menit kardio',
-        ket:'Push up. Turunkan badan pelan tiga hitungan. Kalau sudah ringan, naikkan kaki ke kursi. Tutup dengan jumping jack atau naik-turun bangku.' },
-      { id:'l-tarik',  nama:'Tarik',  hari:[2,6], takaran:'4 set x 10 tiap tangan, tutup 10 menit kardio',
-        ket:'Membungkuk, punggung lurus, tarik beban ke pinggang. Pakai jerigen air, galon, atau tas berisi buku. Tutup dengan mountain climber.' },
-      { id:'l-kaki',   nama:'Kaki',   hari:[3,0], takaran:'4 set x 15, tutup 10 menit kardio',
-        ket:'Squat dan lunge bergantian. Peluk beban di dada kalau sudah ringan. Tutup dengan naik-turun bangku.' }
+      { id:'l-dorong', nama:'Dorong', hari:[1,4], takaran:'4 gerakan, 13 set',
+        ket:'Dada, bahu, trisep. Pemanasan 5 menit, istirahat 90 detik antar set, tiap set berhenti saat sisa satu dua repetisi. Tutup 5 menit lompat tali atau naik-turun bangku.',
+        gerakan: [
+          { id:'g-pushup', nama:'Push up', set:4, rep:'6-12', tingkat:0,
+            tangga:['Push up biasa, tangan selebar bahu, turun 3 hitungan','Kaki di kursi','Archer push up: satu tangan lurus ke samping','Kaki di kursi, tas berisi buku di punggung','Push up satu tangan, kaki lebar'] },
+          { id:'g-dip', nama:'Dip di dua kursi', set:3, rep:'8-12', tingkat:0,
+            tangga:['Kaki menapak lantai, lutut tekuk','Kaki lurus ke depan, tumit di lantai','Kaki di kursi ketiga','Kaki di kursi, tas berisi buku di pangkuan'] },
+          { id:'g-pike', nama:'Pike push up (bahu)', set:3, rep:'6-10', tingkat:0,
+            tangga:['Pinggul tinggi, ubun-ubun turun ke lantai','Kaki di kursi','Handstand di tembok, turun pelan 5 hitungan','Handstand push up di tembok'] },
+          { id:'g-trisep', nama:'Ekstensi trisep jerigen', set:3, rep:'10-15', tingkat:0,
+            tangga:['Jerigen 5 liter di atas kepala, dua tangan, siku tetap di samping telinga','Jerigen 10 liter','Satu tangan bergantian'] } ] },
+      { id:'l-tarik', nama:'Tarik', hari:[2,6], takaran:'4 gerakan, 14 set',
+        ket:'Punggung, bisep, bahu belakang. Inilah yang membuat bahu terlihat lebar dan pinggang terlihat sempit. Palang: pipa besi kokoh, dahan pohon, atau palang taman. Tutup 5 menit mountain climber.',
+        gerakan: [
+          { id:'g-pullup', nama:'Pull up', set:4, rep:'5-10', tingkat:0,
+            tangga:['Tarik badan di bawah meja kokoh, lutut tekuk','Di bawah meja, kaki lurus','Di bawah meja, tumit di kursi','Pull up negatif: lompat ke atas, turun 5 hitungan','Pull up penuh','Pull up dengan tas berisi buku'] },
+          { id:'g-row', nama:'Row jerigen satu tangan', set:4, rep:'8-12', tingkat:0,
+            tangga:['Jerigen 5 liter, tangan lain bertumpu di kursi, tarik ke pinggang','Jerigen 10 liter atau diisi pasir','Galon 19 liter'] },
+          { id:'g-curl', nama:'Curl jerigen', set:3, rep:'10-15', tingkat:0,
+            tangga:['Dua tangan pegang satu jerigen, siku diam di samping badan','Satu tangan bergantian','Jerigen lebih berat'] },
+          { id:'g-yraise', nama:'Y raise tengkurap (bahu belakang)', set:3, rep:'12-15', tingkat:0,
+            tangga:['Tanpa beban, tahan 2 detik di atas','Botol 600 ml tiap tangan','Botol 1,5 liter tiap tangan'] } ] },
+      { id:'l-kaki', nama:'Kaki & perut', hari:[3,0], takaran:'5 gerakan, 17 set',
+        ket:'Paha, bokong, betis, perut. Otot terbesar badan ada di sini; badan atas besar di atas kaki kurus terlihat aneh. Perut cukup 3 set, sisanya urusan makanan.',
+        gerakan: [
+          { id:'g-squat', nama:'Squat', set:4, rep:'8-15', tingkat:0,
+            tangga:['Squat badan, paha sejajar lantai, tumit tetap menapak','Peluk jerigen di dada','Squat Bulgaria: kaki belakang di kursi','Squat Bulgaria peluk jerigen','Pistol squat pegang gagang pintu','Pistol squat'] },
+          { id:'g-rdl', nama:'Romanian deadlift jerigen', set:4, rep:'10-15', tingkat:0,
+            tangga:['Dua jerigen 5 liter, punggung lurus, dorong pinggul ke belakang sampai paha belakang tertarik','Galon 19 liter dipeluk','Satu kaki, satu jerigen'] },
+          { id:'g-stepup', nama:'Naik kursi (step up)', set:3, rep:'10 tiap kaki', tingkat:0,
+            tangga:['Tanpa beban, turun pelan','Peluk jerigen','Peluk galon'] },
+          { id:'g-betis', nama:'Betis di anak tangga', set:3, rep:'15-25', tingkat:0,
+            tangga:['Dua kaki, tahan 1 detik di atas','Satu kaki','Satu kaki pegang jerigen'] },
+          { id:'g-perut', nama:'Perut', set:3, rep:'10-15', tingkat:0,
+            tangga:['Plank 45 detik','Leg raise berbaring, pinggang menempel lantai','Hollow hold 30 detik lalu leg raise','Hanging leg raise di palang'] } ] }
     ]
   },
   jadwal: { items: [
@@ -2728,6 +2765,18 @@ function vBugar(){
     <div class="small dim" style="margin-top:10px">Yang bersantan atau digoreng rendam dihitung <b>dua jempol</b>, bukan satu.</div></div>`;
 
   // --- latihan hari ini
+  // Tangga progresi: tiap gerakan ditampilkan dengan tingkat yang sedang dijalani, ruas
+  // hijau sebanyak tingkat yang sudah dilewati, dan tombol Naik/Turun. Tombolnya di luar
+  // <label> supaya tidak ikut menceklis latihan.
+  const tanggaLatihan = l => {
+    if (!(l.gerakan||[]).length) return '';
+    return `<div class="tangga">${l.gerakan.map(g => { const n = (g.tangga||[]).length, t = Math.min(Math.max(0, +g.tingkat||0), Math.max(0, n-1));
+      return `<div class="gk"><div class="row between"><b>${esc(g.nama)}</b><span class="pill">${g.set} × ${esc(String(g.rep))}</span></div>
+        <div class="row between gk-tk"><span><span class="ruas">${Array.from({length:n}, (_, i) => `<i class="${i <= t ? 'on' : ''}"></i>`).join('')}</span> <span class="small">Tingkat ${t+1} dari ${n}: <b>${esc(g.tangga[t]||'')}</b></span></span>
+          <span class="gk-btn"><button class="btn sm ghost" data-act="bugar-tingkat" data-id="${l.id}" data-g="${g.id}" data-v="-1" ${t ? '' : 'disabled'} title="Turun satu tingkat">−</button><button class="btn sm" data-act="bugar-tingkat" data-id="${l.id}" data-g="${g.id}" data-v="1" ${t < n-1 ? '' : 'disabled'}>Naik</button></span></div>
+        ${g.tangga[t+1] ? `<div class="small dim">Berikutnya: ${esc(g.tangga[t+1])}${g.naikTgl ? ' · naik terakhir ' + fmtTgl(g.naikTgl, false) : ''}</div>` : '<div class="small dim">Tingkat tertinggi. Tambah repetisi atau beban di tas.</div>'}</div>`; }).join('')}
+      <div class="small dim" style="margin-top:6px">Naik tingkat kalau semua set tembus angka atas dengan gerakan rapi dua sesi berturut-turut. Jerigen: tambah satu liter air, kira-kira satu kilogram. Tiap minggu kedelapan kerjakan setengah set saja supaya sendi pulih.</div></div>`;
+  };
   const kartuLatihan = `<div class="c6 panel"><h2><span>Latihan hari ini</span><button class="btn sm" data-act="bugar-latihan-tambah">Tambah</button></h2>
     ${(() => { const n = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
         const isiHari = i => (S.bugar.latihan||[]).filter(l => (l.hari||[]).includes(i) && l.id !== 'l-jalan').map(l => l.nama).join(' + ') || 'istirahat';
@@ -2736,9 +2785,10 @@ function vBugar(){
     ${latihanHariIni.length ? latihanHariIni.map(l => `<label class="cek ${beres[l.id] ? 'on' : ''}">
         <input type="checkbox" data-act="bugar-latih" data-id="${l.id}" ${beres[l.id] ? 'checked' : ''}>
         <span><b>${esc(l.nama)}</b> <span class="pill">${esc(l.takaran || '')}</span><span class="small dim" style="display:block">${esc(l.ket || '')}</span></span>
-        <button class="btn sm ghost" data-act="bugar-latihan-hapus" data-id="${l.id}" title="Hapus dari program">×</button></label>`).join('')
+        <button class="btn sm ghost" data-act="bugar-latihan-hapus" data-id="${l.id}" title="Hapus dari program">×</button></label>${tanggaLatihan(l)}`).join('')
       : `<div class="empty">${hariIni === 5 ? 'Jumat hari istirahat. Otot tumbuh saat istirahat, bukan saat dilatih.' : 'Tidak ada latihan terjadwal hari ini. Hari kosong juga bagian dari program.'}</div>`}
     <div class="small dim" style="margin-top:10px">Seratus push up tiap sore itu cuma sekitar 40 kkal, setara satu pisang goreng. Latihan membentuk otot, yang menurunkan berat adalah makanannya. Punggung dan kaki jangan dilewat: itu yang membuat bahu terlihat lebar dan pinggang terlihat sempit. Centang di bawah ini sifatnya pilihan; yang jadi ukuran sebenarnya grafik berat di bawah.</div>
+    <div class="small dim" style="margin-top:6px">Dasar programnya: tiap otot dilatih dua kali seminggu dengan 10 sampai 20 set per minggu (Schoenfeld, Ogborn &amp; Krieger, <i>Sports Medicine</i> 2016 dan <i>Journal of Sports Sciences</i> 2017); beban ringan yang dibawa sampai hampir gagal membesarkan otot sama baiknya dengan beban berat, jadi kursi dan jerigen cukup (Schoenfeld dkk., <i>Journal of Strength and Conditioning Research</i> 2017); protein 1,6 g per kg berat badan (Morton dkk., <i>British Journal of Sports Medicine</i> 2018).</div>
     <div class="row between" style="margin-top:10px"><button class="btn sm" data-act="bugar-ke-jadwal">Masukkan program ini ke Jadwal</button>
       ${(() => { const sudah = (S.jadwal.items||[]).filter(x => String(x.id).startsWith('j-bugar-'));
         if (!sudah.length) return '<span class="small dim">Dicarikan jam kosong sore hari, tidak akan menabrak jadwalmu</span>';
@@ -2852,6 +2902,11 @@ document.addEventListener('click', async e => {
     case 'bugar-profil': modalProfilBugar(); break;
     case 'bugar-timbang': modalTimbang(); break;
     case 'bugar-latihan-tambah': modalLatihan(); break;
+    case 'bugar-tingkat': { const l = (S.bugar.latihan||[]).find(x => x.id === id); const g = l && (l.gerakan||[]).find(x => x.id === el.dataset.g); if (!g) break;
+      const n = (g.tangga||[]).length; const t = Math.min(Math.max(0, (+g.tingkat||0) + (+el.dataset.v)), Math.max(0, n-1));
+      if (t === (+g.tingkat||0)) break;
+      g.tingkat = t; if (+el.dataset.v > 0) g.naikTgl = todayKey();
+      await store.set('bugar/utama', S.bugar); toast((+el.dataset.v > 0 ? 'Naik: ' : 'Turun: ') + g.tangga[t]); render(); break; }
     case 'bugar-latihan-hapus': if (confirm('Hapus latihan ini dari program?')) { S.bugar.latihan = (S.bugar.latihan||[]).filter(x=>x.id!==id); await store.set('bugar/utama', S.bugar); toast('Latihan dihapus'); render(); } break;
     case 'bugar-takar': { const k = todayKey(), h = hari(k); h.bugar = h.bugar||{};
       h.bugar[el.dataset.k] = Math.max(0, (+h.bugar[el.dataset.k]||0) + (+el.dataset.v));
