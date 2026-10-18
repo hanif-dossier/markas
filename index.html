@@ -642,6 +642,25 @@ body[data-tema="terang"] .lokasi-kartu .lokasi-btn{background:linear-gradient(13
 .pekan .rehat span{opacity:.5;font-style:italic}
 .pilih-hari{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:var(--panel-2,rgba(255,255,255,.05));cursor:pointer}
 .pilih-hari input{margin:0}
+
+/* Catatan harian bergaya Money Manager (18 Okt 2026) */
+.mm-kepala .mm-tiga{margin-top:10px}
+.mm-tiga{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.mm-tiga>div{background:var(--panel-2);border-radius:12px;padding:8px 6px}.mm-tiga span{display:block;font-size:11.5px;color:var(--muted);margin-bottom:2px}.mm-tiga b{font-size:14px}
+.mm-hari{margin-bottom:14px}.mm-tgl{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.mm-tgl>b{font-size:22px;min-width:30px}.mm-tgl>span{font-size:12.5px;font-weight:600}.mm-tgl small{display:block;color:var(--muted);font-weight:400}.mm-tgl .mm-kanan{margin-left:auto;display:flex;gap:12px;font-size:13px}
+.mm-tx{display:flex;align-items:center;gap:12px;width:100%;padding:10px 2px;background:none;border:0;border-bottom:1px solid var(--line);color:inherit;font:inherit;text-align:left;cursor:pointer}
+.mm-tx:hover{background:var(--panel-2)}.mm-ik{font-size:20px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--panel-2);flex:none}
+.mm-isi{flex:1;min-width:0}.mm-isi b{display:block;font-size:14px}.mm-isi small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mm-jml{white-space:nowrap}
+.mm-kal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.mm-hd{text-align:center;font-size:11.5px;color:var(--muted);padding:4px 0}
+.mm-sel{min-height:62px;border-radius:10px;background:var(--panel-2);border:1px solid transparent;padding:4px;display:flex;flex-direction:column;align-items:stretch;gap:1px;color:inherit;font:inherit;cursor:pointer;text-align:right}
+.mm-sel.kosong{background:none;cursor:default}.mm-sel b{text-align:left;font-size:12.5px}.mm-sel i{font-style:normal;font-size:10px;font-family:var(--mono)}.mm-sel i.masuk{color:var(--teal)}.mm-sel i.keluar{color:var(--bad)}
+.mm-sel.kini{border-color:var(--gold)}.mm-sel.pilih{border-color:var(--teal);background:var(--teal-dim)}
+.mm-batang{height:7px;border-radius:5px;background:var(--panel-3);margin:8px 0 4px;overflow:hidden}.mm-batang i{display:block;height:100%;border-radius:5px}
+.mm-fab{position:fixed;right:22px;bottom:calc(86px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;border:0;background:var(--bad);color:#fff;font-size:32px;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.35);cursor:pointer;z-index:40}
+.mm-jenis{display:flex;gap:6px;margin-bottom:12px}.mm-jenis label{flex:1;text-align:center;padding:8px;border-radius:10px;background:var(--panel-2);cursor:pointer;font-weight:600}.mm-jenis label.on{background:var(--teal-dim);color:var(--teal)}
+tr[data-act="mm-bulan"]{cursor:pointer}
+@media (max-width:600px){.mm-sel{min-height:52px}.mm-sel i{font-size:8.5px}}
 </style>
 
 <div class="app">
@@ -1063,7 +1082,7 @@ async function loadAll(){
   if (!S.pengaturan.aturan) S.pengaturan.aturan = clone(DEF.pengaturan.aturan);
   if (!S.aruskas.rutin) S.aruskas.rutin = clone(DEF.aruskas.rutin);
   if (!S.aruskas.transaksi) S.aruskas.transaksi = [];
-  await siapkanKas(); await sinkronKas(); await potretAset(); await siapkanGoyah();
+  await siapkanKas(); await mmSiapkan(); await sinkronKas(); await potretAset(); await siapkanGoyah();
   await sambungkanJadwal();
 }
 /* Kegiatan rutinitas yang belum ditautkan (link kosong) disambungkan ke aturan harian
@@ -1239,6 +1258,7 @@ const totalUtang = () => (S.aset.utang||[]).reduce((n,a) => n + (+a.nilai||0), 0
    membatalkan transaksi otomatis ikut benar. Diminta pemilik 23 September 2026. */
 const asetKas = () => (S.aset.aset||[]).find(a => a.kas);
 function saldoKas(){
+  if (mmDompet().length) return mmDompet().reduce((n, a) => n + saldoDompet(a), 0);   // 18 Okt 2026: kas = jumlah semua dompet
   const k = asetKas(); if (!k) return 0; const mulai = k.kasMulai || '0000-00-00';
   return Math.round((+k.saldoAwal||0) + (S.aruskas.transaksi||[]).filter(t => (t.tanggal||'') >= mulai)
     .reduce((n,t) => n + (+t.masuk||0) - (+t.keluar||0), 0));
@@ -2245,13 +2265,133 @@ function formCepat(ringkas){
     <button class="btn primary" type="submit">Catat</button></form>`;
 }
 
+/* ---------- Catatan harian bergaya Money Manager (18 Okt 2026) ----------
+   Pemilik: "di markasku buat kolom keuangan seperti aplikasi money manager". Memakai transaksi Arus kas yang sama
+   (S.aruskas.transaksi), ditambah:
+   - dompet (S.aruskas.akun): tunai, rekening bank, e-wallet. Saldo tiap dompet = saldo awal (per tanggal mulai) +
+     uang masuk - uang keluar transaksinya + transfer masuk - transfer keluar. Transaksi lama tanpa dompet ikut dompet
+     pertama. Kalau ada dompet, saldo akun kas di Aset = jumlah semua dompet (saldoKas()).
+   - kategori rinci (t.sub) dengan ikon; tiap kategori rinci punya kelompok lama (Kebutuhan, Keinginan, Kuliah,
+     Kewajiban, Pemasukan), jadi ringkasan bulanan, target FF, dan grafik lama tetap benar.
+   - transfer antardompet (t.transfer = {dari, ke, jumlah}, masuk/keluar 0: total uang tidak berubah).
+   - anggaran per kategori per bulan (S.aruskas.anggaran = {sub: jumlah}). */
+const MM_KELUAR = [['Makan & minum','🍜','Kebutuhan'],['Belanja harian','🛒','Kebutuhan'],['Transportasi','🛵','Kebutuhan'],['Tagihan & pulsa','💡','Kebutuhan'],['Rumah','🏠','Kebutuhan'],
+  ['Kesehatan','💊','Kebutuhan'],['Keluarga','👪','Kebutuhan'],['Pendidikan','🎓','Kuliah'],['Sedekah & zakat','🤲','Kewajiban'],['Cicilan & hutang','🧾','Kewajiban'],
+  ['Hiburan','🎮','Keinginan'],['Pakaian','👕','Keinginan'],['Hobi','🎨','Keinginan'],['Tabungan & investasi','💰','Tabungan'],['Lainnya','📦','Kebutuhan']];
+const MM_MASUK = [['Gaji','💼','Pemasukan'],['Hasil usaha','🏪','Pemasukan'],['Bonus','🎁','Pemasukan'],['Hasil investasi','📈','Pemasukan'],['Pemberian','💝','Pemasukan'],['Lainnya','💵','Pemasukan']];
+const MM_DOMPET = { tunai:['Tunai','💵'], bank:['Rekening bank','🏦'], ewallet:['E-wallet','📱'], kartu:['Kartu kredit','💳'] };
+const MM_WARNA = ['#e0614b','#f0a64b','#e8cf4c','#5fbf7f','#3fb6c9','#5b8de8','#9b74e0','#d96bb5','#a3876a','#7f8c99','#c94f6d','#58b39a','#8fa84b','#6b7fd0','#b0b0b0'];
+const mmDompet = () => S.aruskas.akun || [];
+const mmIkon = t => { if (t.transfer) return '🔁'; const L = +t.masuk > 0 ? MM_MASUK : MM_KELUAR, k = L.find(x => x[0] === t.sub); return k ? k[1] : t.setoran ? '💰' : t.hutang ? '🧾' : +t.masuk > 0 ? '💵' : '📦'; };
+// catatan lama belum punya kategori rinci: ditebak dari keterangannya
+const MM_TEBAK = [[/gaji|upah|honor/i, 'Gaji'], [/usaha|jualan|dagang|nta|minyak|ofu/i, 'Hasil usaha'], [/bonus|thr/i, 'Bonus'], [/dividen|profit|crypto|saham|bunga/i, 'Hasil investasi'],
+  [/makan|minum|kopi|jajan|warung|nasi|snack|sarapan/i, 'Makan & minum'], [/parkir|bensin|bbm|ojek|grab|gojek|tol|angkot|bus|kereta|servis motor|transport/i, 'Transportasi'],
+  [/pulsa|kuota|listrik|token|pln|air|pdam|wifi|internet|indihome/i, 'Tagihan & pulsa'], [/belanja|sabun|sembako|indomaret|alfamart|pasar/i, 'Belanja harian'], [/sedekah|infak|infaq|zakat|wakaf/i, 'Sedekah & zakat'],
+  [/obat|dokter|klinik|apotek|sakit/i, 'Kesehatan'], [/kuliah|ukt|buku|kursus|sekolah/i, 'Pendidikan'], [/hutang|cicilan|kredit|pinjaman/i, 'Cicilan & hutang'], [/baju|celana|sepatu|pakaian/i, 'Pakaian'],
+  [/nonton|game|film|langganan|netflix|spotify/i, 'Hiburan'], [/kos|kontrakan|sewa rumah|rumah/i, 'Rumah'], [/ortu|orang tua|ibu|bapak|adik|kakak|keluarga/i, 'Keluarga']];
+const mmSub = t => { if (t.transfer) return 'Transfer'; if (t.sub) return t.sub; if (t.setoran) return 'Tabungan & investasi'; if (t.hutang) return 'Cicilan & hutang';
+  const masuk = +t.masuk > 0, L = masuk ? MM_MASUK : MM_KELUAR, k = MM_TEBAK.find(([re, sub]) => re.test(t.ket || '') && L.some(x => x[0] === sub));
+  if (k) return k[1]; if (masuk) return 'Lainnya'; return t.kategori === 'Kuliah' ? 'Pendidikan' : t.kategori === 'Kewajiban' ? 'Cicilan & hutang' : t.kategori === 'Tabungan' ? 'Tabungan & investasi' : 'Lainnya'; };
+function saldoDompet(a){ const utama = (mmDompet()[0] || {}).id, mulai = a.mulai || '0000-00-00';
+  return Math.round((+a.saldoAwal || 0) + (S.aruskas.transaksi || []).filter(t => (t.tanggal || '') >= mulai).reduce((n, t) => {
+    if (t.transfer) return n + (t.transfer.ke === a.id ? +t.transfer.jumlah || 0 : 0) - (t.transfer.dari === a.id ? +t.transfer.jumlah || 0 : 0);
+    return (t.akun || utama) === a.id ? n + (+t.masuk || 0) - (+t.keluar || 0) : n; }, 0)); }
+// pertama kali: dompet "Tunai & rekening" berisi saldo kas sekarang, supaya angka Aset tidak berubah
+async function mmSiapkan(){ if (mmDompet().length) return; const kini = saldoKas(), tk = todayKey();
+  const sejak = (S.aruskas.transaksi || []).filter(t => (t.tanggal || '') >= tk && !t.transfer).reduce((n, t) => n + (+t.masuk || 0) - (+t.keluar || 0), 0);
+  S.aruskas.akun = [{ id: uid(), nama: 'Tunai & rekening', jenis: 'tunai', saldoAwal: kini - sejak, mulai: tk }]; await store.set('keuangan/aruskas', S.aruskas); }
+function mmRingkas(tx){ let masuk = 0, keluar = 0; tx.forEach(t => { if (t.transfer) return; masuk += +t.masuk || 0; keluar += +t.keluar || 0; }); return { masuk, keluar }; }
+const mmUang = (n, jenis) => `<b class="mono" style="color:${jenis === 'masuk' ? 'var(--teal)' : jenis === 'keluar' ? 'var(--bad)' : 'var(--text)'}">${rp(n)}</b>`;
+function mmBaris(t){ const D = mmDompet(), nama = id => (D.find(a => a.id === id) || D[0] || { nama: '' }).nama, masuk = +t.masuk > 0;
+  const ket = t.transfer ? `${esc(nama(t.transfer.dari))} → ${esc(nama(t.transfer.ke))}` : esc(nama(t.akun));
+  return `<button class="mm-tx" data-act="mm-ubah" data-id="${t.id}"><span class="mm-ik">${mmIkon(t)}</span><span class="mm-isi"><b>${esc(mmSub(t))}</b><small>${esc(t.ket || '')}${t.ket ? ' · ' : ''}${ket}</small></span>
+    <span class="mm-jml">${t.transfer ? mmUang(t.transfer.jumlah) : mmUang(masuk ? t.masuk : t.keluar, masuk ? 'masuk' : 'keluar')}</span></button>`; }
+function vCatatanHarian(){
+  const sub = S.tab.mm || 'harian', mk = S.bulanTx, tk = todayKey(), D = mmDompet();
+  const txB = (S.aruskas.transaksi || []).filter(t => (t.tanggal || '').startsWith(mk)), R = mmRingkas(txB);
+  const geser = n => { const d = parseKey(mk + '-01'); d.setMonth(d.getMonth() + n); return monthKey(d); };
+  const kepala = `<div class="c12 panel tight mm-kepala"><div class="row between"><button class="btn sm ghost" data-act="mm-bulan" data-v="${geser(-1)}">‹</button><b style="font-size:17px">${fmtBulan(mk)}</b><button class="btn sm ghost" data-act="mm-bulan" data-v="${geser(1)}">›</button></div>
+    <div class="mm-tiga"><div><span>Uang masuk</span>${mmUang(R.masuk, 'masuk')}</div><div><span>Uang keluar</span>${mmUang(R.keluar, 'keluar')}</div><div><span>Selisih</span>${mmUang(R.masuk - R.keluar)}</div></div>
+    <div class="tabs" style="margin-top:10px">${[['harian','Harian'],['kalender','Kalender'],['bulanan','Bulanan'],['statistik','Statistik'],['dompet','Dompet'],['anggaran','Anggaran']].map(([v, l]) => `<button class="${sub === v ? 'on' : ''}" data-act="tab" data-k="mm" data-v="${v}">${l}</button>`).join('')}</div></div>`;
+  let isi = '';
+  if (sub === 'harian') { const per = {}; txB.forEach(t => (per[t.tanggal] ||= []).push(t));
+    isi = `<div class="c12 panel">${Object.keys(per).sort().reverse().map(tg => { const r = mmRingkas(per[tg]), d = parseKey(tg);
+      return `<div class="mm-hari"><div class="mm-tgl"><b>${d.getDate()}</b><span>${HARI[d.getDay()]}<small>${BLN[d.getMonth()]} ${d.getFullYear()}</small></span><span class="mm-kanan">${r.masuk ? mmUang(r.masuk, 'masuk') : ''} ${r.keluar ? mmUang(r.keluar, 'keluar') : ''}</span></div>
+        ${per[tg].slice().reverse().map(mmBaris).join('')}</div>`; }).join('') || '<div class="empty">Belum ada catatan bulan ini. Ketuk + untuk mencatat.</div>'}</div>`; }
+  else if (sub === 'kalender') { const awal = parseKey(mk + '-01'), n = new Date(awal.getFullYear(), awal.getMonth() + 1, 0).getDate(), pilih = S.tab.mmTgl && S.tab.mmTgl.startsWith(mk) ? S.tab.mmTgl : (tk.startsWith(mk) ? tk : mk + '-01');
+    let sel = ''; for (let i = 0; i < awal.getDay(); i++) sel += '<div class="mm-sel kosong"></div>';
+    for (let h = 1; h <= n; h++) { const tg = `${mk}-${String(h).padStart(2, '0')}`, r = mmRingkas(txB.filter(t => t.tanggal === tg));
+      sel += `<button class="mm-sel ${tg === pilih ? 'pilih' : ''} ${tg === tk ? 'kini' : ''}" data-act="mm-hari" data-v="${tg}"><b>${h}</b>${r.masuk ? `<i class="masuk">${rpS(r.masuk).replace('Rp', '')}</i>` : ''}${r.keluar ? `<i class="keluar">${rpS(r.keluar).replace('Rp', '')}</i>` : ''}</button>`; }
+    const hari = txB.filter(t => t.tanggal === pilih);
+    isi = `<div class="c12 panel"><div class="mm-kal">${HARI.map(h => `<div class="mm-hd">${h.slice(0, 3)}</div>`).join('')}${sel}</div></div>
+      <div class="c12 panel"><h2>${fmtTgl(pilih)}</h2>${hari.map(mmBaris).join('') || '<div class="empty">Tidak ada catatan di hari ini.</div>'}</div>`; }
+  else if (sub === 'bulanan') { const th = mk.slice(0, 4), B = []; for (let m = 1; m <= 12; m++) { const k = `${th}-${String(m).padStart(2, '0')}`; B.push({ k, ...mmRingkas((S.aruskas.transaksi || []).filter(t => (t.tanggal || '').startsWith(k))) }); }
+    const T = B.reduce((a, b) => ({ masuk: a.masuk + b.masuk, keluar: a.keluar + b.keluar }), { masuk: 0, keluar: 0 });
+    isi = `<div class="c12 panel"><h2>Tahun ${th}</h2><div class="scroll"><table class="tbl"><thead><tr><th>Bulan</th><th class="num">Pemasukan</th><th class="num">Pengeluaran</th><th class="num">Selisih</th></tr></thead><tbody>
+      ${B.filter(b => b.masuk || b.keluar || b.k === mk).reverse().map(b => `<tr${b.k === mk ? ' style="background:var(--panel-2)"' : ''} data-act="mm-bulan" data-v="${b.k}"><td><b>${fmtBulan(b.k)}</b></td><td class="num" style="color:var(--teal)">${rp(b.masuk)}</td><td class="num" style="color:var(--bad)">${rp(b.keluar)}</td><td class="num"><b>${rp(b.masuk - b.keluar)}</b></td></tr>`).join('')}
+      </tbody><tfoot><tr><td>Setahun</td><td class="num">${rp(T.masuk)}</td><td class="num">${rp(T.keluar)}</td><td class="num"><b>${rp(T.masuk - T.keluar)}</b></td></tr></tfoot></table></div></div>`; }
+  else if (sub === 'statistik') { const jenis = S.tab.mmStat || 'keluar', per = {};
+    txB.filter(t => !t.transfer && (jenis === 'masuk' ? +t.masuk > 0 : +t.keluar > 0)).forEach(t => { const k = mmSub(t); per[k] = (per[k] || 0) + (jenis === 'masuk' ? +t.masuk : +t.keluar); });
+    const items = Object.entries(per).sort((a, b) => b[1] - a[1]).map(([k, v], i) => ({ label: `${(jenis === 'masuk' ? MM_MASUK : MM_KELUAR).find(x => x[0] === k)?.[1] || '📦'} ${k}`, v, color: MM_WARNA[i % MM_WARNA.length] }));
+    isi = `<div class="c12 panel"><div class="tabs">${[['keluar','Pengeluaran'],['masuk','Pemasukan']].map(([v, l]) => `<button class="${jenis === v ? 'on' : ''}" data-act="tab" data-k="mmStat" data-v="${v}">${l}</button>`).join('')}</div>
+      <div style="margin-top:12px">${donutChart(items, rpS(jenis === 'masuk' ? R.masuk : R.keluar).replace('Rp', ''), jenis === 'masuk' ? 'total masuk' : 'total keluar')}</div></div>`; }
+  else if (sub === 'dompet') { const tot = D.reduce((n, a) => n + saldoDompet(a), 0);
+    isi = `<div class="c12 panel"><h2>Dompet <span class="row"><button class="act" data-act="mm-transfer">⇄ Transfer</button><button class="act" data-act="mm-dompet-tambah">+ Dompet</button></span></h2>
+      <div class="mm-tiga"><div><span>Total uang</span>${mmUang(tot)}</div><div><span>Jumlah dompet</span><b class="mono">${D.length}</b></div><div><span>Masuk ke Aset sebagai</span><b>${esc((asetKas() || {}).nama || 'akun kas')}</b></div></div>
+      <div class="list" style="margin-top:12px">${D.map((a, i) => `<div class="item"><div class="hd"><b>${(MM_DOMPET[a.jenis] || MM_DOMPET.tunai)[1]} ${esc(a.nama)}</b>${mmUang(saldoDompet(a))}</div>
+        <div class="row between small"><span class="dim">${(MM_DOMPET[a.jenis] || MM_DOMPET.tunai)[0]}${i === 0 ? ' · catatan lama tanpa dompet masuk ke sini' : ''}</span><span class="row"><button class="btn sm ghost" data-act="mm-dompet-saldo" data-id="${a.id}">Sesuaikan saldo</button>${i ? `<button class="btn sm ghost" data-act="mm-dompet-hapus" data-id="${a.id}">Hapus</button>` : ''}</span></div></div>`).join('')}</div>
+      <div class="small dim" style="margin-top:10px">Jumlah semua dompet otomatis menjadi nilai akun kas di tab Aset & utang. Sesuaikan saldo kalau angka di sini beda dengan saldo sungguhan (cek m-banking atau hitung uang tunai).</div></div>`; }
+  else { const A = S.aruskas.anggaran || {}, keluarPer = {}; txB.filter(t => !t.transfer && +t.keluar > 0).forEach(t => { const k = mmSub(t); keluarPer[k] = (keluarPer[k] || 0) + +t.keluar; });
+    const totA = Object.values(A).reduce((n, v) => n + (+v || 0), 0), totPakai = MM_KELUAR.filter(k => A[k[0]]).reduce((n, k) => n + (keluarPer[k[0]] || 0), 0);
+    isi = `<div class="c12 panel"><h2>Anggaran ${fmtBulan(mk)} <span class="small muted">isi batas belanja per kategori tiap bulan</span></h2>
+      ${totA ? `<div class="mm-tiga"><div><span>Anggaran</span>${mmUang(totA)}</div><div><span>Terpakai</span>${mmUang(totPakai, 'keluar')}</div><div><span>Sisa</span>${mmUang(totA - totPakai)}</div></div>` : ''}
+      <div class="list" style="margin-top:12px">${MM_KELUAR.map(([k, ik]) => { const bts = +A[k] || 0, pakai = keluarPer[k] || 0, p = bts ? Math.min(100, pakai / bts * 100) : 0;
+        return `<div class="item"><div class="hd"><b>${ik} ${esc(k)}</b><span class="row"><span class="mono small">${rp(pakai)}${bts ? ' / ' + rp(bts) : ''}</span><input type="number" min="0" step="50000" placeholder="batas" value="${bts || ''}" data-act="mm-anggaran" data-k="${esc(k)}" style="width:110px;padding:4px 8px;text-align:right"></span></div>
+          ${bts ? `<div class="mm-batang"><i style="width:${p}%;background:${pakai > bts ? 'var(--bad)' : p > 80 ? 'var(--warn)' : 'var(--teal)'}"></i></div><div class="small ${pakai > bts ? '' : 'dim'}" style="${pakai > bts ? 'color:var(--bad)' : ''}">${pakai > bts ? 'lebih ' + rp(pakai - bts) : 'sisa ' + rp(bts - pakai)}</div>` : ''}</div>`; }).join('')}</div></div>`; }
+  return kepala + isi + `<button class="mm-fab" data-act="mm-tambah" aria-label="Catat transaksi">+</button>`;
+}
+// formulir catat / ubah: Pengeluaran, Pemasukan, atau Transfer antardompet
+function modalCatat(t, jenisAwal){ const D = mmDompet(), j0 = t ? (t.transfer ? 'transfer' : +t.masuk > 0 ? 'masuk' : 'keluar') : (jenisAwal || 'keluar');
+  if (t && (t.setoran || t.hutang)) return modalTxUbah(t);
+  const opsi = jenis => (jenis === 'masuk' ? MM_MASUK : MM_KELUAR).map(([k, ik]) => `<option value="${esc(k)}" ${t && mmSub(t) === k ? 'selected' : ''}>${ik} ${esc(k)}</option>`).join('');
+  const dompet = (nama, pilih) => `<select name="${nama}">${D.map(a => `<option value="${a.id}" ${a.id === pilih ? 'selected' : ''}>${(MM_DOMPET[a.jenis] || MM_DOMPET.tunai)[1]} ${esc(a.nama)}</option>`).join('')}</select>`;
+  const jml = t ? (t.transfer ? t.transfer.jumlah : (+t.masuk || 0) + (+t.keluar || 0)) : '';
+  modal(`<h3>${t ? 'Ubah catatan' : 'Catat'}</h3><form class="form">
+    <div class="tabs mm-jenis">${[['keluar','Pengeluaran'],['masuk','Pemasukan'],['transfer','Transfer']].map(([v, l]) => `<label class="${v === j0 ? 'on' : ''}"><input type="radio" name="jenis" value="${v}" ${v === j0 ? 'checked' : ''} hidden>${l}</label>`).join('')}</div>
+    <div class="form cols2">${F('Tanggal', `<input type="date" name="tanggal" value="${t ? t.tanggal : todayKey()}" required>`)}${F('Jumlah (Rp)', `<input type="number" name="jumlah" min="1" step="1" value="${jml}" required inputmode="numeric" style="font-family:var(--mono);font-size:18px">`)}</div>
+    <div class="mm-f keluar masuk">${F('Kategori', `<select name="sub" data-keluar="${esc(opsi('keluar'))}" data-masuk="${esc(opsi('masuk'))}">${opsi(j0 === 'masuk' ? 'masuk' : 'keluar')}</select>`)}${F('Dompet', dompet('akun', t && t.akun || (D[0] || {}).id))}</div>
+    <div class="mm-f transfer form cols2">${F('Dari dompet', dompet('dari', t && t.transfer ? t.transfer.dari : (D[0] || {}).id))}${F('Ke dompet', dompet('ke', t && t.transfer ? t.transfer.ke : (D[1] || D[0] || {}).id))}</div>
+    ${F('Catatan', `<input type="text" name="ket" value="${esc(t ? (t.transfer ? '' : t.ket || '') : '')}" placeholder="opsional, misal: makan siang warung">`)}
+    ${ACTIONS(t ? 'Simpan' : 'Catat')}${t ? `<button type="button" class="btn sm ghost" data-act="tx-hapus" data-id="${t.id}" style="margin-top:8px;color:var(--bad)">Hapus catatan ini</button>` : ''}</form>`,
+  async d => { const jumlah = Math.round(+d.jumlah || 0); if (!(jumlah > 0)) { toast('Isi jumlahnya', true); return false; }
+    const L = d.jenis === 'masuk' ? MM_MASUK : MM_KELUAR, grup = (L.find(x => x[0] === d.sub) || L.at(-1))[2];
+    let baru;
+    if (d.jenis === 'transfer') { if (d.dari === d.ke) { toast('Dompet asal dan tujuan sama', true); return false; }
+      const nm = id => (D.find(a => a.id === id) || {}).nama || ''; baru = { tanggal: d.tanggal, ket: d.ket || `Transfer ${nm(d.dari)} → ${nm(d.ke)}`, kategori: 'Transfer', masuk: 0, keluar: 0, transfer: { dari: d.dari, ke: d.ke, jumlah } }; }
+    else baru = { tanggal: d.tanggal, ket: d.ket || d.sub, kategori: grup, sub: d.sub, akun: d.akun, masuk: d.jenis === 'masuk' ? jumlah : 0, keluar: d.jenis === 'masuk' ? 0 : jumlah, transfer: undefined };
+    if (t) Object.assign(t, baru); else S.aruskas.transaksi.push({ id: uid(), ...baru });
+    S.bulanTx = d.tanggal.slice(0, 7); await store.set('keuangan/aruskas', S.aruskas); await sinkronKas(); toast(t ? 'Catatan diubah' : `${d.jenis === 'masuk' ? 'Pemasukan' : d.jenis === 'transfer' ? 'Transfer' : 'Pengeluaran'} ${rp(jumlah)} dicatat`); render(); });
+  // ganti jenis: tampilkan isian yang sesuai, ganti daftar kategori
+  const m = $('#modal'), atur = () => { const j = m.querySelector('[name=jenis]:checked').value; m.querySelectorAll('.mm-jenis label').forEach(l => l.classList.toggle('on', l.querySelector('input').checked));
+    m.querySelectorAll('.mm-f').forEach(x => x.style.display = x.classList.contains(j) ? '' : 'none'); const s = m.querySelector('[name=sub]'); if (j !== 'transfer' && s.dataset.j !== j) { s.innerHTML = j === 'masuk' ? s.dataset.masuk : s.dataset.keluar; s.dataset.j = j; } };
+  m.querySelector('[name=sub]').dataset.j = j0 === 'masuk' ? 'masuk' : 'keluar'; m.querySelectorAll('[name=jenis]').forEach(r => r.onchange = atur); atur(); }
+function modalDompet(a){ modal(`<h3>${a ? 'Sesuaikan saldo ' + esc(a.nama) : 'Tambah dompet'}</h3><form class="form">
+    ${a ? '' : F('Nama', '<input type="text" name="nama" required placeholder="misal: BRI, Dana, Tunai di dompet">') + F('Jenis', `<select name="jenis">${Object.entries(MM_DOMPET).map(([k, [l, ik]]) => `<option value="${k}">${ik} ${l}</option>`).join('')}</select>`)}
+    ${F(a ? 'Saldo sungguhan sekarang (Rp)' : 'Saldo sekarang (Rp)', `<input type="number" name="saldo" step="1" value="${a ? saldoDompet(a) : ''}" required inputmode="numeric" style="font-family:var(--mono);font-size:18px">`)}
+    ${a ? '' : '<div class="desc">Kalau uang di rekening ini sebelumnya sudah termasuk di dompet "Tunai & rekening", sesuaikan juga saldo dompet itu supaya tidak terhitung dua kali.</div>'}${ACTIONS('Simpan')}</form>`,
+  async d => { const v = Math.round(+d.saldo || 0);
+    if (a) a.saldoAwal = (+a.saldoAwal || 0) + v - saldoDompet(a);
+    else S.aruskas.akun.push({ id: uid(), nama: d.nama.trim(), jenis: d.jenis, saldoAwal: v, mulai: todayKey() });
+    await store.set('keuangan/aruskas', S.aruskas); await sinkronKas(); toast(a ? 'Saldo disesuaikan' : 'Dompet ditambahkan'); render(); }); }
+
 function vKeuangan(){
   potretAset();   // nilai bulan berjalan selalu segar; S.aset diperbarui sebelum menunggu penyimpanan
-  const tab = S.tab.keuangan||'arus'; const mk = S.bulanTx; const r = ringkasBulan(mk); const tk = todayKey(); const ws = awalMinggu(tk);
-  const tabs = `<div class="tabs">${[['arus','Arus kas'],['hutang','Bayar hutang'],['aset','Aset & utang'],['maju','Kemajuan']].map(([v,l]) => `<button class="${tab===v?'on':''}" data-act="tab" data-k="keuangan" data-v="${v}">${l}</button>`).join('')}</div>`;
+  const tab = S.tab.keuangan||'buku'; const mk = S.bulanTx; const r = ringkasBulan(mk); const tk = todayKey(); const ws = awalMinggu(tk);
+  const tabs = `<div class="tabs">${[['buku','Catatan harian'],['arus','Arus kas'],['hutang','Bayar hutang'],['aset','Aset & utang'],['maju','Kemajuan']].map(([v,l]) => `<button class="${tab===v?'on':''}" data-act="tab" data-k="keuangan" data-v="${v}">${l}</button>`).join('')}</div>`;
   let isi = '';
 
-  if (tab==='arus') {
+  if (tab==='buku') isi = vCatatanHarian();
+  else if (tab==='arus') {
     const months = []; for (let i=5;i>=0;i--){ const d = parseKey(mk+'-01'); d.setMonth(d.getMonth()-i); months.push(monthKey(d)); }
     const tx = (S.aruskas.transaksi||[]).filter(t => (t.tanggal||'').startsWith(mk)).sort((a,b)=>b.tanggal.localeCompare(a.tanggal) || (b.masuk?1:0)-(a.masuk?1:0));
     const sisa = r.pemasukan - r.pengeluaran - r.tabungan;
@@ -3017,6 +3157,17 @@ document.addEventListener('click', async e => {
       const h = S.harian[t]; if (h && (h.pelanggaran||[]).some(q => q.aturan==='maksiat')) { h.pelanggaran = h.pelanggaran.filter(q => q.aturan!=='maksiat'); await simpanHari(t, h); }
       await store.set('fokus/daftar', S.fokus); toast('Tanggal dihapus dari riwayat'); render(); break; }
     case 'tab': S.tab[el.dataset.k] = el.dataset.v; render(); break;
+    case 'mm-tambah': modalCatat(); break;
+    case 'mm-transfer': if (mmDompet().length < 2) { toast('Tambah dompet kedua dulu untuk transfer', true); break; } modalCatat(null, 'transfer'); break;
+    case 'mm-ubah': { const t = (S.aruskas.transaksi||[]).find(x=>x.id===id); if (t) modalCatat(t); break; }
+    case 'mm-bulan': S.bulanTx = el.dataset.v; render(); break;
+    case 'mm-hari': S.tab.mmTgl = el.dataset.v; render(); break;
+    case 'mm-dompet-tambah': modalDompet(); break;
+    case 'mm-dompet-saldo': { const a = mmDompet().find(x=>x.id===id); if (a) modalDompet(a); break; }
+    case 'mm-dompet-hapus': { const a = mmDompet().find(x=>x.id===id); if (!a) break; const dipakai = (S.aruskas.transaksi||[]).some(t => t.akun===id || (t.transfer && (t.transfer.dari===id || t.transfer.ke===id)));
+      if (dipakai) { toast('Dompet ini sudah punya catatan. Pindahkan atau hapus catatannya dulu.', true); break; }
+      if (!confirm(`Hapus dompet ${a.nama}? Saldonya ${rp(saldoDompet(a))} ikut hilang dari total kas.`)) break;
+      S.aruskas.akun = mmDompet().filter(x=>x.id!==id); await store.set('keuangan/aruskas', S.aruskas); await sinkronKas(); toast('Dompet dihapus'); render(); break; }
     case 'tx-hapus': { const t = S.aruskas.transaksi.find(x=>x.id===id); if (!t) break;
       if (t.setoran) { if (confirm(`Batalkan setoran ${rp(t.keluar)}? Nilai aset juga dikurangi kembali.`)) { await batalSetor(t.setoran); render(); } break; }
       if (t.hutang && !confirm(`Batalkan pembayaran hutang ${rp(t.keluar)} tanggal ${fmtTgl(t.tanggal,false)}? Sisa hutang akan dikembalikan.`)) break;
@@ -3024,7 +3175,7 @@ document.addEventListener('click', async e => {
       if (t.rutin) { const r = (S.aruskas.rutin||[]).find(x=>x.id===t.rutin); if (r) { r.lewati = r.lewati||[]; if (!r.lewati.includes(t.tanggal)) r.lewati.push(t.tanggal); } }
       const tulis = [store.set('keuangan/aruskas', S.aruskas)];
       if (t.hutang) { const u = (S.aset.utang||[]).find(x=>x.id===t.hutang); if (u) { u.nilai = (+u.nilai||0) + (+t.keluar||0); tulis.push(store.set('keuangan/aset', S.aset)); } }
-      await Promise.all(tulis); await sinkronKas(); toast(t.hutang ? 'Pembayaran dibatalkan, sisa hutang dikembalikan' : t.rutin ? 'Minggu ini dilewati' : 'Transaksi dihapus'); render(); break; }
+      await Promise.all(tulis); await sinkronKas(); $('#modalBg').classList.remove('show'); toast(t.hutang ? 'Pembayaran dibatalkan, sisa hutang dikembalikan' : t.rutin ? 'Minggu ini dilewati' : 'Transaksi dihapus'); render(); break; }
     case 'rutin-tambah': modalRutin(); break;
     case 'blok': await klikBlok(el.dataset.link, el.dataset.tgl); break;
     case 'nilai': e.preventDefault(); await kirimNilai(el.dataset.v==='1'); break;
@@ -3058,6 +3209,7 @@ document.addEventListener('change', async e => {
   const el = e.target; const act = el.dataset.act, id = el.dataset.id, field = el.dataset.field;
   if (el.dataset.file === 'suara') { const f = el.files && el.files[0]; el.value = ''; const v = await tambahSuara(f); const m = $('#modal'); if (m) { isiSelectSuara(m.querySelector('[name=adzanSuara]'), v || (m.querySelector('[name=adzanSuara]')||{}).value); const w = m.querySelector('#suaraKhusus'); if (w) w.innerHTML = htmlSuaraKhusus(); } return; }
   if (el.dataset.file === 'latar') { const f = el.files && el.files[0]; const fase = el.dataset.fase; el.value = ''; await gantiLatar(fase, f); const g = document.getElementById('latarGrid'); if (g) g.innerHTML = htmlLatarGrid(); return; }
+  if (act==='mm-anggaran') { S.aruskas.anggaran = S.aruskas.anggaran||{}; const v = Math.round(+el.value||0); if (v>0) S.aruskas.anggaran[el.dataset.k] = v; else delete S.aruskas.anggaran[el.dataset.k]; await store.set('keuangan/aruskas', S.aruskas); render(); return; }
   if (act==='rencana-progres') { const x = S.rencana.items.find(y=>y.id===id); x.progres = +el.value; await store.set('rencana/3tahun', S.rencana); render(); }
   else if (act==='rencana-selesai') { const x = S.rencana.items.find(y=>y.id===id); x.selesai = el.checked; if (el.checked) x.progres = 100; await store.set('rencana/3tahun', S.rencana); render(); }
   else if (act==='aset-nilai') { const a = S.aset.aset.find(y=>y.id===id);
